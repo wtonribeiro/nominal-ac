@@ -38,7 +38,7 @@ Inductive equiv (S : set nat): Context -> term -> term -> Prop :=
                            equiv S C (TPith 1 t m n) (TPith 1 t' m n) ->
                            equiv S C (Fc m n t) (Fc m n t')
 
-(** Checks only for Associtative-alpha equivalence *)  
+(** Checks only for Associative-alpha equivalence *)  
 
  | equiv_A    : forall m, 
          (m = 0) ->
