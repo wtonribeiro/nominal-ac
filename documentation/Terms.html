@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>Terms</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library Terms</h1>
+
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Set Implicit Arguments</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Arith.Max.html#"><span class="id" title="library">Max</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Lists.List.html#"><span class="id" title="library">List</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Lists.ListSet.html#"><span class="id" title="library">ListSet</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.omega.Omega.html#"><span class="id" title="library">Omega</span></a> <a class="idref" href="LibTactics.html#"><span class="id" title="library">LibTactics</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <a name="Atom"><span class="id" title="inductive">Atom</span></a> : <span class="id" title="keyword">Set</span> := <a name="atom"><span class="id" title="constructor">atom</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> -&gt; <a class="idref" href="Terms.html#Atom"><span class="id" title="inductive">Atom</span></a>.<br/>
+<span class="id" title="keyword">Inductive</span> <a name="Var"><span class="id" title="inductive">Var</span></a>  : <span class="id" title="keyword">Set</span> := <a name="var"><span class="id" title="constructor">var</span></a>  : <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> -&gt; <a class="idref" href="Terms.html#Var"><span class="id" title="inductive">Var</span></a>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="Perm"><span class="id" title="definition">Perm</span></a> := <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Terms.html#Atom"><span class="id" title="inductive">Atom</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Datatypes.html#d19c7eafd0e2d195d10df94b392087b5"><span class="id" title="notation">*</span></a> <a class="idref" href="Terms.html#Atom"><span class="id" title="inductive">Atom</span></a>).<br/>
+
+<br/>
+<span class="id" title="keyword">Notation</span> <a name="af522e7bcd6f546a086933f85f4775b4"><span class="id" title="notation">&quot;</span></a>[]"    := <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a>  (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 67).<br/>
+<span class="id" title="keyword">Notation</span> <a name="13a408ca9e0165bae8e7fb37c63ce79d"><span class="id" title="notation">&quot;</span></a>|[ s ]" := (<span class="id" title="var">s</span><a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed5"><span class="id" title="notation">::</span></a><a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 67).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Grammar 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <a name="term"><span class="id" title="inductive">term</span></a> : <span class="id" title="keyword">Set</span> :=<br/>
+&nbsp;&nbsp;| <a name="Ut"><span class="id" title="constructor">Ut</span></a> : <a class="idref" href="Terms.html#term"><span class="id" title="inductive">term</span></a><br/>
+&nbsp;&nbsp;| <a name="At"><span class="id" title="constructor">At</span></a> : <a class="idref" href="Terms.html#Atom"><span class="id" title="inductive">Atom</span></a> -&gt; <a class="idref" href="Terms.html#term"><span class="id" title="inductive">term</span></a> <br/>
+&nbsp;&nbsp;| <a name="Ab"><span class="id" title="constructor">Ab</span></a> : <a class="idref" href="Terms.html#Atom"><span class="id" title="inductive">Atom</span></a> -&gt; <a class="idref" href="Terms.html#term"><span class="id" title="inductive">term</span></a> -&gt; <a class="idref" href="Terms.html#term"><span class="id" title="inductive">term</span></a><br/>
+&nbsp;&nbsp;| <a name="Pr"><span class="id" title="constructor">Pr</span></a> : <a class="idref" href="Terms.html#term"><span class="id" title="inductive">term</span></a> -&gt; <a class="idref" href="Terms.html#term"><span class="id" title="inductive">term</span></a> -&gt; <a class="idref" href="Terms.html#term"><span class="id" title="inductive">term</span></a> <br/>
+&nbsp;&nbsp;| <a name="Fc"><span class="id" title="constructor">Fc</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> -&gt; <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> -&gt; <a class="idref" href="Terms.html#term"><span class="id" title="inductive">term</span></a> -&gt; <a class="idref" href="Terms.html#term"><span class="id" title="inductive">term</span></a><br/>
+&nbsp;&nbsp;| <a name="Su"><span class="id" title="constructor">Su</span></a> : <a class="idref" href="Terms.html#Perm"><span class="id" title="definition">Perm</span></a> -&gt; <a class="idref" href="Terms.html#Var"><span class="id" title="inductive">Var</span></a> -&gt; <a class="idref" href="Terms.html#term"><span class="id" title="inductive">term</span></a>  <br/>
+.<br/>
+
+<br/>
+<span class="id" title="keyword">Notation</span> <a name="5eae5cb9b059b90d1b541d88816886dd"><span class="id" title="notation">&quot;</span></a>&lt;&lt;&gt;&gt;" := (<a class="idref" href="Terms.html#Ut"><span class="id" title="constructor">Ut</span></a>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 67).<br/>
+<span class="id" title="keyword">Notation</span> <a name="ea0c20623ade3fce78550be09a7b37cc"><span class="id" title="notation">&quot;</span></a>% a " := (<a class="idref" href="Terms.html#At"><span class="id" title="constructor">At</span></a> <span class="id" title="var">a</span>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 67).<br/>
+<span class="id" title="keyword">Notation</span> <a name="648ab9f94c023f8f1fd9d39972ac6713"><span class="id" title="notation">&quot;</span></a>[ a ] ^ t" := (<a class="idref" href="Terms.html#Ab"><span class="id" title="constructor">Ab</span></a> <span class="id" title="var">a</span> <span class="id" title="var">t</span>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 67).<br/>
+<span class="id" title="keyword">Notation</span> <a name="3a3cf46873f4d96880aff7259915cf4d"><span class="id" title="notation">&quot;</span></a>&lt;| t1 , t2 |&gt;" := (<a class="idref" href="Terms.html#Pr"><span class="id" title="constructor">Pr</span></a> <span class="id" title="var">t1</span> <span class="id" title="var">t2</span>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 67).<br/>
+<span class="id" title="keyword">Notation</span> <a name="e4e320cd04cec67d6116c1fa82bd6873"><span class="id" title="notation">&quot;</span></a>pi \ X" := (<a class="idref" href="Terms.html#Su"><span class="id" title="constructor">Su</span></a> <span class="id" title="var">pi</span> <span class="id" title="var">X</span>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 67).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Atoms decidability 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="Atom_eqdec"><span class="id" title="lemma">Atom_eqdec</span></a> : <span class="id" title="keyword">forall</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span> : <a class="idref" href="Terms.html#Atom"><span class="id" title="inductive">Atom</span></a>, <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">{</span></a><a class="idref" href="Terms.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Terms.html#b"><span class="id" title="variable">b</span></a><a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">{</span></a><a class="idref" href="Terms.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Logic.html#32263a1c8b01baecdff9deb038955bc9"><span class="id" title="notation">&lt;&gt;</span></a> <a class="idref" href="Terms.html#b"><span class="id" title="variable">b</span></a><a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;<span class="id" title="tactic">intros</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">a</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">b</span>. <span class="id" title="tactic">case</span> (<span class="id" title="var">n</span> <a class="idref" href="LibTactics.html#39064cd091a0ac785497a0862b96127b"><span class="id" title="notation">===</span></a> <span class="id" title="var">n0</span>); <span class="id" title="tactic">intros</span>.<br/>
+&nbsp;<span class="id" title="tactic">left</span>. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">e</span>. <span class="id" title="tactic">trivial</span>. <span class="id" title="tactic">right</span>. <span class="id" title="tactic">intro</span>. <span class="id" title="tactic">inversion</span> <span class="id" title="var">H</span>. <span class="id" title="var">contradiction</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Notation</span> <a name="72a38fe7bd59bf3090d1d923105c5852"><span class="id" title="notation">&quot;</span></a>a ==at b" := (<a class="idref" href="Terms.html#Atom_eqdec"><span class="id" title="lemma">Atom_eqdec</span></a> <span class="id" title="var">a</span> <span class="id" title="var">b</span>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 67).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Size of a term  
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <a name="size_term"><span class="id" title="definition">size_term</span></a> (<span class="id" title="var">t</span> : <a class="idref" href="Terms.html#term"><span class="id" title="inductive">term</span></a>) {<span class="id" title="keyword">struct</span> <span class="id" title="var">t</span>} : <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> :=<br/>
+&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Terms.html#t"><span class="id" title="variable">t</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Terms.html#648ab9f94c023f8f1fd9d39972ac6713"><span class="id" title="notation">[</span></a><span class="id" title="var">a</span><a class="idref" href="Terms.html#648ab9f94c023f8f1fd9d39972ac6713"><span class="id" title="notation">]^</span></a><span class="id" title="var">t1</span>  =&gt; 1 <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Terms.html#size_term"><span class="id" title="definition">size_term</span></a> <span class="id" title="var">t1</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Terms.html#3a3cf46873f4d96880aff7259915cf4d"><span class="id" title="notation">&lt;|</span></a><span class="id" title="var">t1</span><a class="idref" href="Terms.html#3a3cf46873f4d96880aff7259915cf4d"><span class="id" title="notation">,</span></a><span class="id" title="var">t2</span><a class="idref" href="Terms.html#3a3cf46873f4d96880aff7259915cf4d"><span class="id" title="notation">|&gt;</span></a> =&gt; 1 <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Terms.html#size_term"><span class="id" title="definition">size_term</span></a> <span class="id" title="var">t1</span> <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Terms.html#size_term"><span class="id" title="definition">size_term</span></a> <span class="id" title="var">t2</span> <br/>
+&nbsp;&nbsp;| <a class="idref" href="Terms.html#Fc"><span class="id" title="constructor">Fc</span></a> <span class="id" title="var">m</span> <span class="id" title="var">n</span> <span class="id" title="var">t1</span>  =&gt; 1 <a class="idref" href="http://coq.inria.fr/distrib/8.4pl6/stdlib/Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Terms.html#size_term"><span class="id" title="definition">size_term</span></a> <span class="id" title="var">t1</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">_</span>   =&gt; 1  <br/>
+&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>
