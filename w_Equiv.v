@@ -1,6 +1,15 @@
-(***************************************************************************
- * w_Equiv.v                						   *	
-***************************************************************************)
+(*
+ ============================================================================
+ Project     : Nominal AC Unification
+ File        : w_Equiv.v
+ Authors     : Washington Luís R. de Carvalho Segundo and
+               Mauricio Ayala Rincón 
+               Universidade de Brasilia (UnB) - Brazil
+               Group of Theory of Computation
+ 
+ Last Modified On: April 15, 2016.
+ ============================================================================
+*)
 
 Require Export Fresh.
 
@@ -89,7 +98,7 @@ Qed.
 
 Lemma w_equiv_equivariance : forall t1 t2 pi, t1 ~we t2 <-> (pi @ t1) ~we (pi @ t2).
 Proof.
- split; intros. generalize pi; clear pi.
+ split~; intros. generalize pi; clear pi.
  induction H; intros; autorewrite with perm; auto.
  apply w_equiv_Su. intro. apply not_In_ds. 
  rewrite <- 2 perm_comp_atom. apply perm_eq_atom.

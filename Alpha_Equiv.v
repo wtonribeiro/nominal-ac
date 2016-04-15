@@ -1,7 +1,15 @@
-(***************************************************************************
- * Alpha_Equiv.v                						   *		
-***************************************************************************)
-
+(*
+ ============================================================================
+ Project     : Nominal AC Unification
+ File        : Alpha_Equiv.v
+ Authors     : Washington Luís R. de Carvalho Segundo and
+               Mauricio Ayala Rincón 
+               Universidade de Brasilia (UnB) - Brazil
+               Group of Theory of Computation
+ 
+ Last Modified On: April 15, 2016.
+ ============================================================================
+*)
 
 Require Export  w_Equiv.
 
@@ -43,12 +51,12 @@ Proof. intros. rewrite H. apply alpha_equiv_At. Qed.
 
 Lemma alpha_equiv_Pr_elim : forall C t1 t2 t1' t2', 
 C |- (<|t1,t2|>) ~alpha (<|t1',t2'|>) -> ((C |- t1 ~alpha t1') /\ (C |- t2 ~alpha t2')).  
-Proof. intros. inversion H. split; trivial. Qed.
+Proof. intros. inversion H. split~; trivial. Qed.
 
 Lemma alpha_equiv_Fc_elim : forall C m0 m1 n0 n1 t t', 
 C |- Fc m0 n0 t ~alpha Fc m1 n1 t' -> (m0 = m1 /\ n0 = n1 /\ C |- t ~alpha t').  
 Proof. 
- intros. inversion H; split; try split; trivial. 
+ intros. inversion H; split~; try split~; trivial. 
 Qed.
 
 Lemma alpha_equiv_Ab_elim : forall C t t' a a', 
@@ -57,9 +65,7 @@ C |- [a]^t ~alpha ([a']^t') ->
 (a <> a' /\ ((C |- t ~alpha (|[(a,a')] @ t')) /\ C |- a # t'))). 
 Proof.
  intros. inversion H.
- left. split; trivial.
- right. split; trivial. 
- split; trivial.
+ left~. right~. 
 Qed.
 
 Lemma alpha_equiv_Ab_intro : forall C t t' a a', 
@@ -147,7 +153,7 @@ Lemma alpha_equiv_pi : forall C t pi pi',
                   C |- pi @ t ~alpha (pi' @ t) .
 Proof. 
  intros C t pi. 
- induction t; split; autorewrite with perm; intros; auto.
+ induction t; split~; autorewrite with perm; intros; auto.
  (* At *)
  apply alpha_equiv_At_intro. apply equiv_pi_atom; intros.
  assert (Q' : C |- a' # %a). apply H; trivial. 
@@ -157,11 +163,11 @@ Proof.
  (* Ab *)
   (* -> *)
  apply alpha_equiv_Ab_intro. 
- case ((pi $ a) ==at (pi' $ a)); intros. left; split; trivial.
+ case ((pi $ a) ==at (pi' $ a)); intros. left~; split~; trivial.
  apply IHt; intros. assert (Q : C |- a0 # Ab a t). apply H; trivial.
  apply fresh_Ab_elim in Q. destruct Q.  unfold In_ds in H0. 
  rewrite H1 in H0. contradiction. destruct H1; trivial. 
- right. split; trivial. split. 
+ right~. split~; trivial. split~. 
  rewrite perm_comp. apply IHt; intros. unfold In_ds in H0.
  case (a0 ==at a); intros. apply False_ind. apply H0.
  rewrite e. rewrite <- perm_comp_atom. rewrite swap_right; trivial.
@@ -501,7 +507,7 @@ Qed.
 Lemma alpha_equiv_pi_inv_side: forall C pi t1 t2, 
  C |- (!pi) @ t1 ~alpha t2 <-> C |- t1 ~alpha (pi @ t2). 
 Proof.
- split; intros; 
+ split~; intros; 
  [apply alpha_equiv_pi_inv_side_left | apply  alpha_equiv_pi_inv_side_right]; 
  trivial.
 Qed.

@@ -1,6 +1,15 @@
-(***************************************************************************
- * Perm.v                    						   *		
-***************************************************************************)
+(*
+ ============================================================================
+ Project     : Nominal AC Unification
+ File        : Perm.v
+ Authors     : Washington Luís R. de Carvalho Segundo and
+               Mauricio Ayala Rincón 
+               Universidade de Brasilia (UnB) - Brazil
+               Group of Theory of Computation
+ 
+ Last Modified On: April 15, 2016.
+ ============================================================================
+*)
 
 Require Export Terms.
 
@@ -184,8 +193,8 @@ Hint Rewrite perm_inv_atom : perm.
 Lemma perm_inv_side_atom : forall p a b, (p $ a) = b <-> a = (!p $ b).
 Proof.
  intros. destruct p.
- split; simpl; trivial.
- split; intros. 
+ split~; simpl; trivial.
+ split~; intros. 
  rewrite <- H. rewrite perm_inv_atom. trivial.
  rewrite H. gen_eq g : (!p::p0). intro H'.
  assert (Q : p::p0 = !g). rewrite H'. rewrite rev_involutive. trivial.
@@ -199,7 +208,7 @@ Hint Rewrite perm_inv_inv_atom : perm.
 
 Lemma perm_diff_atom : forall p a a', a <> a' <-> p $ a <> p $ a'.
 Proof.
- split; intros; intro H'; apply H.
+ split~; intros; intro H'; apply H.
  apply perm_inv_side_atom in H'.
  rewrite perm_inv_atom in H'. trivial.
  rewrite H'. trivial.
@@ -207,7 +216,7 @@ Qed.
 
 Lemma perm_eq_atom : forall p a a', a = a' <-> p $ a = p $ a'.
 Proof.
- split; intros. rewrite H. trivial.
+ split~; intros. rewrite H. trivial.
  case (a ==at a'); intros; trivial.
  apply perm_diff_atom with (p := p) in n.
  contradiction.

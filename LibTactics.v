@@ -2626,7 +2626,7 @@ Tactic Notation "induction" "*" constr(H) :=
   induction H; auto_star.
 Tactic Notation "inversion" "*" constr(H) :=
   inversion H; auto_star.
-Tactic Notation "split" "*" :=
+(* Tactic Notation "split" "*" :=
   split; auto_star.
 Tactic Notation "subst" "*" :=
   subst; auto_star.
@@ -2635,7 +2635,7 @@ Tactic Notation "right" "*" :=
 Tactic Notation "left" "*" := 
   left; auto_star.
 Tactic Notation "constructor" "*" := 
-  constructor; auto_star.
+  constructor; auto_star. *)
 
 Tactic Notation "false" "*" :=
   false; auto_star.

@@ -1,6 +1,15 @@
-(***************************************************************************
- * Disagr.v                						   *		
-***************************************************************************)
+(*
+ ============================================================================
+ Project     : Nominal AC Unification
+ File        : Disagr.v
+ Authors     : Washington Luís R. de Carvalho Segundo and
+               Mauricio Ayala Rincón 
+               Universidade de Brasilia (UnB) - Brazil
+               Group of Theory of Computation
+ 
+ Last Modified On: April 15, 2016.
+ ============================================================================
+*)
 
 Require Import Morphisms.
 Require Export Perm.
@@ -16,43 +25,39 @@ Lemma In_ds_dec : forall pi pi' a,
                   (In_ds pi pi' a) \/ ~ (In_ds pi pi' a).  
 Proof.
  intros. case ((pi $ a) ==at (pi' $ a)); intro H.
- right. intro H'. destruct H'. trivial.
- left. unfold In_ds. trivial.
+ right~. left~. 
 Qed.
 
 Lemma not_In_ds : forall pi pi' a, 
                   (~ In_ds pi pi' a) <-> pi $ a = pi' $ a. 
-Proof. split; intros.
+Proof. split~; intros.
  intros. case ((pi $ a) ==at (pi' $ a)).
  intro; trivial. intro H'. apply False_ind.
  apply H. unfold In_ds. trivial.
- intro. unfold In_ds in H0.
- contradiction.
 Qed.
 
 Lemma ds_elem : forall a pi, pi $ a <> a <-> In_ds ([]) pi a.
-Proof. split; intros.
+Proof. split~; intros.
  intro. apply H. simpl in H0. rewrite <- H0; trivial.
- intro. apply H. simpl. rewrite H0; trivial.
 Qed.
 
 Lemma ds_sym : forall a pi pi', In_ds pi pi' a <-> In_ds pi' pi a.
 Proof.
- intros; split; intro; intro; apply H; symmetry; trivial.
+ intros; split~; intro; intro; apply H; symmetry; trivial.
 Qed.
 
 Lemma ds_trans : forall a pi1 pi2 pi3, 
 In_ds pi1 pi3 a -> (In_ds pi1 pi2 a \/ In_ds pi2 pi3 a).
 Proof.
- intros. case (In_ds_dec pi1 pi2 a); intros. left; trivial.
- case (In_ds_dec pi2 pi3 a); intros. right; trivial.
+ intros. case (In_ds_dec pi1 pi2 a); intros. left~; trivial.
+ case (In_ds_dec pi2 pi3 a); intros. right~; trivial.
  apply not_In_ds in H0. apply not_In_ds in H1.
  rewrite H1 in H0. contradiction.
 Qed.
 
 Lemma ds_cancel : forall pi pi1 pi2 a, 
 In_ds (pi1 ++ pi) (pi2 ++ pi) a <-> In_ds pi1 pi2 a.
-Proof. split; intros.
+Proof. split~; intros.
  intro. apply H. rewrite <- 2 perm_comp_atom. 
  rewrite H0; trivial.
  intro. apply H. rewrite <- 2 perm_comp_atom in H0.
@@ -70,7 +75,7 @@ Qed.
 Lemma ds_rev_pi_pi : forall a pi1 pi2, 
 In_ds (pi1++!pi1) pi2 a <-> In_ds ([]) pi2 a.
 Proof.
- intros; unfold In_ds; split;    
+ intros; unfold In_ds; split~;    
  rewrite <- perm_comp_atom; rewrite perm_inv_atom;
  simpl; trivial.
 Qed. 
@@ -79,7 +84,7 @@ Lemma ds_rev : forall a pi1 pi2,
 In_ds ([]) (pi2++!pi1) a <-> In_ds pi1 pi2 a.
 Proof.
  intros; unfold In_ds; rewrite <- perm_comp_atom; simpl;
- split; intros; intro; apply H; clear H; 
+ split~; intros; intro; apply H; clear H; 
  apply perm_inv_side_atom; trivial.
 Qed.
 
@@ -108,7 +113,7 @@ Lemma equiv_pi_atom : forall pi pi' a,
                  (forall a', ((In_ds pi pi') a') -> a' <> a) <->
                   pi $ a = pi' $ a.
 Proof. 
- split; intros. 
+ split~; intros. 
  apply not_In_ds. intro. case (H a); trivial. 
  unfold In_ds in H0. intro. rewrite H1 in H0. contradiction.
 Qed.
@@ -133,9 +138,8 @@ Proof.
  intro pi. induction pi; intros. 
  unfold In_ds in H. simpl in H. apply False_ind. apply H; trivial.
  unfold In_ds in H. simpl in H. destruct a. simpl.
- gen H. case (a ==at a0); intros H0 H. left; trivial.
- gen H. case (a1 ==at a0); intros H1 H. right. left; trivial.
- right. right. apply IHpi. unfold In_ds. simpl. trivial.
+ gen H. case (a ==at a0); intros H0 H. left~; trivial.
+ gen H. case (a1 ==at a0); intros H1 H. right~. right~.
 Qed.
 
 Lemma mk_ds_set_to_In_ds : forall a l pi, 
@@ -163,7 +167,7 @@ Qed.
 Lemma In_ds_mk_ds_set_eq : forall a pi,
 In_ds pi ([]) a <-> set_In a (mk_ds_set (flat_perm pi) pi).
 Proof.
- intros. split; intro. 
+ intros. split~; intro. 
  apply In_ds_to_mk_ds_set; trivial.
  apply In_ds_to_flat_perm; trivial.
  apply mk_ds_set_to_In_ds with (l:=(flat_perm pi)); trivial. 
