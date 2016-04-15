@@ -1,6 +1,6 @@
 (*
  ============================================================================
- Project     : Nominal AC Unification
+ Project     : Nominal A and AC Equivalence
  File        : Equiv_Tuples.v
  Authors     : Washington Luís R. de Carvalho Segundo and
                Mauricio Ayala Rincón 
@@ -12,6 +12,7 @@
  *)
 
 Require Export Equiv.
+
 
 Lemma aac_equiv_TPlength : forall C t1 t2 E n, 
  C |- t1 ~aac t2 -> TPlength t1 E n = TPlength t2 E n. 

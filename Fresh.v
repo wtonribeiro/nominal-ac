@@ -1,6 +1,6 @@
 (*
  ============================================================================
- Project     : Nominal AC Unification
+ Project     : Nominal A and AC Equivalence
  File        : Fresh.v
  Authors     : Washington Luís R. de Carvalho Segundo and
                Mauricio Ayala Rincón 
@@ -146,7 +146,8 @@ Qed.
 
 Hint Resolve fresh_lemma_3.
 
-(** Freshness and tuples *)
+
+(** About freshness, TPith and TPithdel *)
  
 Lemma fresh_TPith_TPithdel : forall i a C t E n, 
  C |- a # t <-> (C |- a # TPith i t E n /\ C |- a # TPithdel i t E n).  
@@ -190,8 +191,7 @@ Proof.
 Qed.
 
 
-
-(* About rpl_super and Freshness *)
+(* About rpl_super and freshness *)
 
 Lemma fresh_rpl_super : forall C a S0 m t, C |- a # t <-> C |- a # rpl_super S0 m t.
 Proof.

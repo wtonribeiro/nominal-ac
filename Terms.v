@@ -1,6 +1,6 @@
 (*
  ============================================================================
- Project     : Nominal AC Unification
+ Project     : Nominal A and AC Equivalence
  File        : Terms.v
  Authors     : Washington Luís R. de Carvalho Segundo and
                Mauricio Ayala Rincón 

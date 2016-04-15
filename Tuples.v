@@ -1,11 +1,20 @@
-(***************************************************************************
- * Tuples.v                						   *		
-***************************************************************************)
+(*
+ ============================================================================
+ Project     : Nominal A and AC Equivalence
+ File        : Tuples.v
+ Authors     : Washington Luís R. de Carvalho Segundo and
+               Mauricio Ayala Rincón 
+               Universidade de Brasilia (UnB) - Brazil
+               Group of Theory of Computation
+ 
+ Last Modified On: April 15, 2016.
+ ============================================================================
+ *)
 
 Require Import Perm.
 
 
-(** Computes the lenght of a tuple regarding the nth E function symbol n *)
+(** Computes the lenght of a tuple regarding the nth E function symbol *)
 
 Fixpoint TPlength (t: term) (E n: nat) : nat :=
 match t with 
@@ -16,7 +25,7 @@ match t with
  | _ => 1  
 end.
 
-(** Computes the ith argument from the tuple t, argument of the nth E function symbol n *)
+(** Computes the ith argument from the tuple t, argument of the nth E function symbol *)
 
 Fixpoint TPith (i: nat) (t: term) (E n: nat) : term :=
   match t with 
@@ -34,7 +43,7 @@ Fixpoint TPith (i: nat) (t: term) (E n: nat) : term :=
           
   end.
 
-(** Eliminates the ith argument in the tuple t, argument of the E operator n *)
+(** Eliminates the ith argument in the tuple t, argument of the nth E function symbol *)
 
 Fixpoint TPithdel (i: nat) (t: term) (E n: nat) : term :=
   match t with 
@@ -57,7 +66,7 @@ Fixpoint TPithdel (i: nat) (t: term) (E n: nat) : term :=
 end. 
 
 
-(** The follow function replaces the all superscripts m in S0 to m0 *) 
+(** Replaces all superscripts m in S0 by m0 *) 
 
 Fixpoint rpl_super (S0 : set nat) (E0: nat) (t:term) : term :=
 match t with
@@ -69,6 +78,8 @@ match t with
   | _         => t
 end.                   
 
+
+(** Computes the set of superscripts that occur in t *)
 
 Fixpoint set_super (t:term) : set nat :=
   match t with
@@ -600,7 +611,7 @@ Qed.
 Hint Resolve size_term_TPithdel.
 
 
-(** About rpl_super and set_super*)
+(** About rpl_super, set_super, TPlength, TPith and TPithdel *)
 
 Lemma rpl_super_perm : forall S0 m pi t,
                       rpl_super S0 m (pi @ t) = pi @ (rpl_super S0 m t).

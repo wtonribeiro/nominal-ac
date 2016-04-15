@@ -1,6 +1,6 @@
 (*
  ============================================================================
- Project     : Nominal AC Unification
+ Project     : Nominal A and AC Equivalence
  File        : Disagr.v
  Authors     : Washington Luís R. de Carvalho Segundo and
                Mauricio Ayala Rincón 
@@ -108,7 +108,6 @@ Proof.
  apply perm_eq_atom in e. symmetry in e. contradiction.
 Qed.
 
-
 Lemma equiv_pi_atom : forall pi pi' a, 
                  (forall a', ((In_ds pi pi') a') -> a' <> a) <->
                   pi $ a = pi' $ a.
@@ -118,72 +117,6 @@ Proof.
  unfold In_ds in H0. intro. rewrite H1 in H0. contradiction.
 Qed.
 
-
-Fixpoint flat_perm (pi : Perm) : list Atom :=
-match pi with 
- | [] => []
- | (a,b)::pi0 => (a::b::(flat_perm pi0))
-end.
-
-
-Fixpoint mk_ds_set (l : list Atom) (pi : Perm) : set Atom :=
-match l with 
-| []  => []
-| a::l0 => if ((pi $ a) ==at a) then (mk_ds_set l0 pi)
-           else set_add Atom_eqdec a (mk_ds_set l0 pi)
-end.
-
-Lemma In_ds_to_flat_perm : forall pi a, In_ds pi ([]) a -> In a (flat_perm pi). 
-Proof.
- intro pi. induction pi; intros. 
- unfold In_ds in H. simpl in H. apply False_ind. apply H; trivial.
- unfold In_ds in H. simpl in H. destruct a. simpl.
- gen H. case (a ==at a0); intros H0 H. left~; trivial.
- gen H. case (a1 ==at a0); intros H1 H. right~. right~.
-Qed.
-
-Lemma mk_ds_set_to_In_ds : forall a l pi, 
-set_In a (mk_ds_set l pi) -> In_ds pi ([]) a.  
-Proof.
- intros. induction l. simpl in *|-. contradiction.
- simpl in H. gen H. case ((pi $ a0) ==at a0); intros H0 H2.
- apply IHl; trivial. apply set_add_elim in H2. destruct H2.
- unfold In_ds. rewrite H. simpl. trivial.
- apply IHl; trivial.
-Qed.
-
-Lemma In_ds_to_mk_ds_set : forall a l pi,
-In a l -> In_ds pi ([]) a -> set_In a (mk_ds_set l pi).
-Proof.
- intros. induction l. simpl in H. contradiction.
- simpl in H. destruct H. simpl.
- case ((pi $ a0) ==at a0); intro H1. unfold In_ds in H0.
- rewrite H in H1. simpl in H0. contradiction.
- apply set_add_intro2. symmetry. trivial.
- simpl. case (pi $ a0 ==at a0); intro H1. apply IHl; trivial.
- simpl. apply set_add_intro1. apply IHl; trivial.
-Qed.
-
-Lemma In_ds_mk_ds_set_eq : forall a pi,
-In_ds pi ([]) a <-> set_In a (mk_ds_set (flat_perm pi) pi).
-Proof.
- intros. split~; intro. 
- apply In_ds_to_mk_ds_set; trivial.
- apply In_ds_to_flat_perm; trivial.
- apply mk_ds_set_to_In_ds with (l:=(flat_perm pi)); trivial. 
-Qed.
-
-Definition ds_set (pi1 pi2: Perm) :=
- mk_ds_set (flat_perm (pi1++!pi2)) (pi1++!pi2).
-
-
-Lemma ds_set_eq : forall a pi1 pi2,
- In_ds pi1 pi2 a <-> set_In a (ds_set pi1 pi2). 
-Proof.
- intros. rewrite ds_sym. rewrite <- ds_rev.
- rewrite ds_sym. unfold ds_set. 
- apply In_ds_mk_ds_set_eq.
-Qed.
 
 
 

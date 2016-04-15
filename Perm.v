@@ -1,6 +1,6 @@
 (*
  ============================================================================
- Project     : Nominal AC Unification
+ Project     : Nominal A and AC Equivalence
  File        : Perm.v
  Authors     : Washington Luís R. de Carvalho Segundo and
                Mauricio Ayala Rincón 
@@ -13,13 +13,15 @@
 
 Require Export Terms.
 
-(** Permutation action  *)
+(** Swapping of atoms *)
 
 Definition swapa (s : Atom * Atom) (c : Atom) :=
   let     (a, b)     :=  s in
   if      (a ==at c) then b
   else if (b ==at c) then a
-                   else c.
+  else c.
+
+(** Permutation action  *)
 
 Fixpoint p_act_aux (p : Perm) (c : Atom) {struct p} : Atom :=
 match p with 
@@ -105,6 +107,7 @@ Qed.
 
 Hint Rewrite swap_invol : perm.
 
+
 (** Permutations *) 
 
 (** Basic identities *)
@@ -118,7 +121,6 @@ Proof. destruct t; simpl; trivial. Qed.
 Hint Rewrite perm_id_atom : perm.
 Hint Rewrite perm_id : perm.
 
-(** perm Action *)
 
 Lemma perm_Ut : forall p, p @ Ut = Ut.
 Proof. intros; destruct p; simpl; trivial. Qed.

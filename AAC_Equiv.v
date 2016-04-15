@@ -1,6 +1,6 @@
 (*
  ============================================================================
- Project     : Nominal AC Unification
+ Project     : Nominal A and AC Equivalence
  File        : AAC_Equiv.v 
  Authors     : Washington Luís R. de Carvalho Segundo and
                Mauricio Ayala Rincón 
@@ -8,13 +8,6 @@
                Group of Theory of Computation
  
  Last Modified On: April 15, 2016.
-
- This is a guideline how to deal with A and AC equivalence
- starting from the notion of alpha-equivalence for purely non A or AC
- nominal terms.  The idea is we've defined jet a notion of alpha-
- equivalence for nominal terms without A or AC function symbols. Now,
- the signature is extended allowing both.  
-
  ============================================================================
 *)
 
@@ -31,7 +24,8 @@ Qed.
 
 Hint Resolve alpha_to_aac_equiv.
 
-(** Intermediate transitiviy *)
+
+(** Intermediate transitivity for aac_equiv with alpha_equiv *)
 
 Lemma aac_alpha_equiv_trans : forall C t1 t2 t3, 
   C |- t1 ~aac t2 -> C |- t2 ~alpha t3 -> C |- t1 ~aac t3.
@@ -105,7 +99,8 @@ Proof.
  apply alpha_equiv_Fc. apply alpha_equiv_TPithdel; trivial.
 Qed.
 
-(** Equivariance of ~aac *)
+
+(** Equivariance of aac_equiv *)
 
 Lemma aac_equivariance : forall C t1 t2 pi,  
  C |- t1 ~aac t2 -> C |- (pi @ t1) ~aac (pi @ t2).
@@ -153,6 +148,8 @@ Proof.
 Qed.
 
 
+(** A corollary about the swapping inversion of side in aac_equiv *) 
+
 Lemma aac_equiv_swap_inv_side : forall C a a' t t', 
  C |- t ~aac ((|[ (a, a')]) @ t') -> C |- ((|[ (a', a)]) @ t) ~aac t'. 
 Proof.
@@ -164,6 +161,7 @@ Proof.
  apply alpha_equiv_swap_comm. rewrite perm_comp. apply alpha_equiv_perm_inv.
 Qed.
 
+(** Freshness preservation under aac_equiv *) 
 
 Lemma aac_equiv_fresh : forall C a t1 t2,
                           C |- t1 ~aac t2 ->
@@ -221,6 +219,7 @@ Proof.
  apply IHequiv2. apply fresh_Fc; trivial. 
 Qed.
 
+(** Reflexivity of aac_equiv *)
 
 Lemma aac_equiv_refl : forall C t, C |- t ~aac t.
 Proof.
@@ -232,7 +231,10 @@ Qed.
 
 Hint Resolve aac_equiv_refl.
 
-Lemma aac_equiv_swap_comm : forall C t a a', 
+
+(** A Corollary: the order of the atoms inside a swapping doesn't matter in aac_equiv *)
+
+Corollary aac_equiv_swap_comm : forall C t a a', 
   C |- (|[ (a, a')]) @ t ~aac ((|[ (a', a)]) @ t) .
 Proof.
  intros. apply aac_alpha_equiv_trans with 
@@ -240,6 +242,8 @@ Proof.
  apply alpha_equiv_swap_comm.
 Qed.
 
+
+(** Combination of AC arguments *)
 
 Lemma aac_equiv_TPith_l : forall C t t' i E n, C |- t ~aac t' -> 
                          i > 0 -> i <= TPlength t E n ->
@@ -460,6 +464,105 @@ Proof.
   exists x. split~.
 Qed.
   
+
+(** Transitivity of aac_equiv *)
+
+Lemma aac_equiv_trans : forall C t1 t2 t3,
+ C |- t1 ~aac t2 -> C |- t2 ~aac t3 -> C |- t1 ~aac t3.
+Proof.
+ introv. gen_eq l : (size_term t1). gen t1 t2 t3.
+ induction l using peano_induction; intros. 
+
+ inverts H1; inverts H2; auto; simpl size_term in *|-; try omega; try contradiction.
+ 
+ simpl in H0. apply equiv_Pr. 
+ apply H with (t2 := t1') (m := size_term t0); try omega; trivial.
+ apply H with (t2 := t2') (m := size_term t4); try omega; trivial. 
+
+ simpl in H0. apply equiv_Fc; trivial.
+ apply H with (t2 := t') (m := size_term t); try omega; trivial.
+
+ apply equiv_Ab_1. 
+ apply H with (t2 := t') (m := size_term t); try omega; trivial.
+ simpl in H0. apply equiv_Ab_2; trivial.
+ apply H with (t2 := t') (m := size_term t); try omega; trivial. 
+ simpl in H0. apply equiv_Ab_2; trivial.
+ apply H with (t2 := ((|[ (a, a')]) @ t')) (m := size_term t); try omega; trivial.
+ apply aac_equivariance; trivial. 
+ apply aac_equiv_fresh with (a:=a) in H9; trivial.
+
+ case (a ==at a'0); intro H1. rewrite H1. 
+ simpl in H0. apply equiv_Ab_1.
+ apply H with (t2 := ((|[ (a, a')]) @ t')) (m := size_term t); try omega; trivial.
+ apply aac_equiv_swap_inv_side. rewrite H1. trivial.
+
+ assert (Q:  C |- a # t'0). 
+  apply aac_equiv_fresh with (a:=a) in H9; trivial.
+  apply fresh_lemma_1 in H9. simpl rev in H9. 
+  rewrite swap_neither in H9; auto.
+ apply equiv_Ab_2; trivial.
+ assert (Q' : C |- t ~aac ((|[ (a, a')]) @ ((|[ (a', a'0)]) @ t'0))). 
+  apply H with (t2 := ((|[ (a, a')]) @ t')) (m := size_term t); trivial. 
+  simpl in H0. omega. apply aac_equivariance; trivial.
+ apply aac_alpha_equiv_trans with 
+ (t2 := ((|[ (a, a')]) @ ((|[ (a', a'0)]) @ t'0))); trivial. 
+ apply alpha_equiv_trans with 
+ (t2 := (|[ ((|[(a,a')]) $ a', (|[(a,a')]) $ a'0)]) @ ((|[ (a, a')]) @ t'0)). 
+ apply alpha_equiv_pi_comm. rewrite swap_right. rewrite swap_neither; trivial.
+ apply alpha_equiv_equivariance. apply alpha_equiv_swap_neither; trivial.
+
+ apply equiv_Su; intros.
+ case (In_ds_dec p p' a); intros. apply H3; trivial.
+ apply H7. apply not_In_ds in H2. unfold In_ds in *|-*. 
+ rewrite <- H2; trivial.
+
+ apply equiv_A; simpl set_In; try omega.
+ autorewrite with tuples in *|-*.
+ apply H with (m:=size_term (TPith 1 t 0 n))
+              (t2:=  TPith 1 t' 0 n); trivial.
+ assert (Q: size_term (TPith 1 t 0 n) <= size_term t). auto. omega.
+ assert (Q0: C |- Fc 0 n t ~aac Fc 0 n t'). 
+  apply equiv_A; simpl set_In; try omega; trivial.
+ assert (Q1: C |- Fc 0 n t' ~aac Fc 0 n t'0). 
+  apply equiv_A; simpl set_In; try omega; trivial.
+ apply aac_equiv_TPlength with (E:=0) (n:=n) in Q0. 
+ apply aac_equiv_TPlength with (E:=0) (n:=n) in Q1.
+ autorewrite with tuples in *|-.
+ case (TPlength t 0 n === 1); intro H8.
+ rewrite 2 TPithdel_TPlength_1;
+ autorewrite with tuples; try omega; auto.
+ rewrite 2 TPithdel_Fc_eq in *|-*; autorewrite with tuples; try omega.
+ apply H with (t2:=Fc 0 n (TPithdel 1 t' 0 n)) 
+              (m:=size_term (Fc 0 n (TPithdel 1 t 0 n))); trivial.
+ assert (Q2 : size_term (TPithdel 1 t 0 n) < size_term t). auto. 
+ simpl. omega.
+
+ assert (Q0: C |- Fc 1 n t ~aac Fc 1 n t'). 
+  apply equiv_AC with (i:=i); repeat split~; simpl set_In; try omega; trivial.
+ assert (Q1: C |- Fc 1 n t' ~aac Fc 1 n t'0). 
+  apply equiv_AC with (i:=i0); repeat split~; simpl set_In; try omega; trivial.
+ generalize Q1; intro Q2.
+ apply aac_equiv_TPlength with (E:=1) (n:=n) in Q0. autorewrite with tuples in Q0.
+ apply aac_equiv_TPlength with (E:=1) (n:=n) in Q1. autorewrite with tuples in Q1.
+ apply aac_equiv_TPith_l' with (i:=i) (E:=1) (n:=n) in Q2;
+ autorewrite with tuples; try omega.
+ destruct Q2. destruct H1. 
+ apply equiv_AC with (i:=x); try split~; simpl set_In; try omega;
+ autorewrite with tuples in *|-*; trivial. 
+ apply H with (t2:=TPith i t' 1 n) (m:=size_term (TPith 1 t 1 n)); trivial. 
+ assert (Q2 : size_term (TPith 1 t 1 n) <= size_term t). auto. omega.
+ case (TPlength t 1 n === 1); intro H12.
+ rewrite 2 TPithdel_TPlength_1;
+ autorewrite with tuples; try omega; auto.
+ rewrite 2 TPithdel_Fc_eq in *|-*; autorewrite with tuples; try omega. 
+ apply H with (t2:=Fc 1 n (TPithdel i t' 1 n)) (m:=size_term (Fc 1 n (TPithdel 1 t 1 n))); trivial. 
+ assert (Q2 : size_term (TPithdel 1 t 1 n) < size_term t). auto. 
+ simpl. omega.
+Qed. 
+
+
+(** In AC choosing the ith element is arbitrary in both sides *)
+
 Lemma aac_equiv_AC : forall C t t' i j n,
       C |- TPith i (Fc 1 n t) 1 n ~aac TPith j (Fc 1 n t') 1 n  ->
       C |- TPithdel i (Fc 1 n t) 1 n ~aac TPithdel j (Fc 1 n t') 1 n ->
@@ -617,101 +720,7 @@ Proof.
   rewrite TPithdel_lt_comm with (i:=x) in H7; try omega; trivial.
 Qed.
 
-
-
-
-Lemma aac_equiv_trans : forall C t1 t2 t3,
- C |- t1 ~aac t2 -> C |- t2 ~aac t3 -> C |- t1 ~aac t3.
-Proof.
- introv. gen_eq l : (size_term t1). gen t1 t2 t3.
- induction l using peano_induction; intros. 
-
- inverts H1; inverts H2; auto; simpl size_term in *|-; try omega; try contradiction.
- 
- simpl in H0. apply equiv_Pr. 
- apply H with (t2 := t1') (m := size_term t0); try omega; trivial.
- apply H with (t2 := t2') (m := size_term t4); try omega; trivial. 
-
- simpl in H0. apply equiv_Fc; trivial.
- apply H with (t2 := t') (m := size_term t); try omega; trivial.
-
- apply equiv_Ab_1. 
- apply H with (t2 := t') (m := size_term t); try omega; trivial.
- simpl in H0. apply equiv_Ab_2; trivial.
- apply H with (t2 := t') (m := size_term t); try omega; trivial. 
- simpl in H0. apply equiv_Ab_2; trivial.
- apply H with (t2 := ((|[ (a, a')]) @ t')) (m := size_term t); try omega; trivial.
- apply aac_equivariance; trivial. 
- apply aac_equiv_fresh with (a:=a) in H9; trivial.
-
- case (a ==at a'0); intro H1. rewrite H1. 
- simpl in H0. apply equiv_Ab_1.
- apply H with (t2 := ((|[ (a, a')]) @ t')) (m := size_term t); try omega; trivial.
- apply aac_equiv_swap_inv_side. rewrite H1. trivial.
-
- assert (Q:  C |- a # t'0). 
-  apply aac_equiv_fresh with (a:=a) in H9; trivial.
-  apply fresh_lemma_1 in H9. simpl rev in H9. 
-  rewrite swap_neither in H9; auto.
- apply equiv_Ab_2; trivial.
- assert (Q' : C |- t ~aac ((|[ (a, a')]) @ ((|[ (a', a'0)]) @ t'0))). 
-  apply H with (t2 := ((|[ (a, a')]) @ t')) (m := size_term t); trivial. 
-  simpl in H0. omega. apply aac_equivariance; trivial.
- apply aac_alpha_equiv_trans with 
- (t2 := ((|[ (a, a')]) @ ((|[ (a', a'0)]) @ t'0))); trivial. 
- apply alpha_equiv_trans with 
- (t2 := (|[ ((|[(a,a')]) $ a', (|[(a,a')]) $ a'0)]) @ ((|[ (a, a')]) @ t'0)). 
- apply alpha_equiv_pi_comm. rewrite swap_right. rewrite swap_neither; trivial.
- apply alpha_equiv_equivariance. apply alpha_equiv_swap_neither; trivial.
-
- apply equiv_Su; intros.
- case (In_ds_dec p p' a); intros. apply H3; trivial.
- apply H7. apply not_In_ds in H2. unfold In_ds in *|-*. 
- rewrite <- H2; trivial.
-
- apply equiv_A; simpl set_In; try omega.
- autorewrite with tuples in *|-*.
- apply H with (m:=size_term (TPith 1 t 0 n))
-              (t2:=  TPith 1 t' 0 n); trivial.
- assert (Q: size_term (TPith 1 t 0 n) <= size_term t). auto. omega.
- assert (Q0: C |- Fc 0 n t ~aac Fc 0 n t'). 
-  apply equiv_A; simpl set_In; try omega; trivial.
- assert (Q1: C |- Fc 0 n t' ~aac Fc 0 n t'0). 
-  apply equiv_A; simpl set_In; try omega; trivial.
- apply aac_equiv_TPlength with (E:=0) (n:=n) in Q0. 
- apply aac_equiv_TPlength with (E:=0) (n:=n) in Q1.
- autorewrite with tuples in *|-.
- case (TPlength t 0 n === 1); intro H8.
- rewrite 2 TPithdel_TPlength_1;
- autorewrite with tuples; try omega; auto.
- rewrite 2 TPithdel_Fc_eq in *|-*; autorewrite with tuples; try omega.
- apply H with (t2:=Fc 0 n (TPithdel 1 t' 0 n)) 
-              (m:=size_term (Fc 0 n (TPithdel 1 t 0 n))); trivial.
- assert (Q2 : size_term (TPithdel 1 t 0 n) < size_term t). auto. 
- simpl. omega.
-
- assert (Q0: C |- Fc 1 n t ~aac Fc 1 n t'). 
-  apply equiv_AC with (i:=i); repeat split~; simpl set_In; try omega; trivial.
- assert (Q1: C |- Fc 1 n t' ~aac Fc 1 n t'0). 
-  apply equiv_AC with (i:=i0); repeat split~; simpl set_In; try omega; trivial.
- generalize Q1; intro Q2.
- apply aac_equiv_TPlength with (E:=1) (n:=n) in Q0. autorewrite with tuples in Q0.
- apply aac_equiv_TPlength with (E:=1) (n:=n) in Q1. autorewrite with tuples in Q1.
- apply aac_equiv_TPith_l' with (i:=i) (E:=1) (n:=n) in Q2;
- autorewrite with tuples; try omega.
- destruct Q2. destruct H1. 
- apply equiv_AC with (i:=x); try split~; simpl set_In; try omega;
- autorewrite with tuples in *|-*; trivial. 
- apply H with (t2:=TPith i t' 1 n) (m:=size_term (TPith 1 t 1 n)); trivial. 
- assert (Q2 : size_term (TPith 1 t 1 n) <= size_term t). auto. omega.
- case (TPlength t 1 n === 1); intro H12.
- rewrite 2 TPithdel_TPlength_1;
- autorewrite with tuples; try omega; auto.
- rewrite 2 TPithdel_Fc_eq in *|-*; autorewrite with tuples; try omega. 
- apply H with (t2:=Fc 1 n (TPithdel i t' 1 n)) (m:=size_term (Fc 1 n (TPithdel 1 t 1 n))); trivial. 
- assert (Q2 : size_term (TPithdel 1 t 1 n) < size_term t). auto. 
- simpl. omega.
-Qed. 
+(** Symmetry of aac_equiv *)
 
 Lemma aac_equiv_sym : forall C t1 t2, C |- t1 ~aac t2 -> C |- t2 ~aac t1 .
 Proof.
@@ -733,14 +742,18 @@ Proof.
  apply aac_equiv_AC with (i:=i) (j:=1); try omega; trivial.
 Qed.
 
-Lemma aac_equivalence : forall C, Equivalence (equiv (0::|[1]) C).
+(** Soundness of aac_equiv *)
+
+Theorem aac_equivalence : forall C, Equivalence (equiv (0::|[1]) C).
 Proof.
   split~.
   unfold Symmetric; intros. apply aac_equiv_sym; trivial.
   unfold Transitive; intros. apply aac_equiv_trans with (t2:=y); trivial.
 Qed.
 
-Lemma a_equivalence : forall C, Equivalence (equiv (|[0]) C).
+(** Soundness of a_equiv *)
+
+Corollary a_equivalence : forall C, Equivalence (equiv (|[0]) C).
 Proof.
   intros. apply subset_equivalence with (S2:=0::|[1]).
   unfold subset. simpl; intros. omega.
@@ -748,7 +761,9 @@ Proof.
   apply aac_equivalence.
 Qed.
 
-Lemma ac_equivalence : forall C, Equivalence (equiv (|[1]) C).
+(** Soundness of a_equiv *)
+
+Corollary ac_equivalence : forall C, Equivalence (equiv (|[1]) C).
 Proof.
   intros. apply subset_equivalence with (S2:=0::|[1]).
   unfold subset. simpl; intros. omega.

@@ -1,6 +1,6 @@
 (*
  ============================================================================
- Project     : Nominal AC Unification
+ Project     : Nominal A and AC Equivalence
  File        : Equiv.v
  Authors     : Washington Luís R. de Carvalho Segundo and
                Mauricio Ayala Rincón 
@@ -8,6 +8,12 @@
                Group of Theory of Computation
  
  Last Modified On: April 15, 2016.
+
+ This is a guideline how to deal with A and AC equivalence
+ starting from the notion of alpha-equivalence for purely non A or AC
+ nominal terms.  The idea is we've defined yet a notion of alpha-
+ equivalence for nominal terms without A or AC function symbols. Now,
+ the signature is extended allowing both.  
  ============================================================================
 *)
 
@@ -46,7 +52,7 @@ Inductive equiv (S : set nat): Context -> term -> term -> Prop :=
              (equiv S C (TPithdel 1 (Fc 0 n t) 0 n) (TPithdel 1 (Fc 0 n t') 0 n)) ->
              (equiv S C (Fc 0 n t) (Fc 0 n t'))
 
-(** Checks for AC-alpha equivalence *)
+(** Checks only for AC-alpha equivalence *)
 
  | equiv_AC   : set_In 1 S -> 
                 forall n t t' i C,
@@ -61,6 +67,8 @@ Notation "C |- t ~e t'" := (equiv ([]) C t t') (at level 67).
 Notation "C |- t ~a t'" := (equiv (|[0]) C t t') (at level 67). 
 Notation "C |- t ~ac t'" := (equiv (|[1]) C t t') (at level 67). 
 Notation "C |- t ~aac t'" := (equiv (0 :: (|[1])) C t t') (at level 67). 
+
+(** alpha_equiv is equivalent equiv ([]) *)
 
 Lemma alpha_equiv_eq_equiv : forall C t t',
  C |- t ~alpha t' <-> C |- t ~e t'.
@@ -120,8 +128,7 @@ Proof.
 Qed.
 
 
-(** Proving that subtheories of equivalences are equivalences with 
- replacing of superscripts *)
+(** Manipulating the superscripts of the terms *)
 
 Definition proper_equiv_Fc (S1 : set nat) :=
 forall C t t' m n, equiv S1 C t t' -> equiv S1 C (Fc m n t) (Fc m n t').
@@ -448,6 +455,10 @@ Proof.
   apply set_super_TPithdel in H0; trivial.
   simpl. assert (Q':size_term (TPithdel 1 t 1 n2) < size_term t). auto. omega.
 Qed.
+
+
+(** Subtheories of equiv({0,1}) are equivalences if 
+ equiv({0,1}) is an equivalence *)
 
 Lemma subset_equivalence : forall C S1 S2,
                              subset nat S1 S2 -> proper_equiv_Fc S2 ->

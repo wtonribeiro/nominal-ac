@@ -1,6 +1,6 @@
 (*
  ============================================================================
- Project     : Nominal AC Unification
+ Project     : Nominal A and AC Equivalence
  File        : w_Equiv.v
  Authors     : Washington Luís R. de Carvalho Segundo and
                Mauricio Ayala Rincón 
@@ -47,7 +47,7 @@ Lemma w_equiv_Ab_intro : forall a a' t t',
 Proof. intros. rewrite H. apply w_equiv_Ab; trivial. Qed.
 
 
-(** Reflexivity, Transitivity and Symmetry of w_equiv *)
+(** Reflexivity of  w_equiv *)
 
 Lemma w_equiv_refl : forall t, t ~we t .
 Proof.
@@ -56,6 +56,19 @@ Proof.
  apply w_equiv_Pr; trivial. apply w_equiv_Fc; trivial.
  apply w_equiv_Su. intros. apply not_In_ds. trivial.
 Qed.
+
+(** Symmetry of w_equiv *)
+
+Lemma w_equiv_sym : forall t1 t2, t1 ~we t2 -> t2 ~we t1.
+Proof. 
+ intros. induction H. apply w_equiv_Ut.
+ apply w_equiv_Pr; trivial. apply w_equiv_Fc; trivial.
+ apply w_equiv_Ab; trivial. apply w_equiv_At. 
+ apply w_equiv_Su; intros. intro. apply (H a).
+ apply ds_sym. trivial.
+Qed.
+
+(* Transitivity of w_equiv *)
 
 Lemma w_equiv_trans : forall t1 t2 t3, t1 ~we t2 -> t2 ~we t3 -> t1 ~we t3.
 Proof.
@@ -70,16 +83,7 @@ Proof.
  setoid_rewrite not_In_ds in H. rewrite H. apply H3.
 Qed.
 
-Lemma w_equiv_sym : forall t1 t2, t1 ~we t2 -> t2 ~we t1.
-Proof. 
- intros. induction H. apply w_equiv_Ut.
- apply w_equiv_Pr; trivial. apply w_equiv_Fc; trivial.
- apply w_equiv_Ab; trivial. apply w_equiv_At. 
- apply w_equiv_Su; intros. intro. apply (H a).
- apply ds_sym. trivial.
-Qed.
-
-(** Additional lemmas *)
+(* Freshness preservation of w_equiv *)
 
 Lemma w_equiv_fresh : forall C a t1 t2, C |- a # t1 -> t1 ~we t2 -> C |- a # t2.
 Proof.
@@ -96,6 +100,8 @@ Proof.
  rewrite H1. rewrite rev_involutive. trivial.
 Qed.
 
+(* Equivariance of w_equiv *)
+
 Lemma w_equiv_equivariance : forall t1 t2 pi, t1 ~we t2 <-> (pi @ t1) ~we (pi @ t2).
 Proof.
  split~; intros. generalize pi; clear pi.
@@ -111,6 +117,9 @@ Proof.
  apply w_equiv_Su. intro. apply not_In_ds. setoid_rewrite not_In_ds in H1.
  apply perm_eq_atom with (p := pi). rewrite 2 perm_comp_atom. apply H1.
 Qed.
+
+
+(** Additional lemmas *)
 
 Lemma w_equiv_perm_inv : forall t pi, (pi ++ !pi) @ t ~we t.
 Proof.

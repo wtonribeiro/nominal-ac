@@ -1,6 +1,6 @@
 (*
  ============================================================================
- Project     : Nominal AC Unification
+ Project     : Nominal A and AC Equivalence
  File        : Alpha_Equiv.v
  Authors     : Washington Luís R. de Carvalho Segundo and
                Mauricio Ayala Rincón 
@@ -40,6 +40,7 @@ Inductive alpha_equiv : Context -> term -> term -> Prop :=
 Hint Constructors alpha_equiv.
 
 Notation "C |- t ~alpha t'" := (alpha_equiv C t t') (at level 67).
+
 
 (** alpha_equiv intro and elim lemmas *)
 
@@ -91,8 +92,7 @@ Hint Resolve alpha_equiv_Ab_intro.
 Hint Resolve alpha_equiv_Su_elim.
 
 
-(** Towards Prooving transitivity and symmetry of the alpha_equiv relation *) 
-
+(** Intermediate transitivity for alpha_equiv with w_equiv *)
 
 Lemma alpha_equiv_w_equiv_trans : forall C t1 t2 t3, 
   C |- t1 ~alpha t2 -> t2 ~we t3 -> C |- t1 ~alpha t3.
@@ -110,6 +110,8 @@ Proof.
  apply H. intro. apply H5. setoid_rewrite not_In_ds in H4. 
  rewrite <- H4. trivial.
 Qed.
+
+(** Freshness preservation of alpha_equiv *)
 
 Lemma alpha_equiv_fresh : forall C a t1 t2, C |- t1 ~alpha t2 ->
                                                  C |- a # t1 -> C |- a # t2.
@@ -135,6 +137,8 @@ Proof.
  rewrite H1. trivial. rewrite H2. rewrite rev_involutive. trivial.
 Qed.
 
+(** Equivariance of alpha_equiv *)
+
 Lemma alpha_equiv_equivariance : forall C t1 t2 pi,  
  C |- t1 ~alpha t2 -> C |- (pi @ t1) ~alpha (pi @ t2).
 Proof.
@@ -147,6 +151,7 @@ Proof.
  rewrite <- 2 perm_comp_atom. rewrite H1; trivial. 
 Qed.
 
+(** Invariance of terms under alpha_equiv and the action of permutations *)
 
 Lemma alpha_equiv_pi : forall C t pi pi', 
                  (forall a, (In_ds pi pi' a) -> (C |- a # t)) <->
@@ -220,11 +225,15 @@ Proof.
  rewrite H1. rewrite rev_involutive. trivial.
 Qed.
 
-Lemma alpha_equiv_swap_comm : forall C a b t, C |- |[(a, b)] @ t ~alpha |[(b, a)] @ t.
+(** A Corollary: the order of the atoms inside a swapping doesn't matter in alpha_equiv *)
+
+Corollary alpha_equiv_swap_comm : forall C a b t, C |- |[(a, b)] @ t ~alpha |[(b, a)] @ t.
 Proof.
  intros. apply alpha_equiv_pi. intros. unfold In_ds in H.
  apply False_ind. apply H. apply swap_comm.
 Qed.
+
+(** Second intermediate transitivity lemma *)
 
 Lemma pi_alpha_equiv : forall C t1 t2 pi, 
      C |- t1 ~alpha t2 -> C |- t2 ~alpha (pi @ t2) ->
@@ -370,8 +379,8 @@ Proof.
 Qed.
 
 
-(** Reflexivity, transitivity and symmetry of the alpha_equiv relation *)
- 
+(** Reflexivity of alpha_equiv *)
+
 Lemma alpha_equiv_refl : forall C t, C |- t ~alpha t.
 Proof.
  intros. induction t.
@@ -380,6 +389,8 @@ Proof.
  apply alpha_equiv_Su. intros. apply False_ind. apply H; trivial.
 Qed.
 
+(** Transitivity of alpha_equiv *)
+ 
 Lemma alpha_equiv_trans : forall C t1 t2 t3,
  C |- t1 ~alpha t2 -> C |- t2 ~alpha t3 -> C |- t1 ~alpha t3.
 Proof.
@@ -444,6 +455,8 @@ Proof.
  rewrite <- H7; trivial.
 Qed.
 
+(** Symmetry of alpha_equiv *)
+
 Lemma alpha_equiv_sym : forall C t1 t2, C |- t1 ~alpha t2 -> C |- t2 ~alpha t1 .
 Proof.
  intros. induction H; auto; trivial. 
@@ -461,16 +474,9 @@ Proof.
 Qed.
 
 
-(** Additional lemmas *)
- 
-Lemma w_equiv_to_equiv : forall C t1 t2, t1 ~we t2 -> C |- t1 ~alpha t2. 
-Proof.
- intros. induction H. apply alpha_equiv_Ut. apply alpha_equiv_Pr; trivial.
- apply alpha_equiv_Fc; trivial. apply alpha_equiv_Ab_1; trivial. apply alpha_equiv_At.
- apply alpha_equiv_Su; intros. apply False_ind. apply (H a); trivial.
-Qed.
+(** Corollaries *)
 
-Lemma alpha_equiv_pi_comm : forall C a b t pi, 
+Corollary alpha_equiv_pi_comm : forall C a b t pi, 
 C |- pi @ (|[(a,b)] @ t) ~alpha (|[(pi $ a, pi $ b)] @ (pi @ t)) . 
 Proof.
  intros C a b t. induction t; intros; autorewrite with perm; auto.
@@ -479,7 +485,7 @@ Proof.
  rewrite <- 4 perm_comp_atom. rewrite pi_comm_atom. trivial.
 Qed.
  
-Lemma alpha_equiv_perm_inv : forall C pi t, C |- (pi ++ !pi) @ t ~alpha t.
+Corollary alpha_equiv_perm_inv : forall C pi t, C |- (pi ++ !pi) @ t ~alpha t.
 Proof.
  intros. gen C pi. induction t; intros; autorewrite with perm; 
  try rewrite <- perm_comp_atom; try rewrite perm_inv_atom; auto. 
@@ -487,7 +493,7 @@ Proof.
  rewrite <- 2 perm_comp_atom. rewrite perm_inv_atom; trivial.
 Qed.  
 
-Lemma alpha_equiv_pi_inv_side_left : forall C pi t1 t2, 
+Corollary alpha_equiv_pi_inv_side_left : forall C pi t1 t2, 
  C |- (!pi) @ t1 ~alpha t2 -> C |- t1 ~alpha (pi @ t2).
 Proof.
  intros. apply alpha_equiv_trans with (t2 := pi @ ((!pi) @ t1)).
@@ -496,7 +502,7 @@ Proof.
  rewrite H0. apply rev_involutive. apply alpha_equiv_equivariance; trivial.
 Qed.
 
-Lemma alpha_equiv_pi_inv_side_right : forall C pi t1 t2, 
+Corollary alpha_equiv_pi_inv_side_right : forall C pi t1 t2, 
 C |- t1 ~alpha (pi @ t2) -> C |- (!pi) @ t1 ~alpha t2.
 Proof.
  intros. apply alpha_equiv_sym in H. gen_eq g : (!pi); intros.
@@ -504,7 +510,7 @@ Proof.
  apply alpha_equiv_sym; trivial. rewrite H0. apply rev_involutive.
 Qed. 
 
-Lemma alpha_equiv_pi_inv_side: forall C pi t1 t2, 
+Corollary alpha_equiv_pi_inv_side: forall C pi t1 t2, 
  C |- (!pi) @ t1 ~alpha t2 <-> C |- t1 ~alpha (pi @ t2). 
 Proof.
  split~; intros; 
@@ -512,11 +518,11 @@ Proof.
  trivial.
 Qed.
  
-Lemma alpha_equiv_swap_inv_side : forall C a b t1 t2,
+Corollary alpha_equiv_swap_inv_side : forall C a b t1 t2,
  C |- (|[(a,b)]) @ t1 ~alpha t2 -> C |- t1 ~alpha ((|[(a,b)]) @ t2).
 Proof. intros. apply alpha_equiv_pi_inv_side. simpl rev; trivial. Qed.
 
-Lemma alpha_equiv_equivariance_right : forall C pi t1 t2,
+Corollary alpha_equiv_equivariance_right : forall C pi t1 t2,
 C |- pi @ t1 ~alpha (pi @ t2) -> C |- t1 ~alpha t2.
 Proof.
  intros. apply alpha_equiv_trans with (t2 := (!pi) @ (pi @ t1)). 
@@ -526,7 +532,7 @@ Proof.
  rewrite perm_comp. apply alpha_equiv_perm_inv.
 Qed.
 
-Lemma alpha_equiv_swap_neither : forall C a a' t, 
+Corollary alpha_equiv_swap_neither : forall C a a' t, 
 C |- a # t -> C |- a' # t -> C |- (|[ (a, a')]) @ t ~alpha t.
 Proof.
  intros. replace t with ([] @ t).
