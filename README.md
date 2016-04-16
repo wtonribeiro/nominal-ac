@@ -1,10 +1,11 @@
-# Nominal-ac: A Formalisation (in Coq) of Nominal Equivalence with Associative and Commutative Function Symbols
+# Nominal-ac 
+
+**A Formalisation (in Coq) of Nominal Equivalence with Associative and Commutative Function Symbols**
 
 **Compiled with the Coq Proof Assistant Version 8.4:**
 
 **File** | Short description
 ------------ | -------------
-
 **Makefile**        | The organizer of the code compilation with the "make" tool;
 
 **LibTactics.v**    | A Library of tactics given by http://www.chargueraud.org/softs/tlc/ ;
