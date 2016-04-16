@@ -761,7 +761,7 @@ Proof.
   apply aac_equivalence.
 Qed.
 
-(** Soundness of a_equiv *)
+(** Soundness of ac_equiv *)
 
 Corollary ac_equivalence : forall C, Equivalence (equiv (|[1]) C).
 Proof.
