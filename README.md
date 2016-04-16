@@ -1,7 +1,8 @@
 # Nominal-ac
-A Formalisation (in Coq) of Nominal Equivalence with Associative and Commutative Function Symbols
 
-Compiled with the Coq Proof Assistant Version 8.4:
+# A Formalisation (in Coq) of Nominal Equivalence with Associative and Commutative Function Symbols
+
+# Compiled with the Coq Proof Assistant Version 8.4:
 
 Makefile        - The organizer of the code compilation with the "make" tool;
 
