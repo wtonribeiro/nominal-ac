@@ -5,6 +5,7 @@ COQDEP = coqdep
 
 FILES = \
 	LibTactics \
+        ListFacts \
 	Terms \
 	Perm \
 	Disagr \
@@ -14,7 +15,14 @@ FILES = \
         Alpha_Equiv \
 	Equiv \
 	Equiv_Tuples \
-        AAC_Equiv 
+        AACC_Equiv \
+        C_Equiv \
+        Problems \
+        Substs \
+        C_Unif \
+        Termination \
+        Soundness \
+        Completeness
 
 all : main
 pat: $(foreach i, $(PAT), $(i).vo)
@@ -33,7 +41,7 @@ main : $(VOFILES)
 lib : Metatheory.vo
 
 clean :
-	rm -f *.vo .depend
+	rm -f *.vo .depend *.glob *.v# *.v~
 
 .v.vo : .depend
 	$(COQC) $<

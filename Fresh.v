@@ -1,13 +1,13 @@
 (*
  ============================================================================
- Project     : Nominal A and AC Equivalence
+ Project     : Nominal A, AC and C Unification
  File        : Fresh.v
  Authors     : Washington Luís R. de Carvalho Segundo and
                Mauricio Ayala Rincón 
-               Universidade de Brasilia (UnB) - Brazil
+               Universidade de Brasília (UnB) - Brazil
                Group of Theory of Computation
  
- Last Modified On: April 15, 2016.
+ Last Modified On: March 3, 2017.
  ============================================================================
  *)
 
@@ -156,7 +156,7 @@ Proof.
  simpl; split~; auto. simpl; split~; intro H; try split~; auto; try apply H.
  simpl; split~; intro H; try split~; auto; try apply H.
  case (le_dec i (TPlength t1 E n)); intro H0.
- rewrite TPith_Pr_le; trivial. case (TPlength t1 E n === 1); intro H1.
+ rewrite TPith_Pr_le; trivial. case (eq_nat_dec (TPlength t1 E n) 1); intro H1.
  rewrite TPithdel_t1_Pr; trivial. split~; intro. apply fresh_Pr_elim in H.
  split~; try apply H. apply IHt1; apply H.
  apply fresh_Pr; try apply H. apply IHt1 with (i:=i); split~; try apply H.
@@ -165,7 +165,7 @@ Proof.
  split~; [apply IHt1; apply H | apply fresh_Pr; [apply IHt1; apply H | apply H]].
  destruct H. apply fresh_Pr_elim in H2. destruct H2. apply fresh_Pr; trivial.
  apply IHt1 with (i:=i); split~; trivial.
- rewrite TPith_Pr_gt; try omega. case (TPlength t2 E n === 1); intro H1.
+ rewrite TPith_Pr_gt; try omega. case (eq_nat_dec (TPlength t2 E n) 1); intro H1.
  rewrite TPithdel_t2_Pr; try omega. split~; intro. apply fresh_Pr_elim in H.
  split~; try apply H. apply IHt2; apply H. apply fresh_Pr; try apply H.
  apply IHt2 with (i:=i - TPlength t1 E n); split~; try apply H.
@@ -176,14 +176,14 @@ Proof.
  apply IHt2 with (i:=i-TPlength t1 E n); split~; trivial. 
  split~; intro. apply fresh_Fc_elim in H.
  case ((n0,n1) ==np (E,n)); intro H0.
- inverts H0. autorewrite with tuples. case (TPlength t E n === 1); intro H0.
+ inverts H0. autorewrite with tuples. case (eq_nat_dec (TPlength t E n) 1); intro H0.
  rewrite TPithdel_TPlength_1; autorewrite with tuples; trivial. split~; auto.
  apply IHt; trivial. rewrite TPithdel_Fc_eq; trivial.
  split~; try apply fresh_Fc; apply IHt; trivial.
  rewrite TPith_Fc_diff; trivial. rewrite TPithdel_Fc_diff; trivial. split~; auto.
  apply fresh_Fc. destruct H. case ((n0,n1) ==np (E,n)); intro H1.
  inverts H1. autorewrite with tuples in H. apply IHt with (i:=i); split~; trivial.
- case (TPlength t E n === 1); intro H1.
+ case (eq_nat_dec (TPlength t E n) 1); intro H1.
  rewrite TPithdel_TPlength_1; autorewrite with tuples; trivial.
  rewrite TPithdel_Fc_eq in H0; trivial. apply fresh_Fc_elim in H0; trivial.
  rewrite TPith_Fc_diff in H; trivial. apply fresh_Fc_elim in H; trivial.

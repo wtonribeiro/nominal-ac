@@ -1,13 +1,13 @@
 (*
  ============================================================================
- Project     : Nominal A and AC Equivalence
+ Project     : Nominal A, AC and C Unification
  File        : Disagr.v
  Authors     : Washington Luís R. de Carvalho Segundo and
                Mauricio Ayala Rincón 
-               Universidade de Brasilia (UnB) - Brazil
+               Universidade de Brasília (UnB) - Brazil
                Group of Theory of Computation
  
- Last Modified On: April 15, 2016.
+ Last Modified On: March 3, 2017.
  ============================================================================
 *)
 
@@ -64,8 +64,36 @@ Proof. split~; intros.
  apply perm_eq_atom in H0; trivial.
 Qed.
 
+Lemma ds_cancel2 : forall pi pi1 pi2 a, 
+In_ds (pi ++ pi1) (pi ++ pi2) a <-> In_ds pi1 pi2 (pi $ a).
+Proof.
+  intros.  split~; intros.
+  intro. apply H. rewrite <- 2 perm_comp_atom; trivial. 
+  intro. apply H. rewrite <- 2 perm_comp_atom in H0.
+  trivial.
+Qed.
+
+Lemma ds_cancel3 : forall pi pi', 
+  (forall a, ~ In_ds (pi ++ pi' ++ !pi) ([]) a) ->
+  (forall b, ~ In_ds pi' ([]) b).
+Proof.
+  intros. intro. apply H0. simpl. clear H0.
+  setoid_rewrite not_In_ds in H. simpl in H.
+  setoid_rewrite <- perm_comp_atom in H.
+  setoid_rewrite <- perm_comp_atom in H.
+  setoid_rewrite perm_inv_side_atom in H.  
+  setoid_rewrite perm_inv_inv_atom in H.
+  assert (Q: pi' $ (pi $ (!pi $ b)) = pi $ (!pi $ b)).
+   apply H.
+  replace (pi $ ((! pi) $ b)) with b in Q; trivial.
+  gen_eq pi'' : (! pi); intro Q'.
+  replace pi with (!pi''). rewrite perm_inv_atom; trivial.
+  rewrite Q'. rewrite rev_involutive.
+  trivial.
+Qed.
+  
 Lemma h_ds_cancel : forall s a pi pi', 
-~ In_ds ([]) (|[s]) a -> In_ds (s::pi) pi' a -> In_ds pi pi' a.
+~ In_ds ([]) ([s]) a -> In_ds (s::pi) pi' a -> In_ds pi pi' a.
 Proof.
  intros. apply not_In_ds in H. intro. apply H0.
  rewrite swap_app_atom. rewrite swap_app_atom in H.
@@ -89,7 +117,7 @@ Proof.
 Qed.
 
 Lemma ds_perm_left : forall a b pi1 pi2, 
-In_ds (pi1) (pi2 ++ |[(pi1 $ b, pi2 $ b)]) a -> In_ds pi1 pi2 a .
+In_ds (pi1) (pi2 ++ [(pi1 $ b, pi2 $ b)]) a -> In_ds pi1 pi2 a .
 Proof. 
  intros. intro. apply H. clear H. rewrite <- perm_comp_atom.  
  simpl in *|-*. case ((pi1 $ b) ==at (pi2 $ a)); intros; trivial.
@@ -100,7 +128,7 @@ Qed.
 
 Lemma ds_perm_right : forall a b pi1 pi2, 
 a <> b -> pi1 $ b <> pi2 $ a -> 
-In_ds pi1 pi2 a -> In_ds (pi1) (pi2 ++ |[(pi1 $ b, pi2 $ b)]) a .
+In_ds pi1 pi2 a -> In_ds (pi1) (pi2 ++ [(pi1 $ b, pi2 $ b)]) a .
 Proof. 
  intros. unfold In_ds in *|-*. rewrite <- perm_comp_atom. simpl. 
  case ((pi1 $ b) ==at (pi2 $ a)); intros; try contradiction.

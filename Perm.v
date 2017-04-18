@@ -1,17 +1,20 @@
 (*
  ============================================================================
- Project     : Nominal A and AC Equivalence
+ Project     : Nominal A, AC and C Equivalence
  File        : Perm.v
  Authors     : Washington Luís R. de Carvalho Segundo and
                Mauricio Ayala Rincón 
                Universidade de Brasilia (UnB) - Brazil
                Group of Theory of Computation
  
- Last Modified On: April 15, 2016.
+ Last Modified On: July 15, 2016.
  ============================================================================
 *)
 
-Require Export Terms.
+Require Export Terms ListFacts.
+
+Definition Bijection := set (Atom * Atom).
+Definition Perm_cycles := set (list Atom).
 
 (** Swapping of atoms *)
 
@@ -38,30 +41,30 @@ Fixpoint p_act (p : Perm) (t : term) {struct t} : term :=
   | p0  , [c]^t1       => Ab (p0 $ c) (p_act p0 t1)
   | p0  , <|t1,t2|>      => <|(p_act p0 t1),(p_act p0 t2)|> 
   | p0  , Fc m n t1       => Fc m n (p_act p0 t1)
-  | p0  , p1\X       => Su (p1++p0) X  
+  | p0  , p1|.X       => Su (p1++p0) X  
  end.
 Notation "p @ t" := (p_act p t) (at level 67).  
 Notation "! p"   := (rev p) (at level 67).
-
+            
 
 (** Lemmas *)
 
 (**  Swap action *) 
 
-Lemma swap_app_atom : forall s a p, (s :: p) $ a = p $ (|[s] $ a).
+Lemma swap_app_atom : forall s a p, (s :: p) $ a = p $ ([s] $ a).
 Proof. intros. destruct s. simpl. trivial. Qed.
 
-Lemma swap_comm : forall (a b c : Atom), |[(a, b)] $ c = |[(b, a)] $ c.
+Lemma swap_comm : forall (a b c : Atom), [(a, b)] $ c = [(b, a)] $ c.
 Proof.
  intros. simpl.
  case (a ==at c); intros; case (b ==at c); intros; trivial.  
  rewrite e. rewrite e0. trivial. 
 Qed. 
 
-Lemma swap_eq_swapa : forall s a, |[s] $ a = swapa s a .
+Lemma swap_eq_swapa : forall s a, [s] $ a = swapa s a .
 Proof. intros. destruct s. simpl. trivial. Qed.
 
-Lemma swap_left : forall a b, |[(a,b)] $ a = b.
+Lemma swap_left : forall a b, [(a,b)] $ a = b.
 Proof. 
  intros. simpl. case (a ==at a); intros; trivial.
  apply False_ind. apply n; trivial.
@@ -69,10 +72,10 @@ Qed.
 
 Hint Rewrite swap_left : perm.
 
-Lemma swap_left' : forall a b c, a = c -> |[(a,b)] $ c = b.
+Lemma swap_left' : forall a b c, a = c -> [(a,b)] $ c = b.
 Proof. intros. rewrite H. rewrite swap_left; trivial. Qed.
 
-Lemma swap_right : forall a b, |[(a,b)] $ b = a.
+Lemma swap_right : forall a b, [(a,b)] $ b = a.
 Proof. 
  intros. simpl. case (a ==at b); intros. rewrite e; trivial.  
  case (b ==at b); intros; trivial. apply False_ind. apply n0; trivial. 
@@ -80,22 +83,22 @@ Qed.
 
 Hint Rewrite swap_right : perm.
 
-Lemma swap_right' : forall a b c, b = c -> |[(a,b)] $ c = a.
+Lemma swap_right' : forall a b c, b = c -> [(a,b)] $ c = a.
 Proof. intros. rewrite H. rewrite swap_right; trivial. Qed.
 
-Lemma swap_neither : forall a b c, a <> c -> b <> c -> |[(a,b)] $ c = c.
+Lemma swap_neither : forall a b c, a <> c -> b <> c -> [(a,b)] $ c = c.
 Proof. 
  intros. simpl. 
  case (a ==at c); case (b ==at c); intros; 
  try contradiction; trivial. 
 Qed.
 
-Lemma swap_same : forall a b, |[(a,a)] $ b = b.
+Lemma swap_same : forall a b, [(a,a)] $ b = b.
 Proof. intros. simpl. case (a ==at b); case (a ==at b); intros; trivial. Qed.
 
 Hint Rewrite  swap_same : perm.
 
-Lemma swap_invol : forall s c, |[s] $ (|[s] $ c) = c. 
+Lemma swap_invol : forall s c, [s] $ ([s] $ c) = c. 
 Proof. 
  intros. destruct s. 
  case (a ==at c); intros. 
@@ -138,7 +141,7 @@ Proof. intros; destruct p; simpl; trivial. rewrite perm_id; rewrite perm_id. tri
 Lemma perm_Fc : forall p m n t, p @ (Fc m n t) = Fc m n (p @ t).
 Proof. intros; destruct p; simpl; trivial. rewrite perm_id; trivial. Qed.
 
-Lemma perm_Su : forall p0 p1 X, p1 @ (p0\X) = (p0++p1)\X.
+Lemma perm_Su : forall p0 p1 X, p1 @ (p0|.X) = (p0++p1)|.X.
 Proof. intros. destruct p1; simpl; trivial. rewrite app_nil_r. trivial. Qed.
 
 Hint Rewrite perm_Ut : perm.
@@ -151,7 +154,7 @@ Hint Rewrite perm_Su : perm.
 
 (** Permutations over atoms *)
 
-Lemma swap_app : forall s t p, (s::p) @ t = p @ (|[s] @ t).
+Lemma swap_app : forall s t p, (s::p) @ t = p @ ([s] @ t).
 Proof.
  intros. induction t; autorewrite with perm; 
  try destruct s; simpl; trivial.
@@ -225,7 +228,7 @@ Proof.
 Qed.
 
 Lemma pi_comm_atom : forall a b pi c,
- pi $ (|[(a,b)] $ c) = |[(pi $ a, pi $ b)] $ (pi $ c).  
+ pi $ ([(a,b)] $ c) = [(pi $ a, pi $ b)] $ (pi $ c).  
 Proof.
  intros. simpl.
  case (a ==at c); case ((pi $ a) ==at (pi $ c)); 
@@ -252,3 +255,23 @@ Lemma perm_inv_inv : forall p t, (!(!p)) @ t = p @ t.
 Proof. intros. rewrite rev_involutive. trivial. Qed.
 
 Hint Rewrite perm_inv_inv : perm.
+
+
+(** Permutations does not act over variables *)
+
+Lemma perm_term_vars : forall pi t, term_vars (pi @ t) = term_vars t.
+Proof.
+  intros. induction t; autorewrite with perm; trivial.
+  simpl. rewrite IHt1. rewrite IHt2. trivial.
+Qed.
+
+Hint Rewrite perm_term_vars : perm.
+
+(** Permutations does not change the term size *)
+
+Lemma perm_term_size : forall pi t, term_size (pi @ t) = term_size t. 
+Proof. 
+ intros. induction t; autorewrite with perm; simpl; trivial; try omega.
+Qed.
+
+Hint Rewrite perm_term_size : perm.

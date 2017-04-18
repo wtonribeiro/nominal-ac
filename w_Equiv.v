@@ -1,13 +1,13 @@
 (*
  ============================================================================
- Project     : Nominal A and AC Equivalence
+ Project     : Nominal A, AC and C Unification
  File        : w_Equiv.v
  Authors     : Washington Luís R. de Carvalho Segundo and
                Mauricio Ayala Rincón 
-               Universidade de Brasilia (UnB) - Brazil
+               Universidade de Brasília (UnB) - Brazil
                Group of Theory of Computation
  
- Last Modified On: April 15, 2016.
+ Last Modified On: March 3, 2017.
  ============================================================================
 *)
 
@@ -29,7 +29,7 @@ Inductive w_equiv : term -> term -> Prop :=
  | w_equiv_At   : forall a, w_equiv (%a) (%a)
 
  | w_equiv_Su   : forall p p' X, (forall a, ~ (In_ds p p' a)) -> 
-                                  w_equiv (p\X) (p'\X) 
+                                  w_equiv (p|.X) (p'|.X) 
 .
 
 Hint Constructors w_equiv.
@@ -141,10 +141,10 @@ Proof.
 Qed.
 
 Lemma w_equiv_swap_inv_side : forall a b t1 t2,
- (|[(a,b)]) @ t1 ~we t2 -> t1 ~we ((|[(a,b)]) @ t2).
+ ([(a,b)]) @ t1 ~we t2 -> t1 ~we (([(a,b)]) @ t2).
 Proof. intros. apply w_equiv_pi_inv_side. simpl rev; trivial. Qed.
 
-Lemma w_equiv_swap_comm : forall t a b, |[(a, b)] @ t ~we |[(b, a)] @ t.
+Lemma w_equiv_swap_comm : forall t a b, [(a, b)] @ t ~we [(b, a)] @ t.
 Proof. 
  intros. induction t; autorewrite with perm; auto.
  apply w_equiv_At_intro. apply swap_comm.
@@ -154,7 +154,7 @@ Proof.
 Qed.
 
 Lemma w_equiv_pi_comm : forall a b t pi, 
- pi @ (|[(a,b)] @ t) ~we (|[(pi $ a, pi $ b)] @ (pi @ t)) . 
+ pi @ ([(a,b)] @ t) ~we ([(pi $ a, pi $ b)] @ (pi @ t)) . 
 Proof.
  intros a b t. induction t; intros; repeat autorewrite with perm; auto.
  rewrite pi_comm_atom; auto. rewrite pi_comm_atom; auto.
@@ -173,7 +173,7 @@ Proof.
 Qed.
 
 Lemma w_equiv_swap_cancel2: forall a a' pi t,
- ((pi ++ (|[(a, a')])) ++ (|[(a, a')]) @ t) ~we (pi @ t).
+ ((pi ++ ([(a, a')])) ++ ([(a, a')]) @ t) ~we (pi @ t).
 Proof.
  intros. repeat rewrite <- perm_comp.
  apply w_equiv_sym.
