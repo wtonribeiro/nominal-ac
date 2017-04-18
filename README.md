@@ -5,7 +5,8 @@
 **File** | Short description
 ------------ | -------------
 **Completeness.v**  | Formalisation of the completeness of  $\Rightarrow_{\#}$ and $\Rightarrow_{\approx}$
-**Soundness.v**     | Formalisation of the soundness of  $\Rightarrow_{\#}$ and $\Rightarrow_{\approx}$
+**Soundness.v**     | Formalisation of the soundness of $\Rightarrow_{\#}$ and $\Rightarrow_{\approx}$ and 
+successful leaves characterisation of the derivation tree
 **Termination.v**   | Formalisation of the termination of  $\Rightarrow_{\#}$ and $\Rightarrow_{\approx}$
 **C_Unif.v**        | Definition of the rule transformation systems $\Rightarrow_{\#}$ and $\Rightarrow_{\approx}$
 **Substs.v**        | Definition of substitutions and some lemmas about
