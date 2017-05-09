@@ -10,7 +10,7 @@
 **C_Unif.v**        | Definition of the rule transformation systems $\Rightarrow_{\#}$ and $\Rightarrow_{\approx}$
 **Substs.v**        | Definition of substitutions and some lemmas about
 **Problems.v**      | Definition of nominal C-unification problems and some lemmas about
-**C_Equiv.v**       | Specific Lemmas about nominal c-equivalence
+**C_Equiv.v**       | Specific Lemmas about nominal C-equivalence
 **AACC_Equiv.v**    | Definitions of the nominal A+AC+C, A, AC and C-equivalences and the formalisation of their soundness
 **Equiv_Tuples.v**  | Interactions between the extentions of nominal alpha_equivalence and tuples
 **Equiv.v**         | Extentions of nominal alpha_equivalence in a parametrised way
@@ -22,7 +22,7 @@
 **Perm.v**          | Permutation action definition and its properties
 **Terms.v**         | Syntax definition of nominal terms and some properties about
 **LibTactics.v**    | Library of tactics given by http://www.chargueraud.org/softs/tlc/
-**Makefile**        | Organises of the code compilation with the "make" tool
+**Makefile**        | Organisation of the code compilation with the "make" tool
 **html/**           | HTLM documentation folder
 
 
