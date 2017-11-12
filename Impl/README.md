@@ -7,21 +7,38 @@
 **Basic.ml**  | Basic data and function definitions (terms, action of permutations, action of substitutions etc) 
 **Unif.ml**   | Specification of the nominal C-unification algorithm 
 **Output.ml** | Functions to output the derivation trees in the latex format
+**Tests.ml**  | Some pre-setted execution tests 
+**build.sh**  | Script used to compile Basic.ml, Unif.ml and Output.ml
 
 
+** Instructions for compiling and execute:**
+
+1) Install OCaml version >= 4.0 (https://ocaml.org/docs/install.html)
+
+2) Being inside folder Impl/ , give permition of execution of build.sh:
+
+   $ sudo chmod +x build.sh
+
+3) Execute 
+   
+   $ ./build.sh
+
+4) Install Utop (https://ocaml.org/docs/install.html)
+  
+5) At the Utop prompt, execute:
+
+   #load "Basic.cmo";;
+
+   #load "Unif.cmo";;
+
+   #load "Output.cmo";;      
+
+   #use "Tests.ml";;
 
 
+6) At the Utop prompt, and to run an especific test for tr1 to tr8, execute for example:
 
+    c_unif_tree tr7;;
 
-
-
-
-
-
-
-
-
-
-
-
-
+Ir will generates inside forder Impl/ the latex file out.tex, 
+which can be compiled with pdflatex and generate a out.pdf file. 
