@@ -2,9 +2,9 @@
  ============================================================================
  Project     : Nominal A, AC and C Unification
  File        : Equiv_Tuples.v
- Authors     : Washington Luís R. de Carvalho Segundo and
-               Mauricio Ayala Rincón 
-               Universidade de Brasília (UnB) - Brazil
+ Authors     : Washington Luis R. de Carvalho Segundo and
+               Mauricio Ayala Rincon 
+               Universidade de Brasilia (UnB) - Brazil
                Group of Theory of Computation
  
  Last Modified On: March 3, 2017.
@@ -62,7 +62,7 @@ Proof.
   rewrite 2 TPlength_Fc_diff; trivial.
   
 Qed.
-  
+
 Lemma aacc_equiv_TPith_l1 : forall C t t' E n, C |- t ~aacc t' ->
                          exists j, j > 0 /\ j <= TPlength t' E n /\ 
                          C |- TPith 1 t E n ~aacc TPith j t' E n /\ 

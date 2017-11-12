@@ -1,19 +1,29 @@
-(*
+(**
+%\begin{verbatim}
  ============================================================================
  Project     : Nominal A, AC and C Unification
  File        : C_Unif.v
- Authors     : Washington Luís R. de Carvalho Segundo and
-               Mauricio Ayala Rincón 
-               Universidade de Brasília (UnB) - Brazil
+ Authors     : Washington Lu\'is R. de Carvalho Segundo and
+               Mauricio Ayala Rinc\'on 
+               Universidade de Bras\'ilia (UnB) - Brazil
                Group of Theory of Computation
  
- Last Modified On: April 8, 2017.
+ Description : This file is dedicated to the definition of 
+               the C-unification algorithm and somes basics
+               results over this definition.
+
+
+ Last Modified On: Nomvember 10, 2017.
  ============================================================================
+\end{verbatim}%
 *)
 
 Require Export Substs.
 
-Definition sol_c (Sl : Context * Subst) (T : Triplet) :=
+
+(** %\section{Definition of a solution for a C-unification problem}% *)
+
+Definition sol_c (Sl : Context * Subst) (T : Triple) :=
   let C := (fst (fst T)) in
   let S := (snd (fst T)) in
   let P := (snd T) in
@@ -25,8 +35,9 @@ Definition sol_c (Sl : Context * Subst) (T : Triplet) :=
 (* 4 *) ( exists S'', D |- (S©S'') ~:c W ) .
                                     
 
+(** %\section{The fresh\_sys relation}% *)
 
-Inductive fresh_sys : Triplet -> Triplet -> Prop :=
+Inductive fresh_sys : Triple -> Triple -> Prop :=
   
  | fresh_sys_Ut : forall C S P a, (set_In (a#?(<<>>)) P) ->
                                   fresh_sys (C,S,P)
@@ -55,9 +66,11 @@ Inductive fresh_sys : Triplet -> Triplet -> Prop :=
  | fresh_sys_Pr : forall C S P a s t, (set_In (a#?(<|s,t|>)) P) ->
                                       fresh_sys (C,S,P)
                                                 (C,S,(((P|+(a#?s))|+(a#?t))\(a#?(<|s,t|>))))   
-.                                                               
+.
 
-Inductive equ_sys : Triplet -> Triplet -> Prop :=
+(** %\section{The equ\_sys relation}% *)
+            
+Inductive equ_sys : Triple -> Triple -> Prop :=
   
  | equ_sys_refl : forall C S P s, (set_In (s~?s) P) ->
                                    equ_sys (C,S,P)
@@ -117,20 +130,37 @@ Inductive equ_sys : Triplet -> Triplet -> Prop :=
                    (C,S,(P|+((pi++(!pi'))|.X~?([]|.X)))\((pi|.X)~?(pi'|.X)))
 .
 
+(** %\section{Definition of valid triples}% *)
 
-Definition valid_triplet (T : Triplet) :=
+Definition valid_triple (T : Triple) :=
   let C := (fst (fst T)) in
   let S := (snd (fst T)) in
   let P := (snd T) in
   (* 1 *) ( set_inter Var_eqdec (dom_rec S) (Problem_vars P) = [] ) /\
   (* 2 *) ( set_inter Var_eqdec (dom_rec S) (im_vars S) = [] ) .
 
+
+(** %\section{Definition of proper terms and proper problems}% *)  
+  
+(**
+	The following is a restriction over the syntax. 
+	Commutative function symbols can have only pairs as 
+	arguments.
+*)  
+  
 Definition Proper_term (t : term) :=
   forall n s, set_In (Fc 2 n s) (subterms t) -> is_Pr s .
 
+(**
+	Proper problems contais only proper terms in its equations.
+*) 
+  
 Definition Proper_Problem (P : Problem) :=
   (forall s t, set_In (s~?t) P -> ((Proper_term s) /\ (Proper_term t))) .
 
+  
+(** %\section{Definitions of normal forms and of a reflexive-transitive closure}% *)    
+  
 Definition NF (T:Type) (R:T->T->Prop) (s:T) := forall t, ~ R s t.
 
 Inductive tr_clos (T:Type) (R:T->T->Prop) : T->T->Prop :=
@@ -139,23 +169,98 @@ Inductive tr_clos (T:Type) (R:T->T->Prop) : T->T->Prop :=
  | tr_ms : forall s t u, R s t -> tr_clos T R t u -> tr_clos T R s u
 .
 
-Inductive unif_step : Triplet -> Triplet -> Prop :=
+
+(** %\section{Definition of unif\_step}% *) 
+
+(**
+	A unification step is an equ_sys reduction,
+	or a fresh_sys reduction over a triple whose equational 
+	constraints are all fixpoint equations.
+*)
+
+Inductive unif_step : Triple -> Triple -> Prop :=
 
  | equ_unif_step   : forall T T', equ_sys T T' -> unif_step T T'
   
  | fresh_unif_step : forall T T', fixpoint_Problem (equ_proj (snd T)) ->
                                   fresh_sys T T' -> unif_step T T'
 .
-                                                                
-Definition leaf (T : Triplet) := NF _ unif_step T .  
+ 
+(** %\section{Definition of leaf and unif\_path}% *) 
+ 
+(**
+	A leaf T is a normal form of relation unif_step.
+*) 
+ 
+Definition leaf (T : Triple) := NF _ unif_step T .  
 
-Definition unif_path (T T' : Triplet) := tr_clos _ unif_step T T' /\ leaf T'.
+(**
+	A unifcation path from T to T' (unif_path T T') is zero
+	or more steps of unif_step from T and T' 
+	where T' is a normal form (w.r.t. unif_path), ie, a leaf.
+*) 
+
+Definition unif_path (T T' : Triple) := tr_clos _ unif_step T T' /\ leaf T'.
+
+ 
+
+(** %\section{Some basic lemmas regarding fresh\_sys, equ\_sys, unif\_step and unif\_path}% *) 
+
+(** 
+	If all equational constraints of P in T = (C, S, P) 
+	are fixpoint equations, then T is a normal form w.r.t equ_sys. 
+*)
+  
+Lemma equ_proj_fixpoint_is_NF : forall C S P, fixpoint_Problem (equ_proj P) ->
+                                NF _ equ_sys (C,S,P).
+Proof.
+  intros. unfold NF; intro T. intro H0.
+  unfold fixpoint_Problem in H.
+  unfold fixpoint_equ in H.
+  destruct T. destruct p.
+  inverts H0;
+    try apply equ_proj_set_In_eq in H2;
+    try apply equ_proj_set_In_eq in H3;  
+    try apply H in H2; try destruct H2;
+    try apply H in H3; try destruct H3;
+    try destruct H0; try destruct H0; try inverts H1.
+  inverts H4. apply H0; trivial.
+  apply equ_proj_set_In_eq in H8.
+  apply H in H8. destruct H8.
+  destruct H0. destruct H0. inverts H1. 
+  destruct H8;  apply equ_proj_set_In_eq in H0;  apply H in H0;
+  destruct H0; destruct H0; destruct H0; inverts H1;
+  apply H5; simpl; left~.
+  apply equ_proj_set_In_eq in H9. apply H in H9.
+  destruct H9. destruct H0. destruct H0.  
+  inverts H1. apply H8; trivial.
+Qed.
+
+(** 
+	The fixpoint equations are preserved by unif_step 
+*)
 
 
-(** Lemmas *)
+Lemma fixpoint_preserv : forall T T',
+                           unif_step T T' ->
+                           fixpoint_Problem (equ_proj (snd T)) -> 
+                           fixpoint_Problem (equ_proj (snd T')).
+Proof.
+  intros. destruct H. destruct T. destruct p.
+  simpl in H0. apply equ_proj_fixpoint_is_NF with (C:=c) (S:=s) in H0.
+  apply H0 in H. contradiction.
+  inverts H1; simpl in *|-*;
+  rewrite equ_proj_rem_eq; rewrite set_remove_eq;
+  try apply fresh_not_In_equ_proj;
+  try rewrite equ_proj_add_fresh; trivial.
+  rewrite equ_proj_add_fresh; trivial.  
+Qed.
+                                       
+(** 
+	%\subsection{Problem properness is preserved by fresh\_sys, equ\_sys, unif\_step and unif\_path}% 
+*)
 
-(** Proper Problems *)
-
+  
 Lemma Proper_subterm : forall s t, set_In s (subterms t) -> Proper_term t -> Proper_term s.
 Proof.
   intros. unfold Proper_term in *|-*; intros.
@@ -348,55 +453,15 @@ Proof.
   apply unif_step_Proper_Problem with (T:=s); trivial. 
 Qed.
   
-(** Fix-point Problems *)
-  
-Lemma equ_proj_fixpoint_is_NF : forall C S P, fixpoint_Problem (equ_proj P) ->
-                                NF _ equ_sys (C,S,P).
+
+(** 
+	%\subsection{Validity is preserved by fresh\_sys, equ\_sys, unif\_step and unif\_path}% 
+*)
+
+
+Lemma fresh_valid_preservation : forall T T', valid_triple T -> fresh_sys T T' -> valid_triple T'.
 Proof.
-  intros. unfold NF; intro T. intro H0.
-  unfold fixpoint_Problem in H.
-  unfold fixpoint_equ in H.
-  destruct T. destruct p.
-  inverts H0;
-    try apply equ_proj_set_In_eq in H2;
-    try apply equ_proj_set_In_eq in H3;  
-    try apply H in H2; try destruct H2;
-    try apply H in H3; try destruct H3;
-    try destruct H0; try destruct H0; try inverts H1.
-  inverts H4. apply H0; trivial.
-  apply equ_proj_set_In_eq in H8.
-  apply H in H8. destruct H8.
-  destruct H0. destruct H0. inverts H1. 
-  destruct H8;  apply equ_proj_set_In_eq in H0;  apply H in H0;
-  destruct H0; destruct H0; destruct H0; inverts H1;
-  apply H5; simpl; left~.
-  apply equ_proj_set_In_eq in H9. apply H in H9.
-  destruct H9. destruct H0. destruct H0.  
-  inverts H1. apply H8; trivial.
-Qed.
-
-
-Lemma fixpoint_preserv : forall T T',
-                           unif_step T T' ->
-                           fixpoint_Problem (equ_proj (snd T)) -> 
-                           fixpoint_Problem (equ_proj (snd T')).
-Proof.
-  intros. destruct H. destruct T. destruct p.
-  simpl in H0. apply equ_proj_fixpoint_is_NF with (C:=c) (S:=s) in H0.
-  apply H0 in H. contradiction.
-  inverts H1; simpl in *|-*;
-  rewrite equ_proj_rem_eq; rewrite set_remove_eq;
-  try apply fresh_not_In_equ_proj;
-  try rewrite equ_proj_add_fresh; trivial.
-  rewrite equ_proj_add_fresh; trivial.  
-Qed.
-
-
-(** Preservation of valid triplets *)
-
-Lemma fresh_valid_preservation : forall T T', valid_triplet T -> fresh_sys T T' -> valid_triplet T'.
-Proof.
-  intros. unfold valid_triplet in *|-*. destruct H;
+  intros. unfold valid_triple in *|-*. destruct H;
   destruct H0; simpl in *|-*; split~;
   apply set_inter_nil; intro X0; apply set_inter_nil with (a:=X0) in H;
   intro H'; apply H; clear H; apply set_inter_elim in H';
@@ -420,11 +485,11 @@ Qed.
 
 
 Lemma equ_valid_preservation_aux : forall T T',
-                     valid_triplet T -> equ_sys T T' ->
+                     valid_triple T -> equ_sys T T' ->
                      (set_inter Var_eqdec (dom_rec (snd (fst T'))) (im_vars (snd (fst T'))) = []) .
                                                 
 Proof.
-  intros. unfold valid_triplet in *|-. destruct H;
+  intros. unfold valid_triple in *|-. destruct H;
     destruct H0; simpl in *|-*; trivial.
 
   assert (Q : ~ set_In X (dom_rec S)).
@@ -466,9 +531,9 @@ Proof.
 Qed.
    
 Lemma equ_valid_preservation : forall T T',
-                               valid_triplet T -> equ_sys T T' -> valid_triplet T' .   
+                               valid_triple T -> equ_sys T T' -> valid_triple T' .   
 Proof.
-  intros. unfold valid_triplet in *|-*. split~.
+  intros. unfold valid_triple in *|-*. split~.
   Focus 2. apply equ_valid_preservation_aux with (T:=T); trivial.
    destruct H. apply set_inter_nil. intros Y H2.
    apply set_inter_elim in H2. destruct H2.
@@ -573,7 +638,7 @@ Proof.
   assert (Q:  set_inter Var_eqdec (dom_rec S') (im_vars S') = []).
    replace S' with (snd (fst (C,S',((P\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)]))\cup(C/?S')))).
    apply equ_valid_preservation_aux with (T := (C,S,P)).
-   unfold valid_triplet. simpl. split~.
+   unfold valid_triple. simpl. split~.
    apply equ_sys_inst; trivial.
    simpl; trivial.
   apply set_inter_nil with (a:=Y) in Q.   
@@ -588,12 +653,21 @@ Proof.
 Qed.
 
 
-Lemma unif_valid_preserv : forall T T', valid_triplet T -> unif_path T T' -> valid_triplet T'.
+Lemma unif_step_valid_preserv : forall T T', valid_triple T -> unif_step T T' -> valid_triple T'.
 Proof.
-  intros. destruct H0. induction H0; trivial. destruct H0.
-  apply equ_valid_preservation with (T:=T); trivial.
-  apply fresh_valid_preservation with (T:=T); trivial. 
-  apply IHtr_clos; trivial. destruct H0.
+  intros. destruct H0. 
   apply equ_valid_preservation with (T:=T); trivial.
   apply fresh_valid_preservation with (T:=T); trivial. 
 Qed.
+
+
+Lemma unif_path_valid_preserv : forall T T', valid_triple T -> unif_path T T' -> valid_triple T'.
+Proof.
+  intros. destruct H0. induction H0; trivial.
+  apply unif_step_valid_preserv with (T := s); trivial.
+  apply IHtr_clos; trivial.
+  apply unif_step_valid_preserv with (T := s); trivial.
+Qed.
+
+
+ 

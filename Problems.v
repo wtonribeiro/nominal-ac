@@ -1,29 +1,46 @@
-(*
+(**
+%\begin{verbatim}
  ============================================================================
  Project     : Nominal A, AC and C Unification
  File        : Problems.v
- Authors     : Washington Luís R. de Carvalho Segundo and
-               Mauricio Ayala Rincón 
-               Universidade de Brasília (UnB) - Brazil
+ Authors     : Washington Lu\'is R. de Carvalho Segundo and
+               Mauricio Ayala Rinc\'on 
+               Universidade de Bras\'ilia (UnB) - Brazil
                Group of Theory of Computation
- 
- Last Modified On: April 8, 2017.
+
+ Description : This contains the definitions and basic lemmas related to
+               unification problems.  
+
+ Last Modified On: November 12, 2017.
  ============================================================================
+\end{verbatim}%
 *)
 
 Require Export C_Equiv.
 
 Close Scope nat_scope.
 
+
+(** %\section{Definitions}% *)
+
+(** A constraint is inductive defined as being 
+    an equation or a freshness constraint *)
+
 Inductive Constraint : Set :=
   | fresh_constraint : Atom -> term -> Constraint
   | equ_constraint : term -> term -> Constraint                 
 .
 
+
+(** A substitution, a problem and a triple are respectively 
+    a set of pairs of variables and terms, a set of constraints 
+    and a triple of freshness contexts, substitutions and problems. *) 
+
 Definition Subst := set (Var * term) .
 Definition Problem := set (Constraint).
-Definition Triplet := ((Context * Subst) * Problem) .
+Definition Triple := (Context * Subst * Problem) .
 
+(** Decidability between constraints *)
 
 Lemma Constraint_eqdec : forall x y : Constraint, {x = y} + {x <> y}.
 Proof.
@@ -41,6 +58,9 @@ Proof.
   right~. intro. inverts H0. apply H; trivial.  
 Qed.
 
+(** Decidability between constraints pairs of atoms and variables (elements of a 
+    freshness context). *)
+
 Lemma Context_eqdec : forall x y : (Atom * Var), {x = y} + {x <> y}.
 Proof.
   intros. destruct x; destruct y.
@@ -51,6 +71,9 @@ Proof.
   right~. intro. inverts H0. apply H; trivial.  
 Qed.
 
+
+(** Some notations *)
+
 Notation "a #? t" := (fresh_constraint a t) (at level 67).
 Notation "s ~? t" := (equ_constraint s t) (at level 67).
 
@@ -60,6 +83,8 @@ Notation "C |++ u" := (set_add Context_eqdec u C) (at level 67).
 Notation "P0 \cup P1" := (set_union Constraint_eqdec P0 P1) (at level 67).
 
 
+(** Variables of a problem *)
+
 Fixpoint Problem_vars (P : Problem) : set Var :=
   match P with
     | [] => []
@@ -68,11 +93,9 @@ Fixpoint Problem_vars (P : Problem) : set Var :=
                    (set_union Var_eqdec (term_vars t) (Problem_vars P0))                         
   end.
 
-Fixpoint Context_vars (C : Context) : set Var :=
-  match C with
-    | [] => []
-    | (a,X)::C0 => set_add Var_eqdec X (Context_vars C0) 
-  end .
+
+(** Subsets of equations and freshness contexts of a problem *)
+
 
 Fixpoint equ_proj (P : Problem) : Problem :=
   match P with
@@ -88,29 +111,49 @@ Fixpoint fresh_proj  (P : Problem) : Problem :=
     | (s~?t)::P0 =>  fresh_proj P0                      
   end.
 
+
+(** Fixpoint equations are defined as pi|.X ~? []|.X, where
+    pi <> [] *)
+
 Definition fixpoint_equ (u : Constraint) :=
   exists pi, exists X, pi <> [] /\ u = pi|.X ~? []|.X.
 
 
+(** Fixpoint problems are composed only by fixpoint equations *)
+
 Definition fixpoint_Problem (P : Problem) := forall u, set_In u P -> fixpoint_equ u.
  
 
-(** Lemmas *)
+(** %\section{Lemmas}% *)
 
-Lemma Problem_add_fresh_rem_equ : forall P a s t u,
-                                 (P|+(a#?s))\(t~?u) = (P\(t~?u))|+(a#?s).  
+(** %\subsection{Decidability of existence of equations and freshness constraints
+  in a problem}% *)
+
+Lemma  set_In_equ_Problem_eqdec : forall P, {exists s, exists t, set_In (s~?t) P} + {forall s t, ~ set_In (s~?t) P}.
 Proof.
-  intros. induction P; simpl.
-  case (Constraint_eqdec (t~?u) (a#?s)); intro H; trivial. inverts H.  
-  case (Constraint_eqdec (a#?s) a0); case (Constraint_eqdec (t~?u) a0); intros H H0; simpl; 
-   try rewrite IHP; trivial. 
-  rewrite <- H in H0. inverts H0.
-  case (Constraint_eqdec (a#?s) a0); case (Constraint_eqdec (t~?u) a0); intros H1 H2;
-   try contradiction; trivial.
-  case (Constraint_eqdec (t ~? u) a0); intro H1; try contradiction; trivial.  
-  case (Constraint_eqdec (a#?s) a0); case (Constraint_eqdec (t~?u) a0); intros H1 H2;
-   try contradiction; trivial.
-Qed.  
+  intros. induction P.
+  right~. destruct IHP.
+  left~.  destruct e. destruct H.
+  exists x. exists x0. right~.
+  destruct a. right~; intros. intro H.
+  simpl in H. destruct H. inverts H.
+  apply (n s t0); trivial.
+  left~. exists t. exists t0. left~.
+Qed.   
+
+Lemma set_In_fresh_Problem_eqdec : forall P, {exists a, exists s, set_In (a#?s) P} + {forall a s, ~ set_In (a#?s) P}.
+Proof.
+  intros. induction P.
+  right~. destruct IHP.
+  left~.  destruct e. destruct H.
+  exists x. exists x0. right~.
+  destruct a. left~. exists a. exists t. left~.
+  right~; intros. intro H. simpl in H.
+  destruct H. inverts H. apply (n a s); trivial.
+Qed.
+
+
+(** %\subsection{Basic results about fixpoint equations and fixpoint problems}% *)
 
 Lemma fixpoint_equ_eqdec : forall u, {fixpoint_equ u} + {~ fixpoint_equ u}.
 Proof.
@@ -158,13 +201,57 @@ Proof.
   apply H. right~.
 Qed.
 
+Lemma non_fixpoint_equ_proj : forall P, ~ fixpoint_Problem (equ_proj P) ->
+                              exists s t, set_In (s~?t) P /\ ~ fixpoint_equ (s~?t).          
+Proof.
+  intros. induction P.
+  false. apply H; intros. simpl.
+  apply fixpoint_Problem_nil.
+  destruct a. simpl in *|-*.
+  apply IHP in H. destruct H. destruct H.
+  exists x. exists x0. destruct H. split~.
+  simpl in H. case (fixpoint_equ_eqdec (t ~? t0)); intro H0.
+  destruct IHP. intro H1. apply H.
+  unfold fixpoint_Problem; intros.
+  simpl in H2. destruct H2. rewrite <- H2; trivial. apply H1; trivial.
+  destruct H1. destruct H1. exists x. exists x0. split~. simpl. right~.
+  exists t. exists t0. split~. left~.
+Qed.
+
+
+Lemma set_In_fixpoint_eq_proj : forall P,  (forall s t,  set_In (s ~? t) P -> fixpoint_equ (s ~? t)) ->
+                                            fixpoint_Problem (equ_proj P).
+Proof.
+  intros. case (fixpoint_Problem_eqdec (equ_proj P)); intro H1; trivial.
+  apply non_fixpoint_equ_proj in H1.
+  case H1; clear H1; intros s H1. case H1; clear H1; intros t H1.
+  destruct H1. apply H in H0. contradiction.
+Qed.
+
+Lemma fixpoint_not_In_fresh : forall P, fixpoint_Problem (equ_proj P) ->
+                                        (forall (a : Atom) (s : term), ~ set_In (a #? s) P) ->
+                                        fixpoint_Problem P.
+Proof.
+  intros. induction P.
+  apply fixpoint_Problem_nil. destruct a.
+  false. apply (H0 a t). left~.
+  simpl in H. unfold fixpoint_Problem; intros.
+  simpl in H1. destruct H1. rewrite <- H1.
+  apply H. left~. apply IHP; intros; trivial.
+  unfold fixpoint_Problem; intros. apply H. right~.
+  assert (Q : ~ set_In (a #? s) ((t ~? t0) :: P)). apply H0.
+  intro H2. apply Q. right~.
+Qed. 
+
+(** %\subsection{Basic results about subsets of equations}% *)
+
 Lemma fresh_not_In_equ_proj : forall a s P, ~ set_In (a #? s) (equ_proj P).
 Proof.
   intros. intro H. induction P.
   simpl in H; trivial. destruct a0; simpl in H; try contradiction.
   destruct H. inverts H. contradiction.
-Qed.  
- 
+Qed.
+
 Lemma equ_proj_append : forall P P',  equ_proj (P ++ P') =
                                      (equ_proj P)++(equ_proj P').
 Proof.
@@ -205,6 +292,15 @@ Proof.
   rewrite app_nil_r; trivial.
 Qed.
 
+Lemma equ_proj_rem_fresh : forall P a s, equ_proj (P\(a#?s)) = equ_proj P .
+Proof.
+  intros. induction P; simpl; trivial.
+  destruct a0.
+  case (Constraint_eqdec (a #? s) (a0 #? t)); intro H0; trivial.
+  case (Constraint_eqdec (a #? s) (t ~? t0)); intro H1; trivial.
+  inverts H1. simpl. rewrite IHP; trivial.
+Qed.
+
 Lemma equ_proj_add_eq : forall P s t, equ_proj (P|+(s~?t)) = (equ_proj P)|+(s~?t).
 Proof.
   intros. case (in_dec Constraint_eqdec (s~?t) P); intro H.
@@ -221,71 +317,6 @@ Proof.
   simpl. rewrite equ_proj_add_eq. rewrite IHP'; trivial.
 Qed.
 
-Lemma non_fixpoint_equ_proj : forall P, ~ fixpoint_Problem (equ_proj P) ->
-                              exists s t, set_In (s~?t) P /\ ~ fixpoint_equ (s~?t).          
-Proof.
-  intros. induction P.
-  false. apply H; intros. simpl.
-  apply fixpoint_Problem_nil.
-  destruct a. simpl in *|-*.
-  apply IHP in H. destruct H. destruct H.
-  exists x. exists x0. destruct H. split~.
-  simpl in H. case (fixpoint_equ_eqdec (t ~? t0)); intro H0.
-  destruct IHP. intro H1. apply H.
-  unfold fixpoint_Problem; intros.
-  simpl in H2. destruct H2. rewrite <- H2; trivial. apply H1; trivial.
-  destruct H1. destruct H1. exists x. exists x0. split~. simpl. right~.
-  exists t. exists t0. split~. left~.
-Qed.
-
-
-Lemma set_In_fixpoint_eq_proj : forall P,  (forall s t,  set_In (s ~? t) P -> fixpoint_equ (s ~? t)) ->
-                                            fixpoint_Problem (equ_proj P).
-Proof.
-  intros. case (fixpoint_Problem_eqdec (equ_proj P)); intro H1; trivial.
-  apply non_fixpoint_equ_proj in H1.
-  case H1; clear H1; intros s H1. case H1; clear H1; intros t H1.
-  destruct H1. apply H in H0. contradiction.
-Qed.
-  
-Lemma  set_In_equ_Problem_eqdec : forall P, {exists s, exists t, set_In (s~?t) P} + {forall s t, ~ set_In (s~?t) P}.
-Proof.
-  intros. induction P.
-  right~. destruct IHP.
-  left~.  destruct e. destruct H.
-  exists x. exists x0. right~.
-  destruct a. right~; intros. intro H.
-  simpl in H. destruct H. inverts H.
-  apply (n s t0); trivial.
-  left~. exists t. exists t0. left~.
-Qed.   
-
-Lemma set_In_fresh_Problem_eqdec : forall P, {exists a, exists s, set_In (a#?s) P} + {forall a s, ~ set_In (a#?s) P}.
-Proof.
-  intros. induction P.
-  right~. destruct IHP.
-  left~.  destruct e. destruct H.
-  exists x. exists x0. right~.
-  destruct a. left~. exists a. exists t. left~.
-  right~; intros. intro H. simpl in H.
-  destruct H. inverts H. apply (n a s); trivial.
-Qed.
-
-Lemma fixpoint_not_In_fresh : forall P, fixpoint_Problem (equ_proj P) ->
-                                        (forall (a : Atom) (s : term), ~ set_In (a #? s) P) ->
-                                        fixpoint_Problem P.
-Proof.
-  intros. induction P.
-  apply fixpoint_Problem_nil. destruct a.
-  false. apply (H0 a t). left~.
-  simpl in H. unfold fixpoint_Problem; intros.
-  simpl in H1. destruct H1. rewrite <- H1.
-  apply H. left~. apply IHP; intros; trivial.
-  unfold fixpoint_Problem; intros. apply H. right~.
-  assert (Q : ~ set_In (a #? s) ((t ~? t0) :: P)). apply H0.
-  intro H2. apply Q. right~.
-Qed. 
-
 Lemma Problem_vars_equ_proj : forall X P,
                               set_In X (Problem_vars (equ_proj P)) -> set_In X (Problem_vars P).
 Proof.
@@ -298,7 +329,44 @@ Proof.
   apply set_union_intro2. apply set_union_intro2. apply IHP; trivial.
 Qed.
   
-  
+Lemma Problem_exists_equ : forall P, equ_proj P <> [] <-> exists s t, set_In (s~?t) P.
+Proof.
+  split~; intro.
+  induction P.
+  simpl in H. false. 
+  destruct a. simpl in H. apply IHP in H.
+  case H; clear H; intros s0 H. case H; clear H; intros t0 H.
+  exists s0. exists t0. simpl. right~.
+  simpl. exists t. exists t0. left~.
+  case H; clear H; intros s H.
+  case H; clear H; intros t H.
+  induction P; simpl in H. false.
+  destruct H.
+  rewrite H. simpl. discriminate.
+  apply IHP in H. clear IHP.
+  destruct a; simpl; trivial.
+  intro H'. inverts H'.
+Qed.
+
+
+
+(** %\subsection{Basic results about adding and removing constraints and also the operation of union of problems}% *)
+
+Lemma Problem_add_fresh_rem_equ : forall P a s t u,
+                                 (P|+(a#?s))\(t~?u) = (P\(t~?u))|+(a#?s).  
+Proof.
+  intros. induction P; simpl.
+  case (Constraint_eqdec (t~?u) (a#?s)); intro H; trivial. inverts H.  
+  case (Constraint_eqdec (a#?s) a0); case (Constraint_eqdec (t~?u) a0); intros H H0; simpl; 
+   try rewrite IHP; trivial. 
+  rewrite <- H in H0. inverts H0.
+  case (Constraint_eqdec (a#?s) a0); case (Constraint_eqdec (t~?u) a0); intros H1 H2;
+   try contradiction; trivial.
+  case (Constraint_eqdec (t ~? u) a0); intro H1; try contradiction; trivial.  
+  case (Constraint_eqdec (a#?s) a0); case (Constraint_eqdec (t~?u) a0); intros H1 H2;
+   try contradiction; trivial.
+Qed.  
+
 Lemma Problem_vars_remove : forall P X u, set_In X (Problem_vars (P \ u)) ->
                                           set_In X (Problem_vars P).
 Proof.
@@ -433,6 +501,8 @@ Proof.
   apply set_union_intro2; trivial.
 Qed.
 
+(** %\subsection{Sets of variables have no repeated elements}% *)
+
 
 Lemma NoDup_term_vars : forall t, NoDup (term_vars t).
 Proof.
@@ -458,6 +528,10 @@ Qed.
 
 Open Scope nat_scope.
 
+
+(** %\subsection{Sizes of sets of variables} % *)
+
+
 Lemma length_Problem_vars_rem : forall P u,  length (Problem_vars P) >= length (Problem_vars (P\u)).
 Proof.
   intros.
@@ -477,7 +551,8 @@ Proof.
 Qed.
   
   
-(** Auxiliary definitions and lemmas to prove termination of fresh_sys and equ_sys *)
+(**  %\subsection{Auxiliary definitions and lemmas to 
+    prove termination of fresh\_sys and equ\_sys}% *)
 
 
 Fixpoint fresh_Problem_size (P : Problem) {struct P} : nat :=
@@ -497,11 +572,14 @@ Fixpoint equ_Problem_size (P : Problem) {struct P} : nat :=
   
 Fixpoint non_fixpoint_equ (P : Problem) {struct P} : nat :=
   match P with
-    | [] => 0  
-    | u::P0 => if (fixpoint_equ_eqdec u) then (non_fixpoint_equ P0) else
+    | [] => 0
+    | (a#?s)::P0 => non_fixpoint_equ P0          
+    | (s~?t)::P0 => if (fixpoint_equ_eqdec (s~?t)) then (non_fixpoint_equ P0) else
                   (1 + (non_fixpoint_equ P0))
   end.  
 
+
+(**  %\subsection{Basic results about the size of problems}% *)
 
 
 Lemma fresh_Problem_size_remove : forall P a s, set_In (a#?s) P ->
@@ -590,28 +668,55 @@ Proof.
   case (Constraint_eqdec (t ~? t0) (t1 ~? t2)); intro H; simpl; try omega. 
 Qed.
 
-Lemma non_fixpoint_equ_gt_0 : forall P u, set_In u P -> ~ fixpoint_equ u ->
+
+Lemma equ_Problem_size_add_fresh : forall P a s,
+                                   equ_Problem_size (P|+(a#?s)) = equ_Problem_size P.  
+Proof.
+ intros. induction P; simpl; trivial.
+ destruct a0.
+ case (Constraint_eqdec (a #? s) (a0 #? t)); intro H0; simpl; trivial.
+ case (Constraint_eqdec (a #? s) (t ~? t0)); intro H0; simpl; trivial.
+ rewrite IHP; trivial.
+Qed.
+
+Lemma equ_Problem_size_rem_fresh : forall P a s,
+                                   equ_Problem_size (P\(a#?s)) = equ_Problem_size P.  
+Proof.
+ intros. induction P; simpl; trivial.
+ destruct a0.
+ case (Constraint_eqdec (a #? s) (a0 #? t)); intro H0; simpl; trivial.
+ case (Constraint_eqdec (a #? s) (t ~? t0)); intro H0; simpl; trivial.
+ inverts H0. rewrite IHP; trivial.
+Qed.
+ 
+
+Lemma non_fixpoint_equ_gt_0 : forall P s t, set_In (s~?t) P -> ~ fixpoint_equ (s~?t) ->
                                           non_fixpoint_equ P > 0.
 Proof.
   intros. induction P; simpl in *|-*; try contradiction.
-  destruct H; case (fixpoint_equ_eqdec a); intro H1; try omega.
-  rewrite H in H1. contradiction.
+  destruct a. destruct H. inverts H.
   apply IHP; trivial.
+  case (fixpoint_equ_eqdec (t0 ~? t1)); intro H1.
+  destruct H. inverts H. contradiction.
+  apply IHP; trivial. omega.
 Qed.
   
-Lemma non_fixpoint_equ_remove : forall P u, set_In u P -> ~ fixpoint_equ u ->
-                                non_fixpoint_equ (P\u) =  non_fixpoint_equ P - 1.
+Lemma non_fixpoint_equ_remove : forall P s t, set_In (s~?t) P -> ~ fixpoint_equ (s~?t) ->
+                                non_fixpoint_equ (P\(s~?t)) =  non_fixpoint_equ P - 1.
 Proof.
- intros. induction P; simpl in *|-*; trivial. 
- destruct H; try symmetry in H;
- case (Constraint_eqdec u a); intro H1; try contradiction;
- case (fixpoint_equ_eqdec a); intro H2;
- try rewrite <- H1 in H2; try contradiction; try omega; simpl;
- case (fixpoint_equ_eqdec a); intro H3; try contradiction.
- apply IHP; trivial.
- assert (Q : non_fixpoint_equ P > 0).
-  apply non_fixpoint_equ_gt_0 with (u:=u); trivial.
- rewrite IHP; trivial. omega. 
+  intros. induction P; simpl in *|-*; trivial.
+  destruct a. case (Constraint_eqdec (s ~? t) (a #? t0)); intro H1. inverts H1.
+  simpl. destruct H. inverts H. apply IHP; trivial.
+  case (Constraint_eqdec (s ~? t) (t0 ~? t1)); intro H1.
+  case (fixpoint_equ_eqdec (t0 ~? t1)); intro H2.
+  inverts H1. contradiction. omega.
+  simpl. case (fixpoint_equ_eqdec (t0 ~? t1)); intro H2.
+  destruct H. inverts H. contradiction. apply IHP; trivial.
+  destruct H. inverts H. false.
+  generalize H. intro H3. apply IHP in H3. 
+  assert (Q : non_fixpoint_equ P > 0).
+   apply non_fixpoint_equ_gt_0 with (s := s) (t:=t); trivial.
+  omega.
 Qed.
 
 Lemma non_fixpoint_equ_add : forall P pi X, pi <> [] -> non_fixpoint_equ (P|+(pi|.X~?([]|.X))) =
@@ -620,8 +725,31 @@ Proof.
   intros. induction P; simpl.
   case (fixpoint_equ_eqdec ((pi|.X) ~? (([])|.X))); intro H0; trivial.
   false. apply H0. unfold fixpoint_equ. exists pi. exists X. split~.
-  case (Constraint_eqdec ((pi|.X) ~? (([])|.X)) a); intro H0.
-  simpl; trivial. simpl. case (fixpoint_equ_eqdec a); intro H1; trivial.
+  destruct a.
+  case (Constraint_eqdec ((pi|.X) ~? (([])|.X)) (a #? t)); intro H0.
+  inverts H0. simpl. rewrite IHP; trivial.
+  case (Constraint_eqdec ((pi|.X) ~? (([])|.X)) (t ~? t0)); intro H0; simpl; trivial.
+  case (fixpoint_equ_eqdec (t ~? t0)); intro H1; trivial.
   omega.
 Qed.
 
+
+Lemma non_fixpoint_equ_add_fresh : forall P a s,
+                                   non_fixpoint_equ (P|+(a#?s)) = non_fixpoint_equ P.  
+Proof.
+  intros. induction P; simpl; trivial.
+  destruct a0.
+  case (Constraint_eqdec (a #? s) (a0 #? t)); intro H0; simpl; trivial.
+  case (Constraint_eqdec (a #? s) (t ~? t0)); intro H0; simpl; trivial.
+  rewrite IHP; trivial.
+Qed.
+
+Lemma non_fixpoint_equ_rem_fresh : forall P a s,
+                                   non_fixpoint_equ (P\(a#?s)) = non_fixpoint_equ P.  
+Proof.
+ intros. induction P; simpl; trivial.
+ destruct a0.
+ case (Constraint_eqdec (a #? s) (a0 #? t)); intro H0; simpl; trivial.
+ case (Constraint_eqdec (a #? s) (t ~? t0)); intro H0; simpl; trivial.
+ inverts H0. rewrite IHP; trivial.
+Qed.

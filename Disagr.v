@@ -2,9 +2,9 @@
  ============================================================================
  Project     : Nominal A, AC and C Unification
  File        : Disagr.v
- Authors     : Washington Luís R. de Carvalho Segundo and
-               Mauricio Ayala Rincón 
-               Universidade de Brasília (UnB) - Brazil
+ Authors     : Washington Luis R. de Carvalho Segundo and
+               Mauricio Ayala Rincon 
+               Universidade de Brasilia (UnB) - Brazil
                Group of Theory of Computation
  
  Last Modified On: March 3, 2017.
@@ -30,11 +30,25 @@ Qed.
 
 Lemma not_In_ds : forall pi pi' a, 
                   (~ In_ds pi pi' a) <-> pi $ a = pi' $ a. 
-Proof. split~; intros.
- intros. case ((pi $ a) ==at (pi' $ a)).
- intro; trivial. intro H'. apply False_ind.
- apply H. unfold In_ds. trivial.
+Proof.
+  split~; intros.
+  case ((pi $ a) ==at (pi' $ a)); intro; trivial.
+  false. apply H. unfold In_ds. trivial.
 Qed.
+
+Lemma not_In_ds_inv : forall pi pi' b, 
+                      (forall a, ~ In_ds pi pi' a) -> (!pi) $ b = (!pi') $ b. 
+Proof.
+  intros.
+  assert (Q : pi $ ((! pi) $ b) = pi' $ ((!pi) $ b)).
+  apply not_In_ds. apply H.
+  gen_eq g : (!pi); intro H0.
+  replace pi with (!g) in Q.
+  rewrite perm_inv_atom in Q.
+  symmetry in Q. apply perm_inv_side_atom in Q. trivial.
+  rewrite H0. rewrite rev_involutive. trivial.
+Qed.
+
 
 Lemma ds_elem : forall a pi, pi $ a <> a <-> In_ds ([]) pi a.
 Proof. split~; intros.
@@ -114,6 +128,15 @@ Proof.
  intros; unfold In_ds; rewrite <- perm_comp_atom; simpl;
  split~; intros; intro; apply H; clear H; 
  apply perm_inv_side_atom; trivial.
+Qed.
+
+
+Lemma ds_inv : forall pi a, 
+In_ds pi ([]) a -> In_ds (!pi) ([]) a. 
+Proof.
+  intros. apply ds_rev.
+  simpl. rewrite rev_involutive.
+  apply ds_sym. trivial.
 Qed.
 
 Lemma ds_perm_left : forall a b pi1 pi2, 

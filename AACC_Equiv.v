@@ -2,9 +2,9 @@
  ============================================================================
  Project     : Nominal A, AC and C Unification
  File        : AAAC_Equiv.v 
- Authors     : Washington Luís R. de Carvalho Segundo and
-               Mauricio Ayala Rincón 
-               Universidade de Brasília (UnB) - Brazil
+ Authors     : Washington Luis R. de Carvalho Segundo and
+               Mauricio Ayala Rincon 
+               Universidade de Brasilia (UnB) - Brazil
                Group of Theory of Computation
  
  Last Modified On: March 3, 2017.
@@ -25,90 +25,129 @@ Qed.
 Hint Resolve alpha_to_aacc_equiv.
 
 
+ 
 
 (** Intermediate transitivity for aacc_equiv with alpha_equiv *)
 
-Lemma aacc_alpha_equiv_trans : forall C t1 t2 t3, 
-  C |- t1 ~aacc t2 -> C |- t2 ~alpha t3 -> C |- t1 ~aacc t3.
+Lemma aacc_alpha_equiv_trans : forall C t1 t3, 
+  (exists t2, C |- t1 ~aacc t2 /\ C |- t2 ~alpha t3) <-> C |- t1 ~aacc t3.
 Proof.
- intros. gen t3 H0. induction H; intros; auto.
- inverts H1. apply equiv_Pr; [apply IHequiv1 | apply IHequiv2]; trivial.
- inverts H1. apply equiv_Fc; auto. 
- inverts H0. apply equiv_Ab_1; apply IHequiv; trivial.
- apply equiv_Ab_2; trivial. apply IHequiv; trivial.
- inverts H2. apply equiv_Ab_2; trivial.
- apply IHequiv. apply alpha_equiv_eq_equiv.
- apply alpha_equiv_eq_equiv; trivial.
- apply alpha_equiv_equivariance; trivial.
- apply alpha_equiv_fresh with (t1 := t'); trivial.
- case (a ==at a'0); intro H10. rewrite H10.
- apply equiv_Ab_1. apply IHequiv. apply alpha_equiv_sym.
- apply alpha_equiv_swap_inv_side.
- apply alpha_equiv_trans with (t2 := ([ (a', a)]) @ t'0).
- apply alpha_equiv_swap_comm. apply alpha_equiv_sym. rewrite H10; trivial.
- assert (Q : C |- a # t'0).
-  apply alpha_equiv_fresh with (a := a) in H7; trivial.
-  apply fresh_lemma_1 in H7. simpl rev in H7. 
-  rewrite swap_neither in H7; auto.
- apply equiv_Ab_2; trivial. apply IHequiv.
- apply alpha_equiv_swap_inv_side.
- apply alpha_equiv_trans with (t2 := ([ (a', a'0)]) @ t'0); trivial.
- apply alpha_equiv_trans with 
- (t2 := ([ ([(a, a')] $ a, [(a, a')] $ a'0)]) @ (([ (a, a')]) @ t'0)); trivial.
- rewrite swap_left. rewrite swap_neither; auto.
- apply alpha_equiv_equivariance. apply alpha_equiv_sym. 
- apply alpha_equiv_swap_neither; trivial. apply alpha_equiv_sym. 
- apply alpha_equiv_pi_comm.
+  intros. split~; intro.
+  case H; clear H; intros t2 H. destruct H.
 
- inverts H0. apply equiv_Su. intros. unfold In_ds in *|-.
- case (a ==at (!p $ (p' $ a))); intro H1. rewrite H1. apply H5.
- rewrite <- H1. apply perm_inv_side_atom in H1. rewrite <- H1. trivial.
- rewrite perm_diff_atom with (p:=p) in H1. gen_eq g : (!p). intro H2.
- replace (p $ (g $ (p' $ a))) with (!g $ (g $ (p' $ a))) in H1.
- rewrite perm_inv_atom in H1. apply H; trivial. rewrite H2.
- rewrite perm_inv_inv_atom; trivial.
+  (* -> *)
+  
+  gen t3 H0. induction H; intros; auto.
+  inverts H1. apply equiv_Pr; [apply IHequiv1 | apply IHequiv2]; trivial.
+  inverts H1. apply equiv_Fc; auto. 
+  inverts H0. apply equiv_Ab_1; apply IHequiv; trivial.
+  apply equiv_Ab_2; trivial. apply IHequiv; trivial.
+  inverts H2. apply equiv_Ab_2; trivial.
+  apply IHequiv. apply alpha_equiv_eq_equiv.
+  apply alpha_equiv_eq_equiv; trivial.
+  apply alpha_equiv_equivariance; trivial.
+  apply alpha_equiv_fresh with (t1 := t'); trivial.
+  case (a ==at a'0); intro H10. rewrite H10.
+  apply equiv_Ab_1. apply IHequiv. apply alpha_equiv_sym.
+  replace ([(a, a')]) with (! ([(a, a')])). apply perm_inv_side.
+  apply alpha_equiv_trans with (t2 := ([ (a', a)]) @ t'0).
+  apply alpha_equiv_pi. intros b H11. false. apply H11. apply swap_comm.
+  apply alpha_equiv_sym. rewrite H10; trivial. simpl; trivial.
+  assert (Q : C |- a # t'0).
+   apply alpha_equiv_fresh with (a := a) in H7; trivial.
+   apply fresh_lemma_1 in H7. simpl rev in H7. 
+   rewrite swap_neither in H7; auto.
+  apply equiv_Ab_2; trivial. apply IHequiv.
+  replace ([(a, a')]) with (!([(a, a')])). 
+  apply perm_inv_side'. simpl.
+  apply alpha_equiv_trans with (t2 := ([ (a', a'0)]) @ t'0); trivial.
+  apply alpha_equiv_trans with 
+  (t2 := ([ ([(a, a')] $ a, [(a, a')] $ a'0)]) @ (([ (a, a')]) @ t'0)); trivial.
+  rewrite swap_left. rewrite swap_neither; auto.
+  apply alpha_equiv_equivariance. apply alpha_equiv_sym. 
+  apply alpha_equiv_swap_neither; trivial. apply alpha_equiv_sym. 
+  apply alpha_equiv_pi_comm. simpl; trivial.
 
- inverts H2. 
- apply equiv_A; simpl set_In; try omega.
- apply IHequiv1. apply alpha_equiv_TPith; auto.
- generalize H8; intro H8'.
- assert (Q : C |- Fc 0 n t ~aacc Fc 0 n t').
-  apply equiv_A; simpl set_In; try omega; trivial.              
- apply alpha_equiv_TPlength with (E:=0) (n:=n) in H8'.
- apply aacc_equiv_TPlength with (E:=0) (n:=n) in Q.
- autorewrite with tuples in Q.
- case (eq_nat_dec (TPlength t 0 n) 1); intro H9.
- rewrite 2 TPithdel_TPlength_1;
- autorewrite with tuples; try omega; auto.
- apply IHequiv2.
- rewrite 2 TPithdel_Fc_eq; autorewrite with tuples; try omega.
- apply alpha_equiv_Fc. apply alpha_equiv_TPithdel; trivial.
+  inverts H0. apply equiv_Su. intros. unfold In_ds in *|-.
+  case (a ==at (!p $ (p' $ a))); intro H1. rewrite H1. apply H5.
+  rewrite <- H1. apply perm_inv_side_atom in H1. rewrite <- H1. trivial.
+  rewrite perm_diff_atom with (p:=p) in H1. gen_eq g : (!p). intro H2.
+  replace (p $ (g $ (p' $ a))) with (!g $ (g $ (p' $ a))) in H1.
+  rewrite perm_inv_atom in H1. apply H; trivial. rewrite H2.
+  rewrite perm_inv_inv_atom; trivial.
 
- inverts H2. generalize H8; intro H8'.
- assert (Q : C |- Fc 1 n t ~aacc Fc 1 n t').
-  apply equiv_AC with (i:=i); repeat split~; simpl set_In; try omega; trivial.              
- apply alpha_equiv_TPlength with (E:=1) (n:=n) in H8'.
- apply aacc_equiv_TPlength with (E:=1) (n:=n) in Q.
- autorewrite with tuples in Q.
+  inverts H2. 
+  apply equiv_A; simpl set_In; try omega.
+  apply IHequiv1. apply alpha_equiv_TPith; auto.
+  generalize H8; intro H8'.
+  assert (Q : C |- Fc 0 n t ~aacc Fc 0 n t').
+   apply equiv_A; simpl set_In; try omega; trivial.              
+  apply alpha_equiv_TPlength with (E:=0) (n:=n) in H8'.
+  apply aacc_equiv_TPlength with (E:=0) (n:=n) in Q.
+  autorewrite with tuples in Q.
+  case (eq_nat_dec (TPlength t 0 n) 1); intro H9.
+  rewrite 2 TPithdel_TPlength_1;
+  autorewrite with tuples; try omega; auto.
+  apply IHequiv2.
+  rewrite 2 TPithdel_Fc_eq; autorewrite with tuples; try omega.
+  apply alpha_equiv_Fc. apply alpha_equiv_TPithdel; trivial.
+
+  inverts H2. generalize H8; intro H8'.
+  assert (Q : C |- Fc 1 n t ~aacc Fc 1 n t').
+   apply equiv_AC with (i:=i); repeat split~; simpl set_In; try omega; trivial.              
+  apply alpha_equiv_TPlength with (E:=1) (n:=n) in H8'.
+  apply aacc_equiv_TPlength with (E:=1) (n:=n) in Q.
+  autorewrite with tuples in Q.
   apply equiv_AC with (i:=i); simpl set_In; repeat split~; try omega.
- apply IHequiv1. apply alpha_equiv_TPith; auto.
- case (eq_nat_dec (TPlength t 1 n) 1); intro H9.
- rewrite 2 TPithdel_TPlength_1;
- autorewrite with tuples; try omega; auto.
- apply IHequiv2.
- rewrite 2 TPithdel_Fc_eq; autorewrite with tuples; try omega.
- apply alpha_equiv_Fc. apply alpha_equiv_TPithdel; trivial.
+  apply IHequiv1. apply alpha_equiv_TPith; auto.
+  case (eq_nat_dec (TPlength t 1 n) 1); intro H9.
+  rewrite 2 TPithdel_TPlength_1;
+  autorewrite with tuples; try omega; auto.
+  apply IHequiv2.
+  rewrite 2 TPithdel_Fc_eq; autorewrite with tuples; try omega.
+  apply alpha_equiv_Fc. apply alpha_equiv_TPithdel; trivial.
  
- inverts H2. inverts H8.
- apply IHequiv1 in H5.
- apply IHequiv2 in H7.
- apply equiv_C1; trivial.
+  inverts H2. inverts H8.
+  apply IHequiv1 in H5.
+  apply IHequiv2 in H7.
+  apply equiv_C1; trivial.
 
- inverts H2. inverts H8.
- apply IHequiv1 in H7.
- apply IHequiv2 in H5.
- apply equiv_C2; trivial. 
+  inverts H2. inverts H8.
+  apply IHequiv1 in H7.
+  apply IHequiv2 in H5.
+  apply equiv_C2; trivial.
 
+  (* <- *)
+
+  induction H.
+  exists (<<>>). split~.
+  exists (%a). split~.
+  case IHequiv1; clear IHequiv1; intros t1'' IH1.
+  case IHequiv2; clear IHequiv2; intros t2'' IH2.
+  destruct IH1. destruct IH2. exists (<|t1'',t2''|>). split~.
+  case IHequiv; clear IHequiv; intros t'' H1. destruct H1.
+  exists (Fc E n t''). split~.
+  case IHequiv; clear IHequiv; intros t'' H0. destruct H0.
+  exists ([a]^t''). split~.
+  case IHequiv; clear IHequiv; intros t'' H2. destruct H2.
+  exists ([a]^t''). split~.
+  exists (p|.X). split~. apply equiv_Su; intros. false.
+  case IHequiv1; clear IHequiv1; intros t3 H2.
+  case IHequiv2; clear IHequiv2; intros t4 H3.
+  destruct H2. destruct H3.
+  assert (Q : C |- Fc 0 n t ~aacc Fc 0 n t').
+   apply equiv_A; trivial.
+  exists (Fc 0 n t'). split~. apply alpha_equiv_refl.
+  assert (Q : C |- Fc 1 n t ~aacc Fc 1 n t').
+   apply equiv_AC with (i:=i); trivial.
+  exists (Fc 1 n t'). split~. apply alpha_equiv_refl.  
+  assert (Q : C |- Fc 2 n (<| s0, s1 |>) ~aacc Fc 2 n (<| t0, t1 |>)).
+   apply equiv_C1; trivial.
+  exists (Fc 2 n (<| t0, t1 |>)). split~. apply alpha_equiv_refl.
+  assert (Q : C |- Fc 2 n (<| s0, s1 |>) ~aacc Fc 2 n (<| t0, t1 |>)).
+   apply equiv_C2; trivial.
+  exists (Fc 2 n (<| t0, t1 |>)). split~. apply alpha_equiv_refl.
+  
 Qed.
 
 
@@ -127,8 +166,8 @@ Proof.
  apply (H1 t1 t2); trivial. trivial.
  
  apply equiv_Ab_2. apply perm_diff_atom; trivial.
- apply aacc_alpha_equiv_trans with
- (t2 :=  (pi @ (([(a, a')]) @ t'))); auto.
+ apply aacc_alpha_equiv_trans.
+ exists (pi @ (([(a, a')]) @ t')). split~.
  apply alpha_equiv_pi_comm.
  apply fresh_lemma_3; trivial.
 
@@ -172,11 +211,11 @@ Lemma aacc_equiv_swap_inv_side : forall C a a' t t',
  C |- t ~aacc (([ (a, a')]) @ t') -> C |- (([ (a', a)]) @ t) ~aacc t'. 
 Proof.
  intros. 
- apply aacc_alpha_equiv_trans with 
- (t2 := ([ (a', a)]) @ (([ (a, a')]) @ t')).
+ apply aacc_alpha_equiv_trans.
+ exists (([ (a', a)]) @ (([ (a, a')]) @ t')). split~.
  apply aacc_equivariance; trivial.
- apply alpha_equiv_trans with (t2 := ([ (a, a')]) @ (([ (a, a')]) @ t')).
- apply alpha_equiv_swap_comm. rewrite perm_comp. apply alpha_equiv_perm_inv.
+ apply perm_inv_side'. simpl.
+ apply alpha_equiv_pi. intros b H11. false. apply H11. apply swap_comm.
 Qed.
 
 (** Freshness preservation under aacc_equiv *) 
@@ -246,13 +285,14 @@ Proof.
 
 Qed.
 
-(** Reflexivity of aacc_equiv *)
 
+(** Reflexivity of aacc_equiv *)
+  
 Lemma aacc_equiv_refl : forall C t, C |- t ~aacc t.
 Proof.
- intros. induction t; auto. 
- apply aacc_equiv_Fc; trivial.
- apply equiv_Su. intros. false. 
+  intros. induction t; auto.
+  apply aacc_equiv_Fc; trivial.
+  apply equiv_Su; intros. false.
 Qed.
 
 Hint Resolve aacc_equiv_refl.
@@ -263,9 +303,9 @@ Hint Resolve aacc_equiv_refl.
 Corollary aacc_equiv_swap_comm : forall C t a a', 
   C |- ([ (a, a')]) @ t ~aacc (([ (a', a)]) @ t) .
 Proof.
- intros. apply aacc_alpha_equiv_trans with 
- (t2 := ([ (a, a')]) @ t); auto. 
- apply alpha_equiv_swap_comm.
+ intros. apply aacc_alpha_equiv_trans. 
+ exists (([ (a, a')]) @ t). split~.
+ apply alpha_equiv_pi. intros b H11. false. apply H11. apply swap_comm.
 Qed.
 
 
@@ -627,6 +667,7 @@ Proof.
 Qed.
   
 
+
 (** Transitivity of aacc_equiv *)
 
 Lemma aacc_equiv_trans : forall C t1 t2 t3,
@@ -675,8 +716,8 @@ Proof.
  assert (Q' : C |- t ~aacc (([ (a, a')]) @ (([ (a', a'0)]) @ t'0))). 
   apply H with (t2 := (([ (a, a')]) @ t')) (m := term_size t); trivial. 
   simpl in H0. omega. apply aacc_equivariance; trivial.
- apply aacc_alpha_equiv_trans with 
- (t2 := (([ (a, a')]) @ (([ (a', a'0)]) @ t'0))); trivial. 
+ apply aacc_alpha_equiv_trans.
+ exists ((([ (a, a')]) @ (([ (a', a'0)]) @ t'0))); split~. 
  apply alpha_equiv_trans with 
  (t2 := ([ (([(a,a')]) $ a', ([(a,a')]) $ a'0)]) @ (([ (a, a')]) @ t'0)). 
  apply alpha_equiv_pi_comm. rewrite swap_right. rewrite swap_neither; trivial.
@@ -935,8 +976,9 @@ Proof.
  assert (Q0 : C |- t' ~aacc (([(a', a)]) @ t)).
   apply aacc_equiv_trans with (t2 := ([(a, a')]) @ t).
   apply aacc_equiv_trans with (t2 := ([(a, a')]) @ (([(a, a')]) @ t')).
-  apply aacc_alpha_equiv_trans with (t2 := t'). apply aacc_equiv_refl.
-  apply alpha_equiv_swap_inv_side. apply alpha_equiv_refl.
+  apply aacc_alpha_equiv_trans. exists t'. split~.
+  replace ([(a, a')]) with (!([(a, a')])).   
+  apply perm_inv_side. apply alpha_equiv_refl. simpl; trivial.
   apply aacc_equivariance; trivial.  apply aacc_equiv_swap_comm. 
  assert (Q1 : C |- a # (([(a', a)]) @ t)).
   apply aacc_equiv_fresh with (t1 := t'); trivial.
@@ -980,6 +1022,16 @@ Qed.
 (** Soundness of c_equiv *)
 
 Corollary c_equivalence : forall C, Equivalence (equiv ([2]) C).
+Proof.
+  intros. apply subset_equivalence with (S2:=0::1::[2]).
+  unfold subset. simpl; intros. omega.
+  unfold proper_equiv_Fc; intros. apply aacc_equiv_Fc; trivial.
+  apply aacc_equivalence.
+Qed.
+
+(** Soundness of acc_equiv *)
+
+Corollary acc_equivalence : forall C, Equivalence (equiv (1::[2]) C).
 Proof.
   intros. apply subset_equivalence with (S2:=0::1::[2]).
   unfold subset. simpl; intros. omega.

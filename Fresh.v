@@ -2,9 +2,9 @@
  ============================================================================
  Project     : Nominal A, AC and C Unification
  File        : Fresh.v
- Authors     : Washington Luís R. de Carvalho Segundo and
-               Mauricio Ayala Rincón 
-               Universidade de Brasília (UnB) - Brazil
+ Authors     : Washington Luis R. de Carvalho Segundo and
+               Mauricio Ayala Rincon 
+               Universidade de Brasilia (UnB) - Brazil
                Group of Theory of Computation
  
  Last Modified On: March 3, 2017.

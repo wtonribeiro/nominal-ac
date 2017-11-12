@@ -1,315 +1,34 @@
-(*
+(**
+%\begin{verbatim}
  ============================================================================
  Project     : Nominal A, AC and C Unification
  File        : Soundness.v
- Authors     : Washington Luís R. de Carvalho Segundo and
-               Mauricio Ayala Rincón 
-               Universidade de Brasília (UnB) - Brazil
+ Authors     : Washington Lu\'is R. de Carvalho Segundo and
+               Mauricio Ayala Rinc\'on 
+               Universidade de Bras\'ilia (UnB) - Brazil
                Group of Theory of Computation
  
- Last Modified On: April 1st, 2017.
+Description : A proof of the soundness of the C-unification algorithm is 
+	      presented in this part of the theory. Roughly speaking, it 
+	      was formalised that each solution of a generated successful 
+	      leaf is also a solution of the original problem.
+ 
+ Last Modified On: November 10th, 2017.
  ============================================================================
+\end{verbatim}%
 *)
 
 Require Export Termination.
 
-(** Characterisation of successful leaves *)   
-  
-
-Lemma NF_equ_sys : forall C S s t P,
-                     
-            Proper_Problem P ->
-            set_In (s ~? t) P ->
-            NF _ equ_sys (C, S, P) ->
-            
-            ((forall pi X, t <> pi|.X) /\
-              ((s = (<<>>) /\ t <> (<<>>)) \/
-              (exists a, s = (%a) /\ t <> (%a))  \/
-              (exists E, exists n, exists u, s = (Fc E n u) /\ forall v, t <> (Fc E n v)) \/
-              (exists a, exists u, s = [a]^u /\ forall b v, t <> [b]^v) \/
-              (exists u, exists v, s = (<|u,v|>) /\ forall u' v', t <> (<|u',v'|>))  \/
-              (exists pi, exists X, s = pi|.X /\ set_In X (term_vars t)))) \/
-            
-            ((forall pi X, s <> pi|.X) /\ (exists pi, exists X, t = pi|.X /\
-                                                                set_In X (term_vars s))) \/
-                                    
-            (fixpoint_equ (s ~? t)) .
-Proof.
-  intros. destruct s. destruct t.
-  false. apply (H1 (C,S,P\((<<>>) ~? (<<>>)))).
-  apply equ_sys_refl; trivial.
-  left~. split~; intros. discriminate. left~. split~. discriminate.
-  left~. split~; intros. discriminate. left~. split~. discriminate.  
-  left~. split~; intros. discriminate. left~. split~. discriminate.
-  left~. split~; intros. discriminate. left~. split~. discriminate.
-  false. gen_eq S' : (S © ([(v,(!p) @ (<<>>))])); intro H'.
-  apply (H1 (C,S',(P\((p|.v) ~? (<<>>)))\((<<>>) ~? (p|.v))|^^([(v,(!p) @ (<<>>))])\cup(C/?S'))).
-  apply equ_sys_inst; trivial.
-  simpl. intro; trivial. right~. 
-  destruct t.
-  left~. split~; intros. discriminate. right~. left~. exists a. split~. discriminate.
-  case (a ==at a0); intro H'. rewrite H' in H0. clear H'.
-  false. apply (H1 (C,S,P\((%a0) ~? (%a0)))).
-  apply equ_sys_refl; trivial. 
-  left~. split~; intros. discriminate.
-  right~. left~. exists a. split~.
-  intro H2. inverts H2. apply H'; trivial.
-  left~. split~; intros. discriminate. right~. left~. exists a. split~. discriminate.
-  left~. split~; intros. discriminate. right~. left~. exists a. split~. discriminate.
-  left~. split~; intros. discriminate. right~. left~. exists a. split~. discriminate.
-  false. gen_eq S' : (S © ([(v,(!p) @ (%a))])); intro H'.
-  apply (H1 (C,S',(P\((p|.v) ~? (%a)))\((%a) ~? (p|.v))|^^([(v,(!p) @ (%a))])\cup(C/?S'))).
-  apply equ_sys_inst; trivial.
-  simpl. intro; trivial. right~.
-  destruct t.
-  left~. split~; intros. discriminate.
-  right~. right~. right~. left~. exists a. exists s. split~; intros. discriminate.
-  left~. split~; intros. discriminate.
-  right~. right~. right~. left~. exists a. exists s. split~; intros. discriminate. 
-  false. case (a ==at a0); intro H'. rewrite H' in H0. clear H'.
-  apply (H1 (C,S,P|+(s ~? t)\(([a0]^s) ~? ([a0]^t)))).
-  apply equ_sys_Ab1; trivial. 
-  apply (H1 (C,S,((P|+(s~?([(a,a0)]@t))|+(a#?t)))\(([a]^s)~?([a0]^t)))).
-  apply equ_sys_Ab2; trivial. 
-  left~. split~; intros. discriminate.
-  right~. right~. right~. left~. exists a. exists s. split~; intros. discriminate.
-  left~. split~; intros. discriminate.
-  right~. right~. right~. left~. exists a. exists s. split~; intros. discriminate.  
-  case (set_In_dec Var_eqdec v (term_vars s)); intro H'.
-  right~. left~. split~; intros. discriminate. exists p. exists v. simpl. split~.
-  false. gen_eq S' : (S © ([(v,(!p) @ ([a]^s))])); intro H''.
-  apply (H1 (C,S',(P\((p|.v) ~? ([a]^s)))\(([a]^s) ~? (p|.v))|^^([(v,(!p) @ ([a]^s))])\cup(C/?S'))).
-  apply equ_sys_inst; trivial. right~.    
-  destruct t.
-  left~. split~; intros. discriminate.
-  right~. right~. right~. right~.  left~. exists s1. exists s2. split~; intros. discriminate.
-  left~. split~; intros. discriminate.
-  right~. right~. right~. right~. left~. exists s1. exists s2. split~; intros. discriminate.
-  left~. split~; intros. discriminate.
-  right~. right~. right~. right~. left~. exists s1. exists s2. split~; intros. discriminate.
-  false. apply (H1 (C,S,((P|+(s1~?t1)|+(s2~?t2)))\((<|s1,s2|>) ~? (<|t1,t2|>)))). 
-  apply equ_sys_Pr; trivial. 
-  left~. split~; intros. discriminate.
-  right~. right~. right~. right~. left~. exists s1. exists s2. split~; intros. discriminate.
-  right~. case (set_In_dec Var_eqdec v (term_vars (<|s1,s2|>))); intro H'.
-  left~. split~; intros. discriminate.
-  exists p. exists v. split~.
-  false. gen_eq S' : (S © ([(v,(!p) @ (<|s1,s2|>))])); intro H''.
-  apply (H1 (C,S',(P\((p|.v) ~? (<|s1,s2|>)))\((<|s1,s2|>) ~?
-                  (p|.v))|^^([(v,(!p) @ (<|s1,s2|>))])\cup(C/?S'))).
-  apply equ_sys_inst; trivial.
-  right~.
-  destruct t.  
-  left~. split~; intros. discriminate.
-  right~. right~. left~. exists n. exists n0. exists s. split~; intros. discriminate.
-  left~. split~; intros. discriminate.
-  right~. right~. left~. exists n. exists n0. exists s. split~; intros. discriminate.
-  left~. split~; intros. discriminate.
-  right~. right~. left~. exists n. exists n0. exists s. split~; intros. discriminate.
-  left~. split~; intros. discriminate.
-  right~. right~. left~. exists n. exists n0. exists s. split~; intros. discriminate.
-  case (eq_nat_dec n n1); intro H2. case (eq_nat_dec n0 n2); intro H3.
-  rewrite H2 in *|-*. rewrite H3 in *|-*.
-  clear H2 H3. case (eq_nat_dec n1 2); intro H2.
-  rewrite H2 in *|-*; clear H2.
-  assert (Q : is_Pr s /\ is_Pr t).
-   apply H in H0. destruct H0.
-   unfold Proper_term in H0.
-   unfold Proper_term in H2.
-   split~.
-   apply H0 with (n:=n2).
-   apply In_subterms.
-   apply H2 with (n:=n2).
-   apply In_subterms.
-   destruct Q.  
-  apply is_Pr_exists in H2.
-  apply is_Pr_exists in H3.
-  case H2; clear H2; intros s0 H2.
-  case H2; clear H2; intros s1 H2.
-  case H3; clear H3; intros t0 H3.
-  case H3; clear H3; intros t1 H3.
-  rewrite H2 in *|-*. rewrite H3 in *|-*. clear H2 H3.
-  false. apply (H1 (C,S,((P|+(s0 ~? t0))|+(s1 ~? t1))\
-                        ((Fc 2 n2 (<|s0,s1|>))~?(Fc 2 n2 (<|t0,t1|>))))).
-  apply equ_sys_C1; trivial.
-  false. apply (H1 (C,S,(P|+(s ~? t))\((Fc n1 n2 s)~?(Fc n1 n2 t)))).
-  apply equ_sys_Fc; trivial.
-  left~. split~; intros. discriminate.
-  right~. right~. left~. exists n. exists n0. exists s. split~.
-  intros v H4. inverts H4. apply H3; trivial.
-  left~. split~; intros. discriminate.
-  right~. right~. left~. exists n. exists n0. exists s. split~.
-  intros v H4. inverts H4. apply H2; trivial.
-  case (set_In_dec Var_eqdec v (term_vars s)); intro H'.
-  right~. left~. split~; intros. discriminate. exists p. exists v. simpl. split~.
-  false. gen_eq S' : (S © ([(v,(!p) @ (Fc n n0 s))])); intro H''.
-  apply (H1 (C,S',(P\((p|.v) ~? (Fc n n0 s)))\((Fc n n0 s) ~?
-            (p|.v))|^^([(v,(!p) @ (Fc n n0 s))])\cup(C/?S'))).
-  apply equ_sys_inst; trivial.
-  right~. 
-  case (set_In_dec Var_eqdec v (term_vars t)); intro H'.
-  destruct t; simpl in H'; try contradiction. 
-  left~. split~; intros. discriminate.
-  right~. right~. right~. right~. right~. 
-  exists p. exists v. simpl. split~.
-  left~. split~; intros. discriminate.
-  right~. right~. right~. right~. right~. 
-  exists p. exists v. simpl. split~.
-  left~. split~; intros. discriminate.
-  right~. right~. right~. right~. right~. 
-  exists p. exists v. simpl. split~.
-  destruct H'; try contradiction. rewrite H2 in *|-*. clear H2.
-  case (Perm_eqdec p p0); intro H2. rewrite H2 in *|-*.
-  false. apply (H1 (C,S,P\((p0|.v) ~? (p0|.v)))).
-  apply equ_sys_refl; trivial.   
-  case (Perm_eqdec p0 ([])); intro H3.
-  right~. right~. rewrite H3. unfold fixpoint_equ.
-  exists p. exists v. split~. rewrite <- H3; trivial.
-  false. apply (H1 (C,S,(P|+((p++(!p0))|.v~?([]|.v)))\((p|.v)~?(p0|.v)))).
-  apply equ_sys_inv; trivial.    
-  false. gen_eq S' : (S © ([(v,(!p) @ t)])); intro H''.
-  apply (H1 (C,S',(P\((p|.v) ~? t))\(t ~? (p|.v))|^^([(v,(!p) @ t)])\cup(C/?S'))).
-  apply equ_sys_inst; trivial.
-  left~. 
-Qed.
-
-
-Lemma NF_successful_equ: forall C S P s t,
-                           Proper_Problem P ->
-                           set_In (s ~? t) P -> 
-                           NF _ equ_sys (C, S, P) -> (exists Sl, sol_c Sl (C, S, P)) -> fixpoint_equ (s ~? t).  
-Proof.
-  intros. case H2; clear H2; intros Sl H2. unfold sol_c in H2.
-  destruct H2. destruct H3. destruct H4. simpl fst in *|-. simpl snd in *|-.
-  apply NF_equ_sys with (s:=s) (t:=t) in H1; trivial. destruct H1. destruct H1.
-  destruct H6. destruct H6.
-  assert (Q : fst Sl |- (<<>>) |^ snd Sl ~c (t |^ snd Sl)). 
-   rewrite <- H6. apply H4; trivial.
-  inverts Q. false. apply H7.
-  destruct t; simpl in H9; inverts H9; trivial. false.   
-  destruct H6. case H6; clear H6; intros a H6. destruct H6.   
-  assert (Q : fst Sl |- (%a) |^ snd Sl ~c (t |^ snd Sl)). 
-   rewrite <- H6. apply H4; trivial. 
-  inverts Q. false. apply H7.
-  destruct t; simpl in H11; inverts H11; trivial. false. 
-  destruct H6. case H6; clear H6; intros E H6.
-  case H6; clear H6; intros n H6.
-  case H6; clear H6; intros u H6. destruct H6.  
-  assert (Q : fst Sl |- (Fc E n u) |^ snd Sl ~c (t |^ snd Sl)). 
-   rewrite <- H6. apply H4; trivial. 
-  inverts Q. destruct t; simpl in H13; inverts H13; trivial.
-  false. false. simpl in H13. omega. simpl in H13. omega.
-  destruct t; simpl in H12; inverts H12. false. false.
-  destruct t; simpl in H12; inverts H12. false. false.  
-  destruct H6. 
-  case H6; clear H6; intros a H6.
-  case H6; clear H6; intros u H6. destruct H6.  
-  assert (Q : fst Sl |- ([a]^u) |^ snd Sl ~c (t |^ snd Sl)). 
-   rewrite <- H6. apply H4; trivial. 
-  inverts Q. destruct t; simpl in H12; inverts H12;
-   trivial. false. false. destruct t; inverts H10. false. false.
-  destruct H6.
-  case H6; clear H6; intros u H6.
-  case H6; clear H6; intros v H6. destruct H6.
-  assert (Q : fst Sl |- (<|u,v|>) |^ snd Sl ~c (t |^ snd Sl)). 
-   rewrite <- H6. apply H4; trivial. 
-  inverts Q. destruct t; simpl in H11; inverts H11;
-   trivial. false. false.
-  case H6; clear H6; intros pi H6.
-  case H6; clear H6; intros X H6. destruct H6.
-  assert (Q : fst Sl |- (pi|.X) |^ snd Sl ~c (t |^ snd Sl)). 
-   rewrite <- H6. apply H4; trivial.
-  assert (Q' : set_In X (term_vars ((!pi) @ t))).
-   rewrite perm_term_vars; trivial.
-  apply psubterms_subs with (S:=snd Sl) in Q'; trivial.
-  case Q'; clear Q'; intros pi' Q'.
-  replace (pi|.X) with (pi @ ([]|.X)) in Q;
-  autorewrite with perm; trivial. 
-  rewrite subst_perm_comm in Q.
-  apply c_equiv_pi_inv_side in Q.
-  apply c_equiv_perm_psubterm with (pi := pi') in Q.
-  rewrite <- 2 subst_perm_comm in Q.
-  autorewrite with perm in Q. simpl app in Q.
-  contradiction.
-  intros. intro H8. destruct t;
-    autorewrite with perm in H8; inverts H8. false.
-  destruct H1; trivial. destruct H1.
-  case H6; clear H6; intros pi H6.
-  case H6; clear H6; intros X H6. destruct H6.
-  assert (Q : fst Sl |- s |^ snd Sl ~c ((pi|.X) |^ snd Sl)). 
-   rewrite <- H6. apply H4; trivial.
-  assert (Q' : set_In X (term_vars ((!pi) @ s))).
-   rewrite perm_term_vars; trivial. apply c_equiv_sym in Q.
-  apply psubterms_subs with (S:=snd Sl) in Q'; trivial.
-  case Q'; clear Q'; intros pi' Q'.
-  replace (pi|.X) with (pi @ ([]|.X)) in Q;
-  autorewrite with perm; trivial. 
-  rewrite subst_perm_comm in Q.
-  apply c_equiv_pi_inv_side in Q.
-  apply c_equiv_perm_psubterm with (pi := pi') in Q.
-  rewrite <- 2 subst_perm_comm in Q.
-  autorewrite with perm in Q. simpl app in Q.
-  contradiction.
-  intros. intro H8. destruct s;
-    autorewrite with perm in H8; inverts H8. false.
-Qed.
-
-
-
-Lemma leaf_fresh_sys : forall a s C S P,
-                       set_In (a#?s) P -> leaf (C,S,P) -> fixpoint_Problem (equ_proj P) -> s = %a.
-Proof.
-  intros. unfold leaf in H0. unfold NF in H0.
-  destruct s; trivial.
-  false. apply (H0 (C, S, P\(a #? (<<>>)))).
-  apply fresh_unif_step; trivial. apply fresh_sys_Ut; trivial.
-  case (a ==at a0); intro H2. rewrite H2; trivial.
-  false. apply (H0 (C, S, P\(a #? (%a0)))).
-  apply fresh_unif_step; trivial. apply fresh_sys_At; trivial. 
-  case (a ==at a0); intro H2. rewrite H2 in *|-.
-  false. apply (H0 (C, S, P\(a0 #? ([a0]^s)))).
-  apply fresh_unif_step; trivial. apply fresh_sys_Ab_1; trivial. 
-  false. apply (H0 (C, S, (P|+(a#?s))\(a #? ([a0]^s)))).
-  apply fresh_unif_step; trivial. apply fresh_sys_Ab_2; trivial. 
-  false. apply (H0 (C,S,(((P|+(a#?s1))|+(a#?s2))\(a#?(<|s1,s2|>))))).
-  apply fresh_unif_step; trivial. apply fresh_sys_Pr; trivial.
-  false. apply (H0 (C, S, (P|+(a#?s))\(a #? (Fc n n0 s)))).
-  apply fresh_unif_step; trivial. apply fresh_sys_Fc; trivial.
-  false. apply (H0 (C|++((!p) $ a,v),S,(P\(a#?(p|.v))))).  
-  apply fresh_unif_step; trivial. apply fresh_sys_Su; trivial.
-Qed.
-
-  
-Lemma successful_leaves_ch : forall T,
-                               Proper_Problem (snd T) ->
-                               (leaf T /\ exists Sl, (sol_c Sl T)) ->
-                               (fixpoint_Problem (snd T)).
-Proof.
-  intros. destruct H0. destruct T. destruct p. simpl.
-  
-  assert (Q : fixpoint_Problem (equ_proj p0)).
-   apply set_In_fixpoint_eq_proj; intros.   
-   apply NF_successful_equ with (C:=c) (S:=s) (P:=p0); trivial.
-   unfold leaf in H0. unfold NF in *|-*.
-   intros T H3. apply (H0 T). apply equ_unif_step; trivial.
-
-  unfold fixpoint_Problem; intros. destruct u.
-
-  case H1; clear H1; intros Sl H1. unfold sol_c in H1.  
-  destruct H1. destruct H3.
-  apply leaf_fresh_sys with (a:=a) (s:=t) in H0; trivial.    
-  assert (Q': fst Sl |- a # ((%a) |^ snd Sl)).  
-   apply H3. simpl. rewrite <- H0. trivial.
-  simpl in Q'. inverts Q'. false.
-   
-  apply NF_successful_equ with (C:=c) (S:=s) (P:=p0); trivial.
-  unfold leaf in H0. unfold NF in *|-*.
-  intros T H3. apply (H0 T).   
-  apply equ_unif_step; trivial.
-Qed.    
-
-
-(** Towards soundness and completeness proofs *)
+(** %\section{ Soundness of the C-unification algorithm }% *)
+	
+	
+(** %\subsection{ Completeness of fresh\_sys }% *) 
+(**
+	Be a reduction by fresh_sys form T to T'. Sl is a solution
+	for T if and only if Sl a solution for T'. This is proved
+	by case analysis over fresh_sys T T'.
+*) 
 
 Lemma fresh_sys_compl : forall T T' Sl, fresh_sys T T' -> (sol_c Sl T  <-> sol_c Sl T') .
 Proof.
@@ -478,9 +197,15 @@ Proof.
     apply set_add_intro1. apply set_add_intro1; trivial.
     discriminate. 
 Qed.  
-    
 
-Lemma equ_sol_preserv : forall T T' Sl, valid_triplet T ->
+(** %\subsection{ Preservation of solutions by equ\_sys }% *) 
+(**
+	Be a reduction by equ_sys form T to T'. If Sl is a solution
+	for T', then Sl is also a solution for T. This is proved
+	by case analysis over equ_sys T T'.
+*)    
+
+Lemma equ_sol_preserv : forall T T' Sl, valid_triple T ->
                                         equ_sys T T' -> sol_c Sl T' -> sol_c Sl T .
 Proof.
   intros. destruct T. destruct T'. destruct p. destruct p1.
@@ -644,7 +369,7 @@ Proof.
   apply c_equiv_equivariance. replace (look_up X s1) with (([]|.X)|^s1).
   case H4; clear H4; intros s2 H4.
   apply c_equiv_unif_2 with (S1:=(s©([(X,(!pi) @ t)]))©s2); trivial.
-  unfold valid_triplet in H. simpl in H. destruct H.
+  unfold valid_triple in H. simpl in H. destruct H.
   rewrite 4 subst_comp_expand.
   rewrite 2 inter_dom_term_vars with (t:= (!pi)@t).
   rewrite not_In_dom. rewrite subst_var_eq.
@@ -678,7 +403,7 @@ Proof.
    simpl. apply set_union_intro1; trivial.
 
   case H4; clear H4; intros s2 H4.
-  unfold valid_triplet in H; simpl in H. destruct H.
+  unfold valid_triple in H; simpl in H. destruct H.
   
   case (Constraint_eqdec (s0~?t0) ((pi|.X)~?t)); intro H6. inverts H6.
 
@@ -819,38 +544,361 @@ Proof.
 Qed.
 
 
-Lemma c_unif_path_preserv : forall T T' Sl, valid_triplet T ->
-                                            unif_path T T' -> sol_c Sl T' -> sol_c Sl T.
+(** %\subsection{ Preservation of solutions by unif\_step }% *) 
+(**
+	Be a unifcation step form T to T'. If Sl is a solution
+	for T', then Sl is also a solution for T. This is proved
+	by case analysis over unif_step T T' and uses lemmas
+	fresh_sys_compl and equ_sol_preserv.
+*)
+
+Lemma unif_step_preserv : forall T T' Sl,
+                          valid_triple T ->
+                          unif_step T T' -> sol_c Sl T' -> sol_c Sl T.
+Proof.
+ intros. destruct H0.
+ apply equ_sol_preserv with (T':= T'); trivial.
+ apply fresh_sys_compl with (Sl:=Sl) in H2. apply H2; trivial.
+Qed.
+
+ 
+(** %\subsection{ Soundness of the C-unification algorithm }% *)  
+(** 
+	Be a unifcation path form T to T'. If Sl is a solution
+	for T', then Sl is also a solution for T. This is proved
+	by case analysis over unif_path T T' and uses lemma
+	unif_step_preserv.
+*)
+ 
+Theorem c_unif_path_soundness : forall T T' Sl,
+                              valid_triple T ->
+                              unif_path T T' -> sol_c Sl T' -> sol_c Sl T.
 Proof.
   intros. destruct H0.
-  induction H0; trivial. destruct H0.
-  apply equ_sol_preserv with (T':= T'); trivial.
-  apply fresh_sys_compl with (Sl:=Sl) in H3.
-  apply H3; trivial. destruct H0.
-  apply equ_sol_preserv with (T':= T'); trivial. 
+  induction H0; trivial.
+  apply unif_step_preserv with (Sl := Sl) in H0; trivial.
+  apply unif_step_preserv with (Sl := Sl) in H0; trivial.
   apply IHtr_clos; trivial.
-  apply equ_valid_preservation with (T:= T); trivial.
-  generalize H4; intro H4'.
-  apply fresh_sys_compl with (Sl:=Sl) in H4.
-  apply H4. apply IHtr_clos; trivial. 
-  apply fresh_valid_preservation with (T:= T); trivial.
+  apply unif_step_valid_preserv with (T:= s); trivial.
 Qed.
 
 
-Theorem c_unif_soundness : forall T T' Sl,
-                             Proper_Problem (snd T) ->
-                             valid_triplet T ->
-                             unif_path T T' -> sol_c Sl T' ->
-                             (sol_c Sl T /\ fixpoint_Problem (snd T')).
+
+
+(** %\section{ Characterisation of successful leaves }% *)   
+(**
+	The characterisation of successful leaves is 
+	the subject of this part of the theory.
+
+*)
+
+(** % \subsection{ Freshness constraints in a leaf } % *)
+(**
+	Be a leaf T = (C, S, P). If [a#?s] is in P and the 
+	equational part of P is a fixpoint problem, then 
+	the term s must be equal to [a]. This statement 
+	is proved by case analysis over [s].
+*)
+
+Lemma leaf_fresh_sys : forall a s C S P,
+                         set_In (a#?s) P ->
+                         leaf (C,S,P) ->
+                         fixpoint_Problem (equ_proj P) ->
+                         s = %a.
 Proof.
-  intros. split~.
-  apply c_unif_path_preserv with (T':= T'); trivial.
-  apply successful_leaves_ch.
-  apply unif_path_Proper_Problem with (T:=T); trivial.
-  split~.
-  destruct H1; trivial.
-  exists Sl; trivial.
+  intros. unfold leaf in H0. unfold NF in H0.
+  destruct s; trivial.
+  false. apply (H0 (C, S, P\(a #? (<<>>)))).
+  apply fresh_unif_step; trivial. apply fresh_sys_Ut; trivial.
+  case (a ==at a0); intro H2. rewrite H2; trivial.
+  false. apply (H0 (C, S, P\(a #? (%a0)))).
+  apply fresh_unif_step; trivial. apply fresh_sys_At; trivial. 
+  case (a ==at a0); intro H2. rewrite H2 in *|-.
+  false. apply (H0 (C, S, P\(a0 #? ([a0]^s)))).
+  apply fresh_unif_step; trivial. apply fresh_sys_Ab_1; trivial. 
+  false. apply (H0 (C, S, (P|+(a#?s))\(a #? ([a0]^s)))).
+  apply fresh_unif_step; trivial. apply fresh_sys_Ab_2; trivial. 
+  false. apply (H0 (C,S,(((P|+(a#?s1))|+(a#?s2))\(a#?(<|s1,s2|>))))).
+  apply fresh_unif_step; trivial. apply fresh_sys_Pr; trivial.
+  false. apply (H0 (C, S, (P|+(a#?s))\(a #? (Fc n n0 s)))).
+  apply fresh_unif_step; trivial. apply fresh_sys_Fc; trivial.
+  false. apply (H0 (C|++((!p) $ a,v),S,(P\(a#?(p|.v))))).  
+  apply fresh_unif_step; trivial. apply fresh_sys_Su; trivial.
 Qed.
 
 
+(** % \subsection{ Characterisation of equations that are in normal forms of equ\_sys } % *)
+(**
+	Be T = (C, S, P) a normal form regarding equ_sys. If s ~? t is in P then 
+	it must match with one of the following showed cases. This is proved by case analysis
+	over s and t. 
+	
+	Notice that the predicate Proper_Problem P synthesises
+	the following property: for each equation s ~? t in P, if s or t 
+	has as a subterm (Fc C n s0), with C commutative, then s0
+	must be a pair. This restriction was added to insure that
+	commutative function symbols are only applied to pairs.
+*)  
 
+Lemma NF_equ_sys : forall C S P,
+                     
+           Proper_Problem P ->
+
+           NF _ equ_sys (C, S, P) ->
+
+            (forall s t, set_In (s ~? t) P ->
+                        
+            ((forall pi X, t <> pi|.X) /\
+              ((s = (<<>>) /\ t <> (<<>>)) \/
+              (exists a, s = (%a) /\ t <> (%a))  \/
+              (exists E, exists n, exists u, s = (Fc E n u) /\ forall v, t <> (Fc E n v)) \/
+              (exists a, exists u, s = [a]^u /\ forall b v, t <> [b]^v) \/
+              (exists u, exists v, s = (<|u,v|>) /\ forall u' v', t <> (<|u',v'|>))  \/
+              (exists pi, exists X, s = pi|.X /\ set_In X (term_vars t)))) \/
+            
+            ((forall pi X, s <> pi|.X) /\ (exists pi, exists X, t = pi|.X /\
+                                                set_In X (term_vars s)))
+                                                                                 \/                   
+            (fixpoint_equ (s ~? t)) ).
+Proof.
+  intros.
+
+  case (term_eqdec s t); intro H2.
+  (* s = t *)
+   rewrite H2 in *|-*; clear H2. 
+   false. apply (H0 (C, S, P\(t~?t))). apply equ_sys_refl; trivial.                             
+  (* s <> t *)
+   case (Su_eqdec s); case (Su_eqdec t); intros H3 H4.
+   (* s and t are both suspensions *)  
+    case H3; clear H3; intros pi' H3. case H3; clear H3; intros Y H3.
+    case H4; clear H4; intros pi H4. case H4; clear H4; intros X H4.
+    rewrite H3 in *|-*. rewrite H4 in *|-*. clear H3 H4.
+    case (Y ==v X); intro H3. 
+     (* the variables of the two suspesions are equal *)
+      rewrite H3 in *|-*. clear H3.
+      case (Perm_eqdec pi' ([])); intro H3.
+      (* pi' = [] *) 
+       rewrite H3 in *|-*. clear H3. 
+       right~. right~. unfold fixpoint_equ. exists pi X.
+       split~. intro H3. rewrite H3 in H2. false. 
+      (* pi' <> [] *)
+       false. apply (H0 (C,S,(P|+((pi++(!pi'))|.X~?([]|.X)))\((pi|.X)~?(pi'|.X)))).
+       apply equ_sys_inv; trivial. intro H4. rewrite H4 in H2. false.    
+     (* the variables of the two suspesions are different *) 
+       false. apply (H0 (C,S©([(X,(!pi)@(pi'|.Y))]),
+                        ((P\(pi|.X~?(pi'|.Y))\((pi'|.Y)~?(pi|.X)))|^^([(X,(!pi)@(pi'|.Y))]))
+                          \cup(C/?(S©([(X,(!pi)@(pi'|.Y))]))))).
+       apply equ_sys_inst; trivial. simpl. intro H4. destruct H4; contradiction. left~.
+   (* only s is a suspension *)
+    case H4; clear H4; intros pi H4.    
+    case H4; clear H4; intros X H4. rewrite H4 in *|-*. clear H4.
+    case (set_In_dec Var_eqdec X (term_vars t)); intro H4.
+    (* X is in (term_vars t) *)
+     left~. split~. right~. right~. right~. right~. right~.
+     exists pi X. split~.
+    (* X is not in (term_vars t) *) 
+     false. apply (H0 (C,S©([(X,(!pi)@t)]),
+                        ((P\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)]))
+                          \cup(C/?(S©([(X,(!pi)@t)]))))).
+     apply equ_sys_inst; trivial. left~.
+   (* only t is a suspension *)  
+    case H3; clear H3; intros pi H3.    
+    case H3; clear H3; intros X H3. rewrite H3 in *|-*. clear H3.
+    case (set_In_dec Var_eqdec X (term_vars s)); intro H5.
+    (* X is in (term_vars s) *)
+     right~. left~. split~. exists pi X. split~.
+    (* X is not in (term_vars s) *) 
+     false. apply (H0 (C,S©([(X,(!pi)@s)]),
+                        ((P\(pi|.X~?s)\(s~?(pi|.X)))|^^([(X,(!pi)@s)]))
+                          \cup(C/?(S©([(X,(!pi)@s)]))))).
+     apply equ_sys_inst; trivial. right~.
+
+  (* both s and t are not suspensions *)
+   left~. split~. destruct s.
+   (* s = <<>> *)
+    left~.
+   (* s = %a *)
+    right~. left~. exists a. split~.
+   (* s = [a]^s0 *)
+    right~. right~. right~. left~. 
+    exists a. exists s. split~; intros.
+    intro H5. rewrite H5 in *|-*; clear H5.
+    case (a ==at b); intro H5. rewrite H5 in H1.
+    apply (H0 (C,S,P|+(s~?v)\(([b]^s)~?([b]^v)))).
+    apply equ_sys_Ab1; trivial. 
+    apply (H0 (C,S,((P|+(s~?([(a,b)]@v))|+(a#?v)))\(([a]^s)~?([b]^v)))).
+    apply equ_sys_Ab2; trivial. 
+   (* s = <|s1, s2|> *)
+    right~. right~. right~. right~. left~.
+    exists s1 s2. split~; intros. intro H5.
+    rewrite H5 in *|-*.
+    apply (H0 (C,S,((P|+(s1~?u'))|+(s2~?v'))\(<|s1, s2|>~?<|u', v'|>))).
+    apply equ_sys_Pr; trivial.
+   (* s = Fc n n0 s0 *) 
+    right~. right~. left~. exists n n0 s. split~; intros.
+    intro H5. rewrite H5 in *|-*. clear H5.
+    case (eq_nat_dec n 2); intro H5. rewrite H5 in *|-*; clear H5.
+    assert (Q : is_Pr s /\ is_Pr v).
+     apply H in H1. destruct H1.
+     unfold Proper_term in H1.
+     unfold Proper_term in H5. split~.
+     apply H1 with (n:=n0). apply In_subterms.
+     apply H5 with (n:=n0). apply In_subterms.
+    destruct Q. apply is_Pr_exists in H5. apply is_Pr_exists in H6.
+    case H5; clear H5; intros s0 H5. case H5; clear H5; intros s1 H5.
+    case H6; clear H6; intros t0 H6. case H6; clear H6; intros t1 H6.
+    rewrite H5 in *|-. rewrite H6 in *|-*. clear H5 H6.
+    apply (H0 (C,S,((P|+(s0~?t0))|+(s1~?t1))\(Fc 2 n0 (<|s0,s1|>)~?(Fc 2 n0 (<|t0,t1|>))))).
+    apply equ_sys_C1; trivial.
+    apply (H0 (C,S,(P|+(s~?v))\(Fc n n0 s ~?(Fc n n0 v)))).
+    apply equ_sys_Fc; trivial.
+
+   false. 
+ 
+Qed.
+
+
+(** % \subsection{ Equations in a sucessful leaf by equ\_sys } % *)
+(**
+	Be T = (C, S, P) a normal form of equ_sys. If s ~? t is in P and 
+	T has solutions, then s ~? t must be a fixpoint equation. 
+	A proof of this lemma is obtained by case analysis over the feasible
+	normal forms of equ_sys, and it uses Lemma NF_equ_sys.
+*)
+
+Lemma NF_successful_equ: forall C S P s t,
+                         Proper_Problem P ->
+                         set_In (s ~? t) P -> 
+                         NF _ equ_sys (C, S, P) ->
+                         (exists Sl, sol_c Sl (C, S, P)) ->
+                         fixpoint_equ (s ~? t).  
+Proof.
+  intros. case H2; clear H2; intros Sl H2. unfold sol_c in H2.
+  destruct H2. destruct H3. destruct H4. simpl fst in *|-. simpl snd in *|-.
+  apply NF_equ_sys with (s:=s) (t:=t) in H1; trivial. destruct H1. destruct H1.
+  destruct H6. destruct H6.
+  assert (Q : fst Sl |- (<<>>) |^ snd Sl ~c (t |^ snd Sl)). 
+   rewrite <- H6. apply H4; trivial.
+  inverts Q. false. apply H7.
+  destruct t; simpl in H9; inverts H9; trivial. false.   
+  destruct H6. case H6; clear H6; intros a H6. destruct H6.   
+  assert (Q : fst Sl |- (%a) |^ snd Sl ~c (t |^ snd Sl)). 
+   rewrite <- H6. apply H4; trivial. 
+  inverts Q. false. apply H7.
+  destruct t; simpl in H11; inverts H11; trivial. false. 
+  destruct H6. case H6; clear H6; intros E H6.
+  case H6; clear H6; intros n H6.
+  case H6; clear H6; intros u H6. destruct H6.  
+  assert (Q : fst Sl |- (Fc E n u) |^ snd Sl ~c (t |^ snd Sl)). 
+   rewrite <- H6. apply H4; trivial. 
+  inverts Q. destruct t; simpl in H13; inverts H13; trivial.
+  false. false. simpl in H13. omega. simpl in H13. omega.
+  destruct t; simpl in H12; inverts H12. false. false.
+  destruct t; simpl in H12; inverts H12. false. false.  
+  destruct H6. 
+  case H6; clear H6; intros a H6.
+  case H6; clear H6; intros u H6. destruct H6.  
+  assert (Q : fst Sl |- ([a]^u) |^ snd Sl ~c (t |^ snd Sl)). 
+   rewrite <- H6. apply H4; trivial. 
+  inverts Q. destruct t; simpl in H12; inverts H12;
+   trivial. false. false. destruct t; inverts H10. false. false.
+  destruct H6.
+  case H6; clear H6; intros u H6.
+  case H6; clear H6; intros v H6. destruct H6.
+  assert (Q : fst Sl |- (<|u,v|>) |^ snd Sl ~c (t |^ snd Sl)). 
+   rewrite <- H6. apply H4; trivial. 
+  inverts Q. destruct t; simpl in H11; inverts H11;
+   trivial. false. false.
+  case H6; clear H6; intros pi H6.
+  case H6; clear H6; intros X H6. destruct H6.
+  assert (Q : fst Sl |- (pi|.X) |^ snd Sl ~c (t |^ snd Sl)). 
+   rewrite <- H6. apply H4; trivial.
+  assert (Q' : set_In X (term_vars ((!pi) @ t))).
+   rewrite perm_term_vars; trivial.
+  apply psubterms_subs with (S:=snd Sl) in Q'; trivial.
+  case Q'; clear Q'; intros pi' Q'.
+  replace (pi|.X) with (pi @ ([]|.X)) in Q;
+  autorewrite with perm; trivial. 
+  rewrite subst_perm_comm in Q.
+  apply c_equiv_pi_inv_side in Q.
+  apply c_equiv_perm_psubterm with (pi := pi') in Q.
+  rewrite <- 2 subst_perm_comm in Q.
+  autorewrite with perm in Q. simpl app in Q.
+  contradiction.
+  intros. intro H8. destruct t;
+    autorewrite with perm in H8; inverts H8. false.
+  destruct H1; trivial. destruct H1.
+  case H6; clear H6; intros pi H6.
+  case H6; clear H6; intros X H6. destruct H6.
+  assert (Q : fst Sl |- s |^ snd Sl ~c ((pi|.X) |^ snd Sl)). 
+   rewrite <- H6. apply H4; trivial.
+  assert (Q' : set_In X (term_vars ((!pi) @ s))).
+   rewrite perm_term_vars; trivial. apply c_equiv_sym in Q.
+  apply psubterms_subs with (S:=snd Sl) in Q'; trivial.
+  case Q'; clear Q'; intros pi' Q'.
+  replace (pi|.X) with (pi @ ([]|.X)) in Q;
+  autorewrite with perm; trivial. 
+  rewrite subst_perm_comm in Q.
+  apply c_equiv_pi_inv_side in Q.
+  apply c_equiv_perm_psubterm with (pi := pi') in Q.
+  rewrite <- 2 subst_perm_comm in Q.
+  autorewrite with perm in Q. simpl app in Q.
+  contradiction.
+  intros. intro H8. destruct s;
+    autorewrite with perm in H8; inverts H8. false.
+Qed.
+
+
+(** % \subsection{ Characterisation of successful leaves } % *)
+(**
+		A successful leaf T = (C, S, P) must be a fixpoint problem. This
+		is proved by case analysis over P, and 
+		uses lemmas NF_successful_equ and leaf_fresh_sys.
+*)
+  
+Lemma successful_leaves_ch : forall T,
+                               Proper_Problem (snd T) ->
+                               (leaf T /\ exists Sl, (sol_c Sl T)) ->
+                               (fixpoint_Problem (snd T)).
+Proof.
+  intros. destruct H0. destruct T. destruct p. simpl.
+  
+  assert (Q : fixpoint_Problem (equ_proj p0)).
+   apply set_In_fixpoint_eq_proj; intros.   
+   apply NF_successful_equ with (C:=c) (S:=s) (P:=p0); trivial.
+   unfold leaf in H0. unfold NF in *|-*.
+   intros T H3. apply (H0 T). apply equ_unif_step; trivial.
+
+  unfold fixpoint_Problem; intros. destruct u.
+
+  case H1; clear H1; intros Sl H1. unfold sol_c in H1.  
+  destruct H1. destruct H3.
+  apply leaf_fresh_sys with (a:=a) (s:=t) in H0; trivial.    
+  assert (Q': fst Sl |- a # ((%a) |^ snd Sl)).  
+   apply H3. simpl. rewrite <- H0. trivial.
+  simpl in Q'. inverts Q'. false.
+   
+  apply NF_successful_equ with (C:=c) (S:=s) (P:=p0); trivial.
+  unfold leaf in H0. unfold NF in *|-*.
+  intros T H3. apply (H0 T).   
+  apply equ_unif_step; trivial.
+Qed.    
+
+
+(** % \subsection{ Generated successful leaves } % *)
+(** 
+	Be a unification path from T to T'. If T' = (C', S', P') is
+	a successful leaf, then P' is a fixpoint problem. This is 
+	a corollary of the Lemma successful_leaves_ch.
+*)	
+
+Corollary gen_successfull_leaves : forall T T',                              
+                                   Proper_Problem (snd T)  ->
+                                   unif_path T T' ->  
+                                   (exists Sl, sol_c Sl T') ->   
+                                   fixpoint_Problem (snd T').
+Proof.
+  intros. apply successful_leaves_ch.
+  apply unif_path_Proper_Problem with (T:=T); trivial.
+  destruct H0. split~.
+Qed.

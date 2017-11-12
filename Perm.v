@@ -275,3 +275,21 @@ Proof.
 Qed.
 
 Hint Rewrite perm_term_size : perm.
+
+
+(** Invariance *)
+
+Lemma perm_term_invariance : forall pi s t, s = t <-> pi @ s = pi @ t .
+Proof.
+  intros. split~; intro H. rewrite H; trivial.
+  gen t. induction s; intros t H; destruct t;
+   autorewrite with perm in *|-*; trivial; try inverts H.
+  apply perm_eq_atom in H1. rewrite H1; trivial.
+  apply perm_eq_atom in H1. rewrite H1.
+  apply IHs in H2. rewrite H2; trivial.
+  apply IHs1 in H1. apply  IHs2 in H2.
+  rewrite H1. rewrite H2. trivial.
+  apply IHs in H3. rewrite H3. trivial.
+  apply app_inv_tail in H1.
+  rewrite H1. trivial.
+Qed.  

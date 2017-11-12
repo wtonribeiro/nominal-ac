@@ -241,8 +241,17 @@ Proof. intros; omega. Qed.
     case (Aeq_dec b a0); intros;
      try contradiction.
     simpl in H. destruct H. left~. right~.
- Qed.
-    
+  Qed.
+
+ Lemma set_In_nil : forall (l : list A), l = [] <-> (forall a, ~ set_In a l).  
+ Proof.
+   intros. split~; intros.
+   rewrite H. intro H'. simpl in H'. trivial.
+   induction l; trivial.
+   false. apply (H a). simpl.
+   left~.
+ Qed.   
+   
  Lemma set_inter_nil : forall (l l' : list A),
        set_inter Aeq_dec l l' = [] <-> (forall a, ~ set_In a (set_inter Aeq_dec l l')).
  Proof.  

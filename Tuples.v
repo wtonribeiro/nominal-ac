@@ -14,13 +14,13 @@
 Require Import Perm.
 
 
-(** Computes the lenght of a tuple regarding the nth E function symbol *)
+(** Computes the length of a tuple regarding the nth E function symbol *)
 
 Fixpoint TPlength (t: term) (E n: nat) : nat :=
 match t with 
- | (<|t1,t2|>)  => (TPlength t1 E n) + (TPlength t2 E n) 
- | (Fc E0 n0 t1)  => if (E,n) ==np (E0,n0) then
-                        (TPlength t1 E n)
+ | (<|t1,t2|>)    => (TPlength t1 E n) + (TPlength t2 E n) 
+ | (Fc E0 n0 t1)  => if (E,n) ==np (E0,n0)
+                     then (TPlength t1 E n)
                      else 1
  | _ => 1  
 end.
@@ -28,42 +28,83 @@ end.
 (** Computes the ith argument from the tuple t, argument of the nth E function symbol *)
 
 Fixpoint TPith (i: nat) (t: term) (E n: nat) : term :=
-  match t with 
+match t with 
+ | (<|t1,t2|>)   => let l1 := TPlength t1 E n in 
+                      if le_dec i l1
+                      then TPith i t1 E n
+                      else TPith (i-l1) t2 E n   
 
-    | (<|t1,t2|>) =>  let l1 :=  (TPlength t1 E n) in 
-                        if (le_dec i l1) then
-                           (TPith i t1 E n)
-                        else (TPith (i-l1) t2 E n)   
-
-   | (Fc E0 n0 t0) => if (E,n) ==np (E0,n0) then
-                         (TPith i t0 E n) 
-                      else t
+ | (Fc E0 n0 t0) => if (E,n) ==np (E0,n0)
+                    then TPith i t0 E n
+                    else t
                              
-   | _  => t
-          
-  end.
+ | _             => t
+end.
 
 (** Eliminates the ith argument in the tuple t, argument of the nth E function symbol *)
 
 Fixpoint TPithdel (i: nat) (t: term) (E n: nat) : term :=
-  match t with 
+match t with
+ | (<|t1,t2|>) => let l1 := (TPlength t1 E n) in 
+                  let l2 := (TPlength t2 E n) in 
+                    if (le_dec i l1)
+                    then 
+                      if eq_nat_dec l1 1
+                      then t2 
+                      else <|(TPithdel i t1 E n),t2|>
+                    else
+                      let ii := i-l1 in   
+                        if eq_nat_dec l2 1
+                        then t1
+                        else <|t1,(TPithdel ii t2 E n)|> 
 
-   | (<|t1,t2|>) => let l1 := (TPlength t1 E n) in 
-                      let l2 := (TPlength t2 E n) in 
-                        if (le_dec i l1) then 
-                         (if (eq_nat_dec l1 1) then t2 
-                         else (<|(TPithdel i t1 E n),t2|>))
-                        else
-                        let ii := i-l1 in   
-                         (if (eq_nat_dec l2 1) then t1
-                          else (<|t1,(TPithdel ii t2 E n)|>)) 
+ | (Fc E0 n0 t0) => if eq_nat_dec (TPlength (Fc E0 n0 t) E n) 1
+                    then <<>>
+                    else Fc E0 n0 (TPithdel i t0 E n)                          
+                               
+ | _ => <<>>
+end.
 
-   | (Fc E0 n0 t0) =>   if eq_nat_dec (TPlength (Fc E0 n0 t) E n) 1 then (<<>>)
-                        else (Fc E0 n0 (TPithdel i t0 E n))
-                               
-                               
-   | _ => (<<>>)
-end. 
+
+(** Generates a sequence of arguments of a given funcion symbol starting in the first 
+ up to ith argument *)
+
+Fixpoint Args_seq (i : nat) (t : term) (E n: nat) : term :=
+  match i with
+
+    | 0 => <<>>
+
+    | 1 => TPith 1 t E n
+
+    | S i0 => <| Args_seq i0 t E n, TPith (S i0) t E n |>
+
+  end.
+
+
+
+(** Generates a colection of arguments of a given funcion symbol regarding a given 
+list of indices *)
+
+Fixpoint Args_col (L : list nat) (t : term) (E n: nat) : term :=
+  match L with
+
+    | nil => <<>>
+
+    | [n0] => TPith n0 t E n
+
+    | n0::L0 => <| TPith n0 t E n , Args_col L0 t E n |>
+
+  end.
+
+
+(** Valid sequences and colections *)
+
+
+Definition valid_seq (i : nat) (t : term) (E n: nat) := i <= TPlength t E n.
+
+Definition valid_col (L : list nat) (t : term) (E n: nat) :=
+  NoDup L /\ (forall i, In i L -> (i > 0 /\ i <= TPlength t E n)).
+  
 
 
 (** Replaces all superscripts m in S0 by m0 *) 
@@ -574,6 +615,42 @@ Proof.
 Qed.
 
 Hint Resolve term_size_TPithdel.
+
+Lemma term_size_TPithdel' : forall i t E n, term_size (TPithdel i t E n) <= term_size t.
+Proof.
+  intros. case (eq_nat_dec (TPlength t E n) 1); intro H.
+  rewrite TPithdel_TPlength_1; trivial. simpl.
+  assert (Q : term_size t > 0). auto. omega.
+  assert (Q : term_size (TPithdel i t E n) < term_size t).
+   apply term_size_TPithdel; trivial. 
+  omega.
+Qed. 
+
+Hint Resolve term_size_TPithdel'.
+
+Lemma term_size_TPith_TPithdel : forall i t E n,
+ TPlength t E n <> 1 ->
+ term_size (TPith i t E n) + term_size (TPithdel i t E n) <= term_size t.
+Proof.
+  intros. gen i. induction t; intro; simpl in H.
+  false. false. false. 
+  case (le_dec i (TPlength t1 E n)); intro H0.
+  rewrite TPith_Pr_le; trivial.
+  assert (Q0 : term_size (TPith i t1 E n) <= term_size t1). auto. 
+  case (eq_nat_dec (TPlength t1 E n) 1); intro H1. 
+  rewrite TPithdel_t1_Pr; trivial. simpl. omega.
+  rewrite TPithdel_Pr_le; trivial; simpl; trivial.
+  apply IHt1 with (i:=i) in H1. omega.
+  rewrite TPith_Pr_gt; try omega.
+  assert (Q0 : term_size (TPith (i - TPlength t1 E n) t2 E n) <= term_size t2). auto.  
+  case (eq_nat_dec (TPlength t2 E n) 1); intro H1.
+  rewrite TPithdel_t2_Pr; try omega. simpl; omega.
+  rewrite TPithdel_Pr_gt; try omega; simpl. 
+  apply IHt2 with (i := i - TPlength t1 E n) in H1. omega.
+  gen H. case ((E, n) ==np (n0, n1)); intros. inverts e.
+  rewrite TPith_Fc_eq. rewrite TPithdel_Fc_eq; trivial. simpl.
+  apply IHt with (i:=i) in H. omega. false. false.
+Qed.
 
 
 (** About rpl_super, set_super, TPlength, TPith and TPithdel *)

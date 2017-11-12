@@ -1,23 +1,28 @@
-(*
+(** %\begin{verbatim}
  ============================================================================
  Project     : Nominal A, AC and C Unification
  File        : Equiv.v
- Authors     : Washington Luís R. de Carvalho Segundo and
-               Mauricio Ayala Rincón 
-               Universidade de Brasília (UnB) - Brazil
+ Authors     : Washington Lu\'is R. de Carvalho Segundo and
+               Mauricio Ayala R\'incon 
+               Universidade de Bras\'ilia (UnB) - Brazil
                Group of Theory of Computation
  
- Last Modified On: December 5, 2016.
+ Last Modified On: November 12, 2016.
 
- This is a guideline how to deal with A, C and AC equivalence
- starting from the notion of alpha-equivalence for purely.  
- The idea is we have already defined a notion of alpha-
- equivalence for nominal terms without A, C or AC function symbols. Now,
- the signature is extended allowing these objects.  
+ Description : This is a guideline how to deal with A, C and AC equivalence
+               starting from the notion of alpha-equivalence for purely.  
+               The idea is we have already defined a notion of alpha-
+               equivalence for nominal terms without A, C or AC function symbols. Now,
+               the signature is extended allowing these objects.  
  ============================================================================
+\end{verbatim}%
 *)
 
 Require Export Tuples Alpha_Equiv Morphisms.
+
+
+(** %\section{Inductive definition of equiv which encompasses, an parametric way,
+              the definitions of alpha, a, ac and c equivalences}% *)
 
 Inductive equiv (S : set nat): Context -> term -> term -> Prop :=
 
@@ -33,9 +38,11 @@ Inductive equiv (S : set nat): Context -> term -> term -> Prop :=
                                     (equiv S C t t') -> 
                               equiv S C (Fc E n t) (Fc E n t')
 
+(** Checks only for alpha-equivalence *)  
+                                    
  | equiv_Ab_1 : forall C a t t', (equiv S C t t') -> 
                                equiv S C ([a]^t) ([a]^t')
-
+                                     
  | equiv_Ab_2 : forall C a a' t t', 
                 a <> a' -> (equiv S C t ([(a,a')] @ t')) -> C |- a # t' -> 
                                     equiv S C ([a]^t) ([a']^t')
@@ -45,7 +52,7 @@ Inductive equiv (S : set nat): Context -> term -> term -> Prop :=
                equiv S C (p|.X) (p'|.X)
 
 
-(** Checks only for Associative-alpha equivalence *)  
+(** Checks only for A-alpha-equivalence *)  
 
  | equiv_A : set_In 0 S -> 
              forall n t t' C, 
@@ -53,7 +60,7 @@ Inductive equiv (S : set nat): Context -> term -> term -> Prop :=
              (equiv S C (TPithdel 1 (Fc 0 n t) 0 n) (TPithdel 1 (Fc 0 n t') 0 n)) ->
              (equiv S C (Fc 0 n t) (Fc 0 n t'))
 
-(** Checks only for AC-alpha equivalence *)
+(** Checks only for AC-alpha-equivalence *)
 
  | equiv_AC   : set_In 1 S -> 
                 forall n t t' i C,
@@ -61,7 +68,7 @@ Inductive equiv (S : set nat): Context -> term -> term -> Prop :=
                 (equiv S C (TPithdel 1 (Fc 1 n t) 1 n) (TPithdel i (Fc 1 n t') 1 n)) ->
                 (equiv S C (Fc 1 n t) (Fc 1 n t'))  
 
-(** Checks only for commutative alpha equivalence *)
+(** Checks only for C-alpha-equivalence *)
 
  | equiv_C1 : set_In 2 S ->
               forall n s0 s1 t0 t1 C,
@@ -76,13 +83,17 @@ Inductive equiv (S : set nat): Context -> term -> term -> Prop :=
 
 Hint Constructors equiv.
 
+(** %\subsection{Notations for the different equivalences}% *)
+
+
 Notation "C |- t ~e t'" := (equiv ([]) C t t') (at level 67).
 Notation "C |- t ~a t'" := (equiv ([0]) C t t') (at level 67). 
 Notation "C |- t ~ac t'" := (equiv ([1]) C t t') (at level 67).
 Notation "C |- t ~c t'" := (equiv ([2]) C t t') (at level 67).
+Notation "C |- t ~acc t'" := (equiv (1::[2]) C t t') (at level 67).
 Notation "C |- t ~aacc t'" := (equiv (0 :: 1 :: ([2])) C t t') (at level 67). 
 
-(** alpha_equiv is equivalent equiv ([]) *)
+(** %\subsection{alpha\_equiv is equivalent equiv ([])}% *)
 
 Lemma alpha_equiv_eq_equiv : forall C t t',
  C |- t ~alpha t' <-> C |- t ~e t'.
@@ -92,6 +103,9 @@ Proof.
 Qed.
 
 Hint Resolve alpha_equiv_eq_equiv.
+
+
+(** %\subsection{Some basic properties about alpha\_equiv}% *)
 
 Lemma alpha_equiv_TPlength : forall C t1 t2 E n, 
  C |- t1 ~alpha t2 -> TPlength t1 E n = TPlength t2 E n. 
@@ -142,7 +156,11 @@ Proof.
 Qed.
 
 
-(** Manipulating the superscripts of the terms *)
+(** %\subsection{Manipulating the function symbols superscripts}% *)
+
+(**  The following results are going towards the proof that 
+if (equiv S0 C) is a equivalence and S1 is a subset of S0
+then (equiv S1 C) is also a equivalence. *)
 
 Definition proper_equiv_Fc (S1 : set nat) :=
 forall C t t' m n, equiv S1 C t t' -> equiv S1 C (Fc m n t) (Fc m n t').
@@ -650,8 +668,12 @@ Proof.
 Qed.
 
 
-(** Subtheories of equiv({0,1}) are equivalences if 
- equiv({0,1}) is an equivalence *)
+(** %\subsection{Subtheories of equiv({0,1,2}) are equivalences if 
+ equiv({0,1,2}) is an equivalence}% *)
+
+(**
+The following lemma is proved by case analysis over Equivalence (equiv S2 C).
+*)
 
 Lemma subset_equivalence : forall C S1 S2,
                              subset nat S1 S2 -> proper_equiv_Fc S2 ->
@@ -662,7 +684,7 @@ Proof.
          unfold Symmetric in *|-*;
          unfold Transitive in *|-*; intros.
 
- (* Reflexivity *) 
+ (** Reflexivity *) 
   case (leq_nat_set (S2 |U (set_super x))); intros E H1.
   apply rpl_equiv with (E:=E) (S2:=set_diff eq_nat_dec S2 S1); intros.
   apply nil_empty_set. intros k H2. apply set_inter_elim in H2. destruct H2.
@@ -680,7 +702,7 @@ Proof.
    apply set_union_intro1; trivial.
   omega. apply set_diff_intro; trivial.
 
- (* Symmetry *) 
+ (** Symmetry *) 
   case (leq_nat_set (S2 |U (set_super x) |U (set_super y))); intros E H2. 
   apply rpl_equiv with (E:=E) (S2:=set_diff eq_nat_dec S2 S1); intros.
   apply nil_empty_set. intros k H3. apply set_inter_elim in H3. destruct H3.
@@ -708,7 +730,7 @@ Proof.
   apply set_union_intro1. apply set_union_intro2; trivial.  
   apply set_union_intro2; trivial.
 
-  (* Transitiviy *)
+  (** Transitivity *)
   case (leq_nat_set (S2 |U (set_super x) |U (set_super y) |U (set_super z))); intros E H3. 
   apply rpl_equiv with (E:=E) (S2:=set_diff eq_nat_dec S2 S1); intros.
   apply nil_empty_set. intros k H4. apply set_inter_elim in H4. destruct H4.
@@ -747,36 +769,26 @@ Proof.
    apply set_union_intro1. apply set_union_intro2; trivial. omega.
 Qed.
 
-
-(** Some usefull properties of (Fc 2 n) regularity with the relations ~aacc and ~c *) 
-  
-Lemma pair_eq_dec : forall t, {forall s s', t <> <|s,s'|>} + {exists s, exists s', t = <|s,s'|>}.
-Proof.
-  intro t. destruct t.
-  left~; intros. discriminate.
-  left~; intros. discriminate.
-  left~; intros. discriminate.
-  right~. exists t1. exists t2; trivial.
-  left~; intros. discriminate.  
-  left~; intros. discriminate.
-Qed.
+(** %\subsection{Some usefull properties about the (Fc 2 n) regularity in the relations aacc\_equiv 
+    and c\_equiv}% *)
 
 Lemma equiv_Fc_c : forall C t t' n, C |- t ~aacc t' -> C |- Fc 2 n t ~aacc Fc 2 n t'.
 Proof.
-  intros. case (pair_eq_dec t); intro H0.
-  apply equiv_Fc; trivial. right~; split~; intros.
-  destruct H0. destruct H0. rewrite H0 in *|-*.
+  intros. case (Pr_eqdec t); intro H0.
+   destruct H0. destruct H0. rewrite H0 in *|-*.
   inverts H. apply equiv_C1; trivial.
   simpl. right~.
+  apply equiv_Fc; trivial. right~; split~; intros.
 Qed.
 
 Lemma c_equiv_Fc : forall C t t' m n, C |- t ~c t' -> C |- Fc m n t ~c Fc m n t'.
 Proof.
   intros. case (eq_nat_dec m 2); intro H0. rewrite H0.
-  case (pair_eq_dec t); intro H1.
-  apply equiv_Fc; trivial. right~; split~; intros.
+  case (Pr_eqdec t); intro H1.
   destruct H1. destruct H1. rewrite H1 in *|-*.
   inverts H. apply equiv_C1; trivial.
   simpl. left~. apply equiv_Fc; trivial.
+  right~; split~; intros.
+  apply equiv_Fc; trivial.
   left~. simpl. omega.
 Qed.
