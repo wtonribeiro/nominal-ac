@@ -11,7 +11,6 @@ FILES = \
 	Disagr \
 	Tuples \
 	Fresh \
-	w_Equiv \
         Alpha_Equiv \
 	Equiv \
 	Equiv_Tuples \
@@ -41,7 +40,7 @@ main : $(VOFILES)
 lib : Metatheory.vo
 
 clean :
-	rm -f *.vo .depend *.glob *.v# *.v~
+	rm -f *.aux *.vo .depend *.glob *.v# *.v~
 
 .v.vo : .depend
 	$(COQC) $<
