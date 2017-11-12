@@ -40,5 +40,5 @@
 
     c_unif_tree tr7;;
 
-Ir will generates inside forder Impl/ the latex file out.tex, 
-which can be compiled with pdflatex and generate a out.pdf file. 
+It will generates the latex file out.tex inside forder Impl/. 
+This file can be compiled with pdflatex to  generate a out.pdf file. 
