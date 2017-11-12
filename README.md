@@ -23,7 +23,7 @@
 **Terms.v**         | Syntax definition of nominal terms and some properties about
 **LibTactics.v**    | Library of tactics given by http://www.chargueraud.org/softs/tlc/
 **Makefile**        | Organisation of the code compilation with the "make" tool
-**html/**           | HTLM documentation folder
+**Impl/**           | Folder with the implementation in OCaml of the nominal C-unification algorithm
 
 
 
