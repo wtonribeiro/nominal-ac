@@ -11,7 +11,7 @@
 **build.sh**  | Script used to compile Basic.ml, Unif.ml and Output.ml
 
 
-**Instructions for compiling and execute:**
+**Instructions for compiling and execution:**
 
 1) Install OCaml version >= 4.0 (https://ocaml.org/docs/install.html)
 
