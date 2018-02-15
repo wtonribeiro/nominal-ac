@@ -1,4 +1,4 @@
-**Implementation (in OCaml) of the nominal C-unification algoritm**
+**Implementation (in OCaml) of the nominal C-unification algorithm**
 
 **Compiled with OCaml Version 4.02.3:**
 
