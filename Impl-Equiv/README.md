@@ -5,7 +5,7 @@
 **File** | Short description
 ------------ | -------------
 **Basic.ml**  | Basic data and function definitions (terms, action of permutations, action of substitutions etc) 
-**Equiv.ml**  | Specification of the naive nominal A, C and AC-checking algoritm 
+**Equiv.ml**  | Specification of the naive nominal A, C and AC-checking algorithm 
 **Tests.ml**  | Some pre-setted execution tests 
 **build.sh**  | Script used to compile Basic.ml and Equiv.ml
 
