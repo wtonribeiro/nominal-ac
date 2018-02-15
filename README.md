@@ -4,6 +4,8 @@
 
 **File** | Short description
 ------------ | -------------
+**Impl_Equiv/**     | Folder with the implementation (in OCaml) of the naive nominal A, C and AC-checking algorithm
+**Impl_Unif/**      | Folder with the implementation (in OCaml) of the nominal C-unification algorithm
 **Completeness.v**  | Formalisation of the completeness of  $\Rightarrow_{\#}$ and $\Rightarrow_{\approx}$
 **Soundness.v**     | Formalisation of the soundness of $\Rightarrow_{\#}$ and $\Rightarrow_{\approx}$ and successful leaves characterisation of the derivation tree
 **Termination.v**   | Formalisation of the termination of  $\Rightarrow_{\#}$ and $\Rightarrow_{\approx}$
@@ -23,7 +25,6 @@
 **Terms.v**         | Syntax definition of nominal terms and some properties about
 **LibTactics.v**    | Library of tactics given by http://www.chargueraud.org/softs/tlc/
 **Makefile**        | Organisation of the code compilation with the "make" tool
-**Impl/**           | Folder with the implementation in OCaml of the nominal C-unification algorithm
 
 
 
