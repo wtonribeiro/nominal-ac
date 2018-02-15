@@ -7,7 +7,7 @@
 **Basic.ml**  | Basic data and function definitions (terms, action of permutations, action of substitutions etc) 
 **Equiv.ml**  | Specification of the naive nominal A, C and AC-checking algoritm 
 **Tests.ml**  | Some pre-setted execution tests 
-**build.sh**  | Script used to compile Basic.ml, Equiv.ml and Output.ml
+**build.sh**  | Script used to compile Basic.ml and Equiv.ml
 
 
 **Instructions for compiling and execution:**
@@ -37,5 +37,5 @@
 
     equiv eq5;;
 
-   In the case this call will return "True",
+   This case will return "true",
    because eq5 = ([], Ab ("a", At "a"), Ab ("b", At "b")).
