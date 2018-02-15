@@ -1,4 +1,4 @@
-**Implementation (in OCaml) of the naive nominal A, C and AC-checking algoritm**
+**Implementation (in OCaml) of the naive nominal A, C and AC-checking algorithm**
 
 **Compiled with OCaml Version 4.02.3:**
 
