@@ -1,4 +1,5 @@
-open Basic      
+open Basic
+open Equiv
        
 
 (** Equiv tests **)                                      
