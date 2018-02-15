@@ -35,7 +35,7 @@
 
 6) At the Utop prompt, and to run an especific test for eq1 to eq18, execute for example:
 
-    equiv_ctx_tree eq5;;
+    equiv eq5;;
 
    In the case this call will return "True",
    because eq5 = ([], Ab ("a", At "a"), Ab ("b", At "b")).

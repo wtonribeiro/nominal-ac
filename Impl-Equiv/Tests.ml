@@ -1,8 +1,6 @@
 open Basic      
        
-let equiv_ctx_tree pr = create_file matching_pair_string equiv_ctx pr  
 
-                                    
 (** Equiv tests **)                                      
 
 let eq1 = ([], At "a", At "a")
