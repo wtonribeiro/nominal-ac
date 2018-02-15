@@ -1,11 +1,11 @@
-**A Formalisation (in Coq) of Nominal C-Unification and Nominal AC-Equivalence**
+**A Formalisation (in Coq) of Nominal C-Unification and Nominal A, C and AC-Equivalence**
 
 **Compiled with the Coq Proof Assistant Version 8.6:**
 
 **File** | Short description
 ------------ | -------------
-**Impl_Equiv/**     | Folder with the implementation (in OCaml) of the naive nominal A, C and AC-checking algorithm
-**Impl_Unif/**      | Folder with the implementation (in OCaml) of the nominal C-unification algorithm
+**[Impl_Equiv/](Impl_Equiv/)** | Folder with the implementation (in OCaml) of the naive nominal A, C and AC-checking algorithm
+**[Impl_Unif/](Impl_Unif/)** | Folder with the implementation (in OCaml) of the nominal C-unification algorithm
 **Completeness.v**  | Formalisation of the completeness of  $\Rightarrow_{\#}$ and $\Rightarrow_{\approx}$
 **Soundness.v**     | Formalisation of the soundness of $\Rightarrow_{\#}$ and $\Rightarrow_{\approx}$ and successful leaves characterisation of the derivation tree
 **Termination.v**   | Formalisation of the termination of  $\Rightarrow_{\#}$ and $\Rightarrow_{\approx}$
