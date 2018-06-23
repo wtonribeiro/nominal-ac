@@ -11,7 +11,7 @@
  Description : This file contains all the definitions and lemmas regarding
                substitutions of variables by terms.
  
- Last Modified On: June 23, 2018.
+ Last Modified On: Jun 23, 2018.
  ============================================================================
 \end{verbatim}%
 *)

@@ -13,7 +13,7 @@ Description : A proof of the soundness of the C-unification algorithm is
 	      was formalised that each solution of a generated successful 
 	      leaf is also a solution of the original problem.
  
- Last Modified On: November 10th, 2017.
+ Last Modified On: Jun 2, 2018.
  ============================================================================
 \end{verbatim}%
 *)

@@ -7,7 +7,7 @@
                Universidade de Brasília (UnB) - Brazil
                Group of Theory of Computation
  
- Last Modified On: June 26, 2018.
+ Last Modified On: Jun 23, 2018.
  ============================================================================
  *)
 

@@ -13,7 +13,7 @@
                termination, soundness and completess are
                the contributions of this file.
  
- Last Modified On: June 23th, 2018.
+ Last Modified On: Jun 23, 2018.
  ============================================================================
  \end{verbatim} %
 *)

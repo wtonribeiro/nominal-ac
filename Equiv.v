@@ -7,7 +7,7 @@
                Universidade de Bras\'ilia (UnB) - Brazil
                Group of Theory of Computation
  
- Last Modified On: November 12, 2016.
+ Last Modified On: Jan 28, 2018.
 
  Description : This is a guideline how to deal with A, C and AC equivalence
                starting from the notion of alpha-equivalence for purely.  

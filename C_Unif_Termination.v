@@ -14,7 +14,7 @@ Description : This file is dedicated to the proof of termination of the
 	      Thus one proves that both equ_sys and fresh_sys induce a 
 	      well-founded order.
  
- Last Modified On: November 10, 2017.
+ Last Modified On: Jun 2, 2018.
  ============================================================================
  \end{verbatim} %
  *)

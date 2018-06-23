@@ -10,7 +10,7 @@
 Description : This file contains specific results about alpha-equivalence
               modulo commutativity 
 
- Last Modified On: November 12, 2017.
+ Last Modified On: Jan 28, 2018.
  ============================================================================
 \end{verbatim}%*)
 

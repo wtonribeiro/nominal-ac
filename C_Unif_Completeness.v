@@ -13,7 +13,7 @@
 	       of this file. It also contains two preliminary lemmas 
 	       (equ_sys_compl and unif_step_compl).
  
- Last Modified On: June 7th, 2018.
+ Last Modified On: Jun 7, 2018.
  ============================================================================
  \end{verbatim} %
 *)
