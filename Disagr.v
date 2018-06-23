@@ -170,4 +170,126 @@ Qed.
 
 
 
+(** The disagrement (differences) set as a recursive function *)
 
+Fixpoint atom_in_set (a : Atom) (S : set Atom) : bool :=
+  match S with 
+    | [] => false
+    | a0 :: S0 => if a ==at a0
+                  then true
+                  else atom_in_set a S0
+  end.
+
+
+Fixpoint atoms_perm (pi : Perm) : set Atom :=
+  match pi with
+    | [] => []
+    | (a, b) :: pi0 => set_add Atom_eqdec a (set_add Atom_eqdec b (atoms_perm pi0))
+  end .                                  
+
+
+Fixpoint dom_perm_aux (pi : Perm) (S : set Atom) : set Atom :=
+  match S with
+     | [] => []
+     | a :: S0 => if a ==at (pi $ a)
+                  then dom_perm_aux pi S0
+                  else set_add Atom_eqdec a (dom_perm_aux pi S0)
+  end.
+
+Definition dom_perm (pi : Perm) : set Atom :=
+  dom_perm_aux pi (atoms_perm pi).
+
+
+Definition disgr (pi pi': Perm) : set Atom :=
+  dom_perm (pi++(!pi')).
+
+
+(** Equivalence between ds and disgr *)
+
+Lemma ds_to_atoms_perm : forall a pi, In_ds ([]) pi a -> set_In a (atoms_perm pi).
+Proof.
+  intros. unfold In_ds in H.
+  induction pi; simpl in *|-*. apply H; trivial.
+  destruct a0. gen H.
+  case (a0 ==at a); intros H H0.
+  apply set_add_intro2. symmetry. trivial.
+  gen H0. case (a1 ==at a); intros H0 H1.
+  apply set_add_intro1.
+  apply set_add_intro2. symmetry; trivial.
+  apply IHpi in H1.
+  apply set_add_intro1.
+  apply set_add_intro1; trivial.
+Qed.  
+
+Lemma ds_to_dom_perm_aux : forall a pi A, In_ds ([]) pi a ->
+                                          set_In a A ->
+                                          set_In a (dom_perm_aux pi A).
+Proof.
+  intros. unfold In_ds in H. simpl in H.
+  gen pi a. induction A; intros.
+  simpl in H0. contradiction.
+  simpl in *|-*. case (a ==at (pi $ a)); intro H1.
+  destruct H0. rewrite H0 in H1; contradiction.
+  apply IHA; trivial.
+  destruct H0. apply set_add_intro2.
+  symmetry. trivial.
+  apply set_add_intro1.
+  apply IHA; trivial.
+Qed.
+
+Lemma dom_perm_aux_to_In_ds : forall a pi A, set_In a (dom_perm_aux pi A) ->
+                                             In_ds ([]) pi a.
+Proof.
+  intros. unfold In_ds.
+  simpl. gen a pi.
+  induction A; intros; simpl in *|-*.
+  contradiction.
+  gen H. case (a ==at (pi $ a)); intros.
+  apply IHA; trivial.
+  apply set_add_elim in H. destruct H.
+  rewrite H; trivial. apply IHA; trivial.
+Qed.  
+  
+Lemma ds_eq_disgr : forall a pi pi', In_ds pi pi' a <-> set_In a (disgr pi pi'). 
+Proof.
+  intros.
+  rewrite ds_sym. rewrite <- ds_rev.
+  unfold disgr. unfold dom_perm.
+  split~; intros.
+  apply ds_to_dom_perm_aux; trivial.
+  apply ds_to_atoms_perm; trivial.
+  apply dom_perm_aux_to_In_ds in H; trivial.
+Qed.  
+
+
+Lemma In_dom_perm : forall a pi, set_In a (dom_perm pi) -> exists b, pi $ a = b /\ set_In b (dom_perm pi).
+Proof.
+  intros. replace (dom_perm pi) with (disgr pi ([])) in *|-*.
+  apply ds_eq_disgr in H. exists (pi $ a).
+  split~. apply ds_eq_disgr.
+  unfold In_ds in *|-*. simpl in *|-*.
+  apply perm_diff_atom; trivial.
+  unfold disgr. simpl. rewrite app_nil_r; trivial.
+Qed.
+
+Lemma dom_perm_inv : forall a pi, set_In a (dom_perm pi) <-> set_In a (dom_perm (!pi)). 
+Proof.
+  intros.
+  replace (dom_perm pi) with (disgr pi ([])).
+  replace (dom_perm (!pi)) with (disgr (!pi) ([])).  
+  rewrite <- 2 ds_eq_disgr. split~; intro.
+  apply ds_sym. replace (!pi) with (([])++(!pi)).
+  apply ds_rev; trivial. simpl; trivial.
+  apply ds_sym in H. replace (!pi) with (([])++(!pi)) in H.
+  rewrite ds_rev in H; trivial. simpl; trivial.
+  unfold disgr. simpl. rewrite app_nil_r; trivial.
+  unfold disgr. simpl. rewrite app_nil_r; trivial.
+Qed.
+  
+  
+Lemma In_dom_perm' :  forall a pi, set_In a (dom_perm pi) -> exists b, (!pi) $ a = b /\ set_In b (dom_perm pi).
+Proof.
+  intros. setoid_rewrite dom_perm_inv.
+  rewrite dom_perm_inv in H.
+  apply In_dom_perm; trivial.
+Qed.  

@@ -98,8 +98,27 @@ Proof.
   intros. induction H; simpl; try omega.
   rewrite perm_term_size in IHalpha_equiv. omega.
 Qed.
-  
 
+Lemma alpha_equiv_sub_context : forall C C' s t,
+      sub_context C C' -> C |- s ~alpha t -> C' |- s ~alpha t.
+Proof.
+  intros. induction H0.
+  apply alpha_equiv_Ut. apply alpha_equiv_At.
+  apply alpha_equiv_Pr.
+   apply IHalpha_equiv1; trivial.
+   apply IHalpha_equiv2; trivial.
+  apply alpha_equiv_Fc.
+   apply IHalpha_equiv; trivial.
+  apply alpha_equiv_Ab_1.  
+   apply IHalpha_equiv; trivial.
+  apply alpha_equiv_Ab_2; trivial.
+   apply IHalpha_equiv; trivial.
+  apply fresh_lemma_4 with (C:=C); trivial.
+  apply alpha_equiv_Su; intros.
+   unfold sub_context in H. 
+   apply H. apply H0; trivial.
+Qed.
+   
 Lemma ds_empty_fresh_1 : forall C pi pi' a t, (forall b, ~ In_ds pi pi' b) -> 
                          (C |- (pi $ a) # t <-> C |- (pi' $ a) # t) .
 Proof.

@@ -292,4 +292,41 @@ Proof.
   apply IHs in H3. rewrite H3. trivial.
   apply app_inv_tail in H1.
   rewrite H1. trivial.
-Qed.  
+Qed.
+
+
+(** About pairs and proper terms *) 
+
+
+Lemma perm_is_Pr : forall pi t, is_Pr t -> is_Pr (pi @ t).
+Proof.
+  intros. induction t; autorewrite with perm; simpl in *|-*; trivial.
+Qed.
+
+Lemma perm_Proper_term : forall pi t, Proper_term t -> Proper_term (pi @ t) .
+Proof.
+  intros. induction t; autorewrite with perm; trivial.
+  unfold Proper_term; intros. 
+  simpl in H0. destruct H0; try contradiction. inverts H0.
+  unfold Proper_term in *|-*; intros. apply IHt with (n:=n); intros.
+  apply H with (n:=n0). simpl. apply set_add_intro1; trivial.
+  simpl in H0. apply set_add_elim in H0. destruct H0; trivial. inverts H0.
+  unfold Proper_term in *|-*; intros.
+  simpl in H0. apply set_add_elim in H0. destruct H0. inverts H0.
+  apply set_union_elim in H0. destruct H0.
+  apply IHt1 with (n:=n); intros; trivial. 
+  apply H with (n := n0). simpl.
+  apply set_add_intro1. apply set_union_intro1; trivial.
+  apply IHt2 with (n:=n); intros; trivial. 
+  apply H with (n := n0). simpl.
+  apply set_add_intro1. apply set_union_intro2; trivial.
+  unfold Proper_term in *|-*; intros.
+  simpl in H0. apply set_add_elim in H0. destruct H0.
+  inverts H0. apply perm_is_Pr. apply H with (n:=n0).
+  simpl. apply set_add_intro2; trivial.
+  apply IHt with (n:=n1); trivial; intros.
+  apply H with (n1:=n2); trivial. simpl.
+  apply set_add_intro1; trivial.
+  unfold Proper_term in *|-*; intros.
+  simpl in H0. destruct H0; try contradiction. inverts H0.
+Qed.

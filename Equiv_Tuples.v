@@ -91,12 +91,7 @@ Proof.
  rewrite 2 TPithdel_TPlength_1; autorewrite with tuples; try omega; auto.
  rewrite 2 TPithdel_Fc_eq; try omega; auto.
  destruct H. apply equiv_Fc. left~. trivial.
- destruct H. apply equiv_Fc. destruct t; simpl in H5.
- false. false. false. false. 
- gen H5. case ((E, n) ==np (n0, n1)); intros H7 H8. inverts H7.
- rewrite <- H5 in *|-*. right~; split~; intros. 
- rewrite TPithdel_Fc_eq; trivial. intro H9. inverts H9.
- false. false. trivial.
+ destruct H. rewrite H in *|-*. apply equiv_Fc_c; trivial.
  exists 1. rewrite TPlength_Fc_diff; trivial.
  rewrite 2 TPith_Fc_diff; trivial.
  rewrite 2 TPithdel_TPlength_1; try rewrite TPlength_Fc_diff; trivial.
@@ -211,15 +206,9 @@ Proof.
  case (eq_nat_dec (TPlength t E n) 1); intro H2.
  rewrite 2 TPithdel_TPlength_1;
  autorewrite with tuples; try omega; auto.
- rewrite 2 TPithdel_Fc_eq; try omega.
- apply equiv_Fc; trivial. destruct H0.
- left~. destruct H0.
- destruct t; simpl in H2.
- false. false. false. false. 
- gen H2. case ((E, n) ==np (n0, n1)); intros H4 H5. inverts H4.
- rewrite <- H2 in *|-*. right~; split~; intros. 
- rewrite TPithdel_Fc_eq; trivial. intro H6. inverts H6.
- false. false. apply IHequiv.
+ rewrite 2 TPithdel_Fc_eq; try omega. destruct H0.
+ apply equiv_Fc; trivial. left~. apply IHequiv. destruct H0.
+ rewrite H0 in *|-*. apply equiv_Fc_c. apply IHequiv.
  rewrite 2 TPithdel_TPlength_1; try rewrite TPlength_Fc_diff; trivial.
  rewrite 2 TPith_Fc_diff; trivial. split~; auto.
 
@@ -301,9 +290,8 @@ Proof.
  rewrite 2 TPithdel_TPlength_1; try rewrite TPlength_Fc_diff; trivial.
  split~; auto.
 
-Qed.
-
-
+Qed.   
+  
 Lemma aacc_equiv_Fc : forall C t t' E n, C |- t ~aacc t' ->
                                         C |- Fc E n t ~aacc Fc E n t'.
 Proof.
@@ -347,6 +335,36 @@ Proof.
   destruct H2; try contradiction.
   rewrite <- H2. apply equiv_Fc_c; trivial.
   
+Qed.
+
+
+(** *)
+
+
+
+Lemma aacc_equiv_Fc_A_TPith : forall C t t' n,
+                 TPlength t 0 n = TPlength t' 0 n ->
+                 (forall i, i <= TPlength t 0 n ->
+                 C |- TPith i t 0 n ~aacc TPith i t' 0 n) ->
+                 C |- Fc 0 n t  ~aacc Fc 0 n t' .      
+Proof.
+  intros. gen_eq l : (TPlength t 0 n). intro H1.
+  gen t t' H1 H H0. induction l using peano_induction; intros.
+  assert (Q : TPlength t 0 n >= 1). auto.
+  apply equiv_A. left~. rewrite 2 TPith_Fc_eq. apply H2. omega.
+  case (eq_nat_dec l 1); intro H3.
+  rewrite 2 TPithdel_TPlength_1;
+    try rewrite TPlength_Fc_eq; try omega; auto.
+  rewrite 2 TPithdel_Fc_eq; try omega.
+  apply H with (m := TPlength (TPithdel 1 t 0 n) 0 n); trivial.
+  rewrite H1. rewrite TPlength_TPithdel; try omega.
+  rewrite 2 TPlength_TPithdel; omega. 
+  intros. case (le_dec i 1); intro H5.
+  rewrite 2 TPith_TPithdel_leq_1; try omega.
+  apply H2; try omega.
+  rewrite TPlength_TPithdel in H4; try omega.
+  rewrite 2 TPith_TPithdel_geq; try omega.
+  apply H2. omega.
 Qed.
 
 

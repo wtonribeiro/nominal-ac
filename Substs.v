@@ -11,7 +11,7 @@
  Description : This file contains all the definitions and lemmas regarding
                substitutions of variables by terms.
  
- Last Modified On: November 10, 2017.
+ Last Modified On: June 23, 2018.
  ============================================================================
 \end{verbatim}%
 *)
@@ -167,90 +167,6 @@ Fixpoint set_subst (St : set term) (S : Subst) : set term :=
     | [] => []  
     | s::St0 => set_add term_eqdec (s|^S) (set_subst St0 S) 
   end.
-
-(** left_terms gives the set of terms that occurs on the lhs of the equational 
-constraints of a problem *)
-
-Fixpoint left_terms (P : Problem) : set term :=
-  match P with
-    | [] => []
-    | (a#?t)::P0 => left_terms P0
-    | (s~?t)::P0 => set_add term_eqdec s (left_terms P0)                         
-  end.
-
-(** right_terms gives the set of terms that occurs on the rhs of the equational 
-constraints of a problem *)
-
-Fixpoint right_terms (P : Problem) : set term :=
-  match P with
-    | [] => []
-    | (a#?t)::P0 => right_terms P0
-    | (s~?t)::P0 => set_add term_eqdec t (right_terms P0)                         
-  end.
-
-(** left_vars gives the variables of the left_terms *)
-
-Definition left_vars (P : Problem) := terms_set_vars (left_terms P).
-
-(** right_vars gives the variables of the right_terms *)
-
-Definition right_vars (P : Problem) := terms_set_vars (right_terms P).
-
-(** Context_vars gives the variables of a freshness context *)
-
-Fixpoint Context_vars (C : Context) : set Var :=
-  match C with
-    | [] => []
-    | (a,X)::C0 => X::Context_vars C0
-  end.
-
-(** gt_idx gives greatest variable index occuring in a set of variables *)
-
-Fixpoint gt_idx (St : set Var) : nat :=
-  match St with
-    | []  => 0
-    | (var n)::St0 => max n (gt_idx St0)                  
-  end.
-
-(** ren_subst is a renaming of variables that chooses all "new" variables 
-  with index greather then n *)
-
-Fixpoint ren_subst (St : set Var) (n : nat) : Subst :=
-  match St with
-    | [] => []
-    | X::St0 => (X,[]|.(var (S n)))::(ren_subst St0 (S n)) 
-  end.                                 
-
-(** left_subst applies a substitution to the lrs of equational constraints of a given problem *)
-
-Fixpoint left_subst (P : Problem) (S : Subst) : Problem :=
-  match P with
-    | [] => []
-    | (a#?t)::P0 => left_subst P0 S
-    | (s~?t)::P0 => (s|^S~?t)::(left_subst P0 S)
-  end.
-
-Notation "P ||^ S" := (left_subst P S) (at level 67).
-
-
-(** left_ren renames all the variables in the intersection of left_vars and right_vars 
- to variables with indexes greather then n *)
-                        
-Definition left_ren (P : Problem) (n : nat) :=
-  P||^(ren_subst (set_inter Var_eqdec (left_vars P) (right_vars P)) n). 
-
-(** Triple_vars is set of variables that occurs in a given Triple *)
-
-Definition Triple_vars (T : Triple) :=
-  set_union Var_eqdec (Context_vars (fst (fst T)))
-   (set_union Var_eqdec (dom_rec (snd (fst T)))
-     (set_union Var_eqdec (im_vars (snd (fst T))) (Problem_vars (snd T)))) .         
-
-
-(** gt_idx_Triple is the greatest index of a variable occuring in a Triple *)
-
-Definition gt_idx_Triple (T : Triple) := gt_idx (Triple_vars T).
-  
                            
 
 (** %\section{Lemmas}% *)
@@ -269,7 +185,6 @@ Proof.
   rewrite IHt; trivial.
   rewrite perm_comp; trivial.
 Qed.
-
 
 (** The empty substitution has no action over a term. *)
 
@@ -542,7 +457,7 @@ Proof.
 Qed.
 
 
-(** Some results about "C-equivalence" between substitutions. *)
+(** Some results about "AACC-equivalence" between substitutions. *)
 
 Notation "C |- S ~:c S'" := (subs_equiv C (equiv ([2])) S S') (at level 67).
 
@@ -928,6 +843,21 @@ Proof.
   symmetry in H. trivial.
   intros. false.
 Qed.  
+
+
+(** The composition S © [(X,t)] is different from S *)
+
+Lemma comp_diff_singleton : forall S X t, 
+      S <> (S © ([(X,t)])) .
+Proof.
+  intros. intro H. unfold Subst_comp in H.
+  induction S; simpl in H.
+  gen H. discriminate.
+  destruct a. inverts H.
+  apply IHS; trivial.
+Qed.
+  
+(**  *)
 
 Lemma set_In_subst_term : forall X S t,
       set_In X (term_vars (t|^S)) ->
@@ -1461,3 +1391,278 @@ Proof.
   contradiction. apply set_union_intro2; trivial.
   apply In_subst_Problem_im; trivial.
 Qed.
+
+(** About substitutions and proper terms *)
+
+Lemma subs_is_Pr : forall s t X, is_Pr s -> is_Pr (s|^([(X,t)])).
+Proof.
+  intros. induction s; simpl in *|-*; trivial.
+  contradiction.
+Qed.
+
+Lemma subs_Proper_term : forall s t X, Proper_term s -> Proper_term t -> Proper_term (s|^([(X,t)])).
+Proof.
+  intros. induction s; simpl; trivial.
+  unfold Proper_term in *|-*; intros.
+  simpl in H1. apply set_add_elim in H1; destruct H1. inverts H1.
+  apply IHs with (n:=n); intros; trivial. apply H with (n:=n0); trivial.
+  simpl. apply set_add_intro1; trivial.
+  unfold Proper_term in *|-*; intros.
+  simpl in H1. apply set_add_elim in H1; destruct H1. inverts H1.
+  apply set_union_elim in H1. destruct H1.
+  apply IHs1 with (n:=n); intros; trivial. apply H with (n:=n0); trivial.
+  simpl. apply set_add_intro1. apply set_union_intro1; trivial.
+  apply IHs2 with (n:=n); intros; trivial. apply H with (n:=n0); trivial.
+  simpl. apply set_add_intro1. apply set_union_intro2; trivial.
+  unfold Proper_term in *|-*; intros.
+  simpl in H1. apply set_add_elim in H1; destruct H1. inverts H1.
+  apply subs_is_Pr. apply H with (n:=n0). simpl. apply set_add_intro2; trivial.
+  apply IHs with (n:=n1); intros; trivial. apply H with (n1:=n2); trivial.
+  simpl. apply set_add_intro1; trivial.
+  case (X ==v v); intro H1; autorewrite with perm; simpl; trivial.
+  apply perm_Proper_term; trivial.
+Qed.
+
+
+(** **)
+
+
+Lemma TPlength_subst : forall S t E n,
+      TPlength t E n <= TPlength (t|^S) E n. 
+Proof.
+  intros. induction t; simpl; try omega.
+  case ((E, n) ==np (n0, n1)); intro H; trivial.
+  assert (Q : TPlength (p @ look_up v S) E n >= 1). auto. omega.
+Qed.
+
+Lemma TPlnegth_1_Su_subst : forall pi X t E n S,
+      TPlength t E n = 1 ->
+      TPith 1 t E n = pi|.X ->
+      TPlength ((pi|.X)|^S) E n = TPlength (t|^S) E n .
+Proof.
+  intros. induction t.
+  simpl in H0. inverts H0. simpl in H0. inverts H0.
+  simpl in H0. inverts H0.
+  simpl in H.
+  assert (Q  : TPlength t1 E n >= 1). auto.
+  assert (Q' : TPlength t2 E n >= 1). auto. omega.
+  case ((n0, n1) ==np (E, n)); intro H1.
+  inverts H1. rewrite TPith_Fc_eq in H0.
+  simpl subs. rewrite TPlength_Fc_eq in *|-*.
+  apply IHt; trivial.
+  rewrite TPith_Fc_diff in H0; trivial. inverts H0.
+  simpl in H0. rewrite H0. trivial.
+Qed.
+  
+Lemma TPlength_1_subst : forall S t E n, 
+      ~ is_Su (TPith 1 t E n) ->
+      TPlength t E n = 1 -> TPlength (t |^ S) E n = 1 .
+Proof.
+  intros. induction t; simpl in *|-*; trivial.
+  assert (Q0 : TPlength t1 E n >= 1). auto.
+  assert (Q1 : TPlength t2 E n >= 1). auto. omega.
+  gen H H0. case ((E, n) ==np (n0, n1)); intros H0 H1 H2.
+  apply IHt; trivial. trivial.
+  false. apply H. trivial.
+Qed.
+
+Lemma TPlength_1_TPith_subst : forall i S t E n,
+      TPlength t E n = 1 ->
+      TPlength (TPith i t E n|^S) E n =
+      TPlength (t|^S) E n .
+Proof.
+  intros. induction t; simpl in *|-*; trivial.
+  assert (Q : TPlength t1 E n >= 1 /\ TPlength t2 E n >= 1).
+   split~. destruct Q. omega.
+  gen H. case ((E, n) ==np (n0, n1)); intros H H0.
+  apply IHt; trivial. simpl subs. rewrite TPlength_Fc_diff.
+  trivial. intro H1. symmetry in H1. contradiction.
+Qed.
+   
+Lemma TPlength_TPith_subst : forall S i t E n,
+      TPlength ((TPith i t E n)|^S) E n <= TPlength (t|^S) E n. 
+Proof.
+  intros. gen i. induction t; intros.
+  simpl; omega. simpl; omega. simpl; omega.
+  Focus 3. simpl; omega.
+  case (le_dec i (TPlength t1 E n)); intro H.
+  rewrite TPith_Pr_le; trivial; simpl subs.
+  assert (Q : TPlength (TPith i t1 E n|^S) E n <= TPlength (t1|^S) E n).
+   apply IHt1.
+  simpl. omega.
+  rewrite TPith_Pr_gt; try omega.
+  assert (Q : TPlength (TPith (i - TPlength t1 E n) t2 E n|^S) E n <=
+              TPlength (t2|^S) E n).
+   apply IHt2.
+  simpl. omega.  
+  case ((n0,n1) ==np (E,n)); intro H. inverts H.
+  rewrite TPith_Fc_eq. simpl subs.
+  rewrite TPlength_Fc_eq. apply IHt.
+  rewrite TPith_Fc_diff; trivial.
+Qed.  
+
+  
+Lemma TPith_1_subst : forall S t E n,
+      ~ is_Su (TPith 1 t E n) -> TPith 1 (t|^S) E n = (TPith 1 t E n)|^S.
+Proof.
+  intros. induction t; simpl; trivial.
+  assert (Q0 : TPlength (t1|^S) E n >= 1). auto.
+  assert (Q1 : TPlength t1 E n >= 1). auto.
+  case (le_dec 1 (TPlength (t1|^S) E n)); intro H0; try omega.
+  case (le_dec 1 (TPlength t1 E n)); intro H1; try omega.  
+  apply IHt1. intro H2. apply H. simpl.
+  case (le_dec 1 (TPlength t1 E n)); intro H3; try contradiction; trivial.
+  gen H. simpl. case ((E, n) ==np (n0, n1)); intros H H0. apply IHt; trivial.
+  simpl; trivial. simpl in H. false. apply H; trivial.
+Qed.
+
+Lemma TPithdel_1_subst : forall S t E n,
+      ~ is_Su (TPith 1 t E n) -> TPithdel 1 (t|^S) E n = (TPithdel 1 t E n)|^S.
+Proof.
+  intros. induction t; simpl; trivial.
+  assert (Q0 : TPlength (t1|^S) E n >= 1). auto.
+  assert (Q1 : TPlength t1 E n >= 1). auto.
+  assert (Q3 : ~ is_Su (TPith 1 t1 E n)).
+   intro H1. apply H. rewrite TPith_Pr_le; try omega; trivial.
+  case (le_dec 1 (TPlength (t1|^S) E n)); intro H0; try omega.
+  case (le_dec 1 (TPlength t1 E n)); intro H1; try omega.  
+  case (eq_nat_dec (TPlength (t1 |^ S) E n) 1);
+  case (eq_nat_dec (TPlength t1 E n) 1); intros H2 H3; trivial.
+  assert (Q2 : TPlength t1 E n <= TPlength (t1 |^ S) E n).
+   apply TPlength_subst; trivial.  
+  omega. apply TPlength_1_subst with (S0:=S) in H2; trivial.
+  contradiction.
+  simpl. fequals. apply IHt1; trivial.
+  gen H. simpl. case ((E, n) ==np (n0, n1)); intros H1 H2.
+  case (eq_nat_dec (TPlength (t |^ S) E n) 1);
+  case (eq_nat_dec (TPlength t E n) 1); intros H3 H4; simpl; trivial.
+  assert (Q0 : TPlength t E n >= 1). auto.
+  assert (Q1 : TPlength t E n <= TPlength (t |^ S) E n).
+   apply TPlength_subst; trivial.  
+  omega. apply TPlength_1_subst with (S0:=S) in H2; trivial.
+  contradiction. fequals. apply IHt; trivial.
+  case (eq_nat_dec 1 1); intro H3; trivial. false.
+  simpl in H. false. apply H; trivial.
+Qed.
+
+
+Lemma TPith_1_Su_subs : forall E n S t pi X i,
+    TPith 1 t E n = pi|.X ->
+    i <= TPlength ((pi|.X)|^S) E n ->
+    TPith i ((pi|.X)|^S) E n = TPith i (t|^S) E n.
+Proof.
+  intros. simpl subs in *|-*.
+  gen i. induction t; intros.
+  simpl in H. inverts H. simpl in H. inverts H.
+  simpl in H. inverts H. Focus 3.
+  simpl in H. inverts H; trivial.
+  simpl subs.
+  case (le_dec i (TPlength (t1|^S) E n)); intro H1.
+  rewrite TPith_Pr_le; trivial. apply IHt1; trivial.
+  rewrite TPith_Pr_le in H; trivial.
+  assert (Q : TPlength ((TPith 1 t1 E n)|^S) E n <=
+              TPlength (t1|^S) E n).              
+   apply TPlength_TPith_subst.
+  rewrite TPith_Pr_le in H. rewrite H in Q.
+  simpl in Q. omega.
+  assert (Q' : TPlength t1 E n >= 1). auto. omega.
+  case ((n0, n1) ==np (E,n)); intro H1. inverts H1.
+  simpl subs. rewrite TPith_Fc_eq in *|-*.
+  apply IHt; trivial. rewrite TPith_Fc_diff in H; trivial.
+  inverts H.
+Qed.
+
+
+
+Lemma TPlength_TPith_TPithdel_subst : forall i t E n S,
+      TPlength t E n <> 1 ->
+      TPlength (TPith i t E n|^S) E n + 
+      TPlength (TPithdel i t E n|^S) E n = TPlength (t|^S) E n.
+Proof.
+  intros. gen i. induction t; intros.
+  simpl in H. false. simpl in H. false. simpl in H. false.
+  Focus 3. simpl in H. false.
+  case (le_dec i (TPlength t1 E n)); intro H0.
+  rewrite TPith_Pr_le; trivial.
+  case (eq_nat_dec (TPlength t1 E n) 1); intro H1.
+  rewrite TPithdel_t1_Pr; trivial. simpl.
+  rewrite TPlength_1_TPith_subst; trivial.
+  rewrite TPithdel_Pr_le; trivial. simpl.
+  apply IHt1 with (i:=i) in H1. omega.
+  rewrite TPith_Pr_gt; try omega.
+  case (eq_nat_dec (TPlength t2 E n) 1); intro H1.    
+  rewrite TPithdel_t2_Pr; try omega.
+  simpl. rewrite TPlength_1_TPith_subst; omega.
+  rewrite TPithdel_Pr_gt; try omega. simpl.
+  apply IHt2 with (i:=i - TPlength t1 E n) in H1. omega.
+  case ((n0, n1) ==np (E, n)); intro H0. inverts H0.
+  rewrite TPlength_Fc_eq in H.
+  rewrite TPith_Fc_eq. rewrite TPithdel_Fc_eq; trivial.
+  simpl subs. rewrite 2 TPlength_Fc_eq. apply IHt; trivial.  
+  rewrite TPlength_Fc_diff in H; trivial. false.
+Qed.
+
+
+Lemma TPith_TPithdel_1_subst : forall i t E n S,
+      i > 0 -> TPlength t E n <> 1 ->
+      TPith i (TPithdel 1 t E n|^ S) E n =
+      TPith (i + TPlength ((TPith 1 t E n)|^S) E n) (t|^S) E n.
+Proof.
+  intros. gen i. induction t; intros; simpl in H0; try omega.
+  assert (Q : TPlength t1 E n >= 1). auto.
+  rewrite TPith_Pr_le; try omega.
+  replace ((<|t1, t2|>)|^S) with (<|t1|^S, t2|^S|>).
+  case (eq_nat_dec (TPlength t1 E n) 1); intro H1. 
+  rewrite TPithdel_t1_Pr; try omega.
+  rewrite TPlength_1_TPith_subst; trivial.
+  rewrite TPith_Pr_gt; try omega.
+  replace(i + TPlength (t1|^S) E n - TPlength (t1|^S) E n)
+         with i; trivial; omega.
+  rewrite TPithdel_Pr_le; try omega.
+  replace ((<|TPithdel 1 t1 E n, t2|>)|^S) with
+          (<|TPithdel 1 t1 E n|^S, t2|^S|>).
+  case (le_dec i (TPlength (TPithdel 1 t1 E n|^S) E n)); intro H2.
+  rewrite 2 TPith_Pr_le; trivial. apply IHt1; trivial.
+  rewrite <- TPlength_TPith_TPithdel_subst
+    with (i:=1) (t:=t1); trivial. omega. 
+  rewrite 2 TPith_Pr_gt; try omega.
+  fequals. rewrite <- TPlength_TPith_TPithdel_subst
+    with (i:=1) (t:=t1); trivial. omega.
+  rewrite <- TPlength_TPith_TPithdel_subst
+    with (i:=1) (t:=t1); trivial. omega.
+  simpl; trivial. simpl; trivial.
+  case (eq_nat_dec (TPlength (Fc n0 n1 t) E n) 1); intro H1.
+  false. gen H0 H1. simpl.
+  case ((E, n) ==np (n0, n1)); intros; try contradiction.
+  gen H0. case ((E, n) ==np (n0, n1)); intros; try contradiction.
+  inverts e. rewrite TPithdel_Fc_eq; trivial.
+  rewrite TPith_Fc_eq. simpl subs.
+  rewrite 2 TPith_Fc_eq. apply IHt; trivial.
+Qed.
+
+
+(** rhvars_Probl lemmas *)
+
+Lemma rhvars_Prob_subs : forall P X Y t, ~ set_In X (rhvars_Probl P) ->
+                                           set_In Y (rhvars_Probl (P|^^([(X,t)]))) ->
+                                           set_In Y (rhvars_Probl P).
+Proof.
+ intros. induction P; simpl in *|-*; trivial.  
+ destruct a; simpl in *|-. apply IHP; trivial.
+ apply set_union_elim in H0. destruct H0.
+ rewrite not_occurs in H0. apply set_union_intro1; trivial.
+ intro H1. apply H. apply set_union_intro1; trivial.
+ apply set_union_intro2. apply IHP; trivial.
+ intro H1. apply H. apply set_union_intro2; trivial.
+Qed.
+ 
+Lemma rhvars_Prob_fresh : forall X C S, ~ set_In X (rhvars_Probl (C/?S)).
+Proof.
+  intros. intro H. induction C; simpl in *|-; trivial.
+  destruct a. gen H.
+  case (In_dom_dec v S); intros H H0;
+   try contradiction.                 
+  apply rhvars_Prob_add in H0. simpl in H0.
+  destruct H0; contradiction.
+Qed.
+

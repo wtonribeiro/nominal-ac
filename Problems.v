@@ -122,7 +122,33 @@ Definition fixpoint_equ (u : Constraint) :=
 (** Fixpoint problems are composed only by fixpoint equations *)
 
 Definition fixpoint_Problem (P : Problem) := forall u, set_In u P -> fixpoint_equ u.
- 
+
+
+(** Proper problems contais only proper terms in its equations. *) 
+  
+Definition Proper_Problem (P : Problem) :=
+  (forall s t, set_In (s~?t) P -> ((Proper_term s) /\ (Proper_term t))) .
+
+(** Right-hand vars of a problem *)
+
+Fixpoint rhvars_Probl (P : Problem) :=
+  match P with
+  | [] => []
+  | (a#?s) :: P0 => rhvars_Probl P0
+  | (s~?t) :: P0 => set_union Var_eqdec (term_vars t) (rhvars_Probl P0)
+  end.  
+
+
+(** Building freshness contexts over a variable *)
+
+Fixpoint fresh_context (S : set Atom) (X : Var) :=
+  match S with
+    | [] => []
+    | a :: S0 => (a, X) :: fresh_context S0 X
+  end.
+
+
+
 
 (** %\section{Lemmas}% *)
 
@@ -243,7 +269,7 @@ Proof.
   intro H2. apply Q. right~.
 Qed. 
 
-(** %\subsection{Basic results about subsets of equations}% *)
+(** %\subsection{Basic results about subsets of equations and freshness constraints}% *)
 
 Lemma fresh_not_In_equ_proj : forall a s P, ~ set_In (a #? s) (equ_proj P).
 Proof.
@@ -254,6 +280,13 @@ Qed.
 
 Lemma equ_proj_append : forall P P',  equ_proj (P ++ P') =
                                      (equ_proj P)++(equ_proj P').
+Proof.
+  intros. induction P; simpl; trivial.
+  destruct a; trivial. simpl. fequals.
+Qed.
+
+Lemma fresh_proj_append : forall P P',  fresh_proj (P ++ P') =
+                                       (fresh_proj P)++(fresh_proj P').
 Proof.
   intros. induction P; simpl; trivial.
   destruct a; trivial. simpl. fequals.
@@ -292,6 +325,14 @@ Proof.
   rewrite app_nil_r; trivial.
 Qed.
 
+Lemma fresh_proj_add_equ : forall P s t, fresh_proj (P|+(s~?t)) = fresh_proj P.
+Proof.
+  intros. case (in_dec Constraint_eqdec (s~?t) P); intro H.
+  rewrite set_add_In; trivial. rewrite set_add_not_In; trivial.
+  rewrite fresh_proj_append. simpl.
+  rewrite app_nil_r; trivial.
+Qed.  
+  
 Lemma equ_proj_rem_fresh : forall P a s, equ_proj (P\(a#?s)) = equ_proj P .
 Proof.
   intros. induction P; simpl; trivial.
@@ -299,6 +340,14 @@ Proof.
   case (Constraint_eqdec (a #? s) (a0 #? t)); intro H0; trivial.
   case (Constraint_eqdec (a #? s) (t ~? t0)); intro H1; trivial.
   inverts H1. simpl. rewrite IHP; trivial.
+Qed.
+
+Lemma fresh_proj_rem_equ : forall P s t, fresh_proj (P\(s~?t)) = fresh_proj P .
+Proof.
+  intros. induction P; simpl; trivial. destruct a.
+  case (Constraint_eqdec (s ~? t) (a #? t0)); intro H0. inverts H0.
+  simpl. rewrite IHP. trivial.
+  case (Constraint_eqdec (s ~? t) (t0 ~? t1)); intro H1; trivial.
 Qed.
 
 Lemma equ_proj_add_eq : forall P s t, equ_proj (P|+(s~?t)) = (equ_proj P)|+(s~?t).
@@ -531,7 +580,6 @@ Open Scope nat_scope.
 
 (** %\subsection{Sizes of sets of variables} % *)
 
-
 Lemma length_Problem_vars_rem : forall P u,  length (Problem_vars P) >= length (Problem_vars (P\u)).
 Proof.
   intros.
@@ -577,11 +625,25 @@ Fixpoint non_fixpoint_equ (P : Problem) {struct P} : nat :=
     | (s~?t)::P0 => if (fixpoint_equ_eqdec (s~?t)) then (non_fixpoint_equ P0) else
                   (1 + (non_fixpoint_equ P0))
   end.  
-
+           
+             
+Fixpoint func_symbols_equ (P : Problem) {struct P} : nat :=
+  match P with
+    | [] => 0
+    | (s~?t)::P0 => (func_symbols_term s) + (func_symbols_term t) +
+                    func_symbols_equ P0
+    | (a#?s)::P0 => func_symbols_equ P0
+  end.
 
 (**  %\subsection{Basic results about the size of problems}% *)
 
 
+Lemma equ_Problem_size_term : forall s t,
+      equ_Problem_size ([s~?t]) = term_size s + term_size t. 
+Proof.
+  intros. simpl. omega.
+Qed.  
+  
 Lemma fresh_Problem_size_remove : forall P a s, set_In (a#?s) P ->
                          fresh_Problem_size (P\(a#?s)) = fresh_Problem_size P - (term_size s). 
 Proof.
@@ -669,6 +731,24 @@ Proof.
 Qed.
 
 
+Lemma equ_Problem_size_add' : forall P u,
+      ~ set_In u P ->
+      equ_Problem_size (P|+u) =
+      equ_Problem_size P + equ_Problem_size ([u]).
+Proof.
+  intros. rewrite set_add_not_In; trivial.
+  induction P; trivial; simpl in *|-*.
+  destruct a; destruct u; rewrite IHP; try omega;
+  intro H0; apply H; right~.  
+Qed.
+  
+Lemma equ_Problem_size_add'' : forall P u,
+      set_In u P -> equ_Problem_size (P|+u) = equ_Problem_size P.
+Proof.
+  intros. rewrite set_add_In; trivial.
+Qed.
+
+
 Lemma equ_Problem_size_add_fresh : forall P a s,
                                    equ_Problem_size (P|+(a#?s)) = equ_Problem_size P.  
 Proof.
@@ -752,4 +832,206 @@ Proof.
  case (Constraint_eqdec (a #? s) (a0 #? t)); intro H0; simpl; trivial.
  case (Constraint_eqdec (a #? s) (t ~? t0)); intro H0; simpl; trivial.
  inverts H0. rewrite IHP; trivial.
+Qed.
+
+(** Lemmas about the operator func_symbols_equ *)
+
+Lemma func_symbols_set_In : forall P u,
+    set_In u P ->
+    func_symbols_equ P >= func_symbols_equ ([u]).
+Proof.
+  intros. destruct u; simpl. omega.
+  induction P; simpl in *|-*. contradiction.
+  destruct a. destruct H. inverts H.
+  apply IHP in H. omega.
+  destruct H. inverts H. omega.
+  apply IHP in H. omega.
+Qed.  
+
+Lemma func_symbols_equ_remove : forall P u,
+                                set_In u P ->
+                                func_symbols_equ (P\u) =
+                                func_symbols_equ P -
+                                func_symbols_equ ([u])  .
+Proof.
+  intros. destruct u. simpl.
+
+  clear H.
+  induction P; simpl; trivial.
+  case (Constraint_eqdec (a #? t) a0); intro H0.
+  destruct a0. omega. inverts H0.
+  simpl. destruct a0. trivial.
+  rewrite IHP. omega.
+  
+  induction P; simpl in *|-*; trivial.
+  case (Constraint_eqdec (t ~? t0) a); intro H0.
+  destruct a; inverts H0. omega.
+  simpl. destruct a. destruct H. inverts H.
+  apply IHP in H. trivial.
+  destruct H. inverts H. false.
+  rewrite IHP; trivial.
+  assert (Q : func_symbols_equ P >= func_symbols_equ ([t~?t0])).
+   apply func_symbols_set_In; trivial.
+  simpl in Q. omega.   
+Qed.
+
+
+Lemma func_symbols_equ_add : forall P u,
+    ~ set_In u P ->
+    func_symbols_equ (P|+u) =
+    func_symbols_equ P + func_symbols_equ ([u]).
+Proof.
+  intros. rewrite set_add_not_In; trivial.
+
+  destruct u. simpl. clear H.
+
+  induction P; simpl; trivial. destruct a0; trivial.
+  rewrite IHP. omega.
+
+  induction P; simpl; trivial.
+  destruct a.
+  rewrite IHP.
+  simpl. trivial. intro H0.
+  apply H. right~.
+  rewrite IHP.
+  simpl. omega. intro H0.
+  apply H. right~.
+Qed.
+
+Lemma func_symbols_equ_add' : forall P u,
+    set_In u P ->
+    func_symbols_equ (P|+u) = func_symbols_equ P.
+Proof.
+  intros. rewrite set_add_In; trivial.
+Qed.  
+ 
+  
+Lemma func_symbols_equ_remove_add : forall P u u',
+      set_In u P ->
+      func_symbols_equ ([u]) > func_symbols_equ ([u']) -> 
+      func_symbols_equ P > func_symbols_equ ((P|+u')\u).
+Proof.
+  intros. case (Constraint_eqdec u u'); intro H1.
+  rewrite H1 in H0. omega.
+  rewrite set_remove_add'; trivial.
+
+  case (set_In_dec Constraint_eqdec u' (P\u)); intro H2.
+
+  rewrite func_symbols_equ_add'; trivial.
+  rewrite func_symbols_equ_remove; trivial.
+  apply func_symbols_set_In in H. omega.
+
+  rewrite func_symbols_equ_add; trivial.
+  rewrite func_symbols_equ_remove; trivial.
+  apply func_symbols_set_In in H. omega.  
+
+Qed.
+
+Lemma func_symbols_equ_remove_add' : forall P u u' v,
+      set_In v P ->
+      func_symbols_equ ([v]) >
+      func_symbols_equ ([u]) + func_symbols_equ ([u']) -> 
+      func_symbols_equ P > func_symbols_equ ((P|+u|+u')\v).
+Proof.
+  intros.
+  
+  case (Constraint_eqdec v u'); intro H1.
+  rewrite H1 in H0. omega.
+  case (Constraint_eqdec v u); intro H2.
+  rewrite H2 in H0. omega.
+
+  rewrite 2 set_remove_add'; trivial.
+
+  case (set_In_dec Constraint_eqdec u' ((P\v)|+u)); intro H3.
+  rewrite func_symbols_equ_add'; trivial.
+  case (set_In_dec Constraint_eqdec u (P\v)); intro H4.
+  rewrite func_symbols_equ_add'; trivial.
+  rewrite func_symbols_equ_remove; trivial.
+  apply func_symbols_set_In in H. omega.
+  rewrite func_symbols_equ_add; trivial.
+  rewrite func_symbols_equ_remove; trivial.
+  apply func_symbols_set_In in H. omega.
+  rewrite func_symbols_equ_add; trivial. 
+  case (set_In_dec Constraint_eqdec u (P\v)); intro H4.
+  rewrite func_symbols_equ_add'; trivial.
+  rewrite func_symbols_equ_remove; trivial.
+  apply func_symbols_set_In in H. omega.
+  rewrite func_symbols_equ_add; trivial. 
+  rewrite func_symbols_equ_remove; trivial.
+  apply func_symbols_set_In in H. omega.  
+
+Qed.
+
+
+(** *)
+
+(** Characterising the memebers of the set (fresh_context St X)  *)
+
+Lemma fresh_context_mem : forall a X Y St, set_In (a, Y) (fresh_context St X) <->
+                                           (X = Y /\ set_In a St).
+Proof.
+  intros. induction St;
+    simpl; split~; intros; try contradiction.
+  destruct H; trivial.
+  destruct H. inverts H. split~.
+  apply IHSt in H. destruct H. split~.
+  destruct H. rewrite H in *|-*. destruct H0.
+  rewrite H0. left~. right~. 
+  apply <- IHSt. split~.
+Qed.
+  
+(* If a term is an right-hand position of a problem P, its 
+   varialbes are in the set rhvars_Probl *)
+
+Lemma rh_term_Probl_vars : forall s t P, set_In (s~?t) P ->
+                           (forall X, set_In X (term_vars t) -> set_In X (rhvars_Probl P)).              
+Proof.
+  intros. induction P; simpl in *|-*; trivial.
+  destruct H. rewrite H. apply set_union_intro1; trivial.
+  apply IHP in H. clear IHP H0.
+  destruct a; trivial. apply set_union_intro2; trivial.
+Qed.
+
+
+(* If X is a right-hand var in (P\u) then it is in P *)
+
+Lemma rhvars_Prob_rem : forall X P u, set_In X (rhvars_Probl (P\u)) ->
+                                      set_In X (rhvars_Probl P).
+Proof.
+  intros. induction P; simpl in *|-*; auto.
+  gen H. case (Constraint_eqdec u a); intros H H0.
+  rewrite H in *|-*. clear H. destruct a; simpl in *|-*; auto.
+  apply set_union_intro2; trivial.
+  simpl in H0. destruct a; auto.
+  apply set_union_elim in H0. apply set_union_intro.
+  destruct H0; auto.
+Qed.  
+  
+Lemma rhvars_Prob_add : forall X P u, set_In X (rhvars_Probl (P|+u)) ->
+                                      (set_In X (rhvars_Probl ([u])) \/ set_In X (rhvars_Probl P)).
+Proof.
+  intros. induction P; simpl in *|-*; auto.
+  gen H. case (Constraint_eqdec u a); intros H H0.
+  rewrite H in *|-*. clear H. destruct a; simpl in *|-*; auto.
+  destruct u; destruct a; simpl in *|-*; auto.
+  apply set_union_elim in H0. right~. destruct H0.
+  apply set_union_intro1; trivial.
+  apply IHP in H0. destruct H0; try contradiction.
+  apply set_union_intro2; trivial.
+  apply set_union_elim in H0. destruct H0.
+  right~. apply set_union_intro1; trivial.
+  apply IHP in H0. destruct H0; auto.
+  right~. apply set_union_intro2; trivial.
+Qed.  
+  
+
+Lemma rhvars_Prob_union : forall P P' X, set_In X (rhvars_Probl (P \cup P')) ->
+                                         (set_In X (rhvars_Probl P) \/ set_In X (rhvars_Probl P')).
+Proof.
+  intros. induction P'; simpl in *|-*; auto.
+  apply rhvars_Prob_add in H. destruct a; simpl in *|-*.
+  destruct H; try contradiction. apply IHP'; trivial.
+  destruct H. right~. apply set_union_intro1; trivial.
+  apply IHP' in H. destruct H; auto.
+  right~. apply set_union_intro2; trivial.
 Qed.

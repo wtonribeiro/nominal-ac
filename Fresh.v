@@ -16,6 +16,12 @@ Require Export Disagr.
 
 Definition Context := set (Atom * Var).
 
+(** C0 is a subset freshness context of C1 *) 
+
+Definition sub_context (C0 C1 : Context) :=
+  forall c, set_In c C0 -> set_In c C1.
+
+
 Inductive fresh : Context -> Atom -> term -> Prop :=
 
  | fresh_Ut   : forall C a, fresh C a Ut 
@@ -146,7 +152,27 @@ Qed.
 
 Hint Resolve fresh_lemma_3.
 
-
+Lemma fresh_lemma_4 : forall C C' a t,
+      sub_context C C' -> C |- a # t -> C' |- a # t. 
+Proof.
+  intros. unfold sub_context in H.
+  induction t.
+  apply fresh_Ut.
+  apply fresh_At_elim in H0. apply fresh_At; trivial.
+  apply fresh_Ab_elim in H0. destruct H0.
+   rewrite H0. apply fresh_Ab_1.
+   destruct H0. apply fresh_Ab_2; trivial.
+   apply IHt; trivial.
+  apply fresh_Pr_elim in H0. destruct H0.
+  apply fresh_Pr.
+   apply IHt1; trivial.
+   apply IHt2; trivial.  
+  apply fresh_Fc_elim in H0.
+  apply fresh_Fc. apply IHt; trivial. 
+  apply fresh_Su_elim in H0.
+  apply fresh_Su. apply H; trivial.
+Qed.  
+   
 (** About freshness, TPith and TPithdel *)
  
 Lemma fresh_TPith_TPithdel : forall i a C t E n, 
@@ -207,3 +233,6 @@ Proof.
   gen H. case (set_In_dec eq_nat_dec n S0); intros H H1;
   apply fresh_Fc_elim in H1; apply fresh_Fc; apply IHt; trivial.
 Qed.
+
+
+

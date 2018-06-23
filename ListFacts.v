@@ -54,8 +54,55 @@ Qed.
 
 Hypothesis Aeq_dec : forall (a a': A), {a = a'} + {a <> a'}.
 
+
+(** Additonal operators over lists: 
+   remove_list, head_list and tail_list. *)
+
+Fixpoint remove_list (L L': list A) : list A :=
+  
+  match L with
+
+    | [] => L'
+                
+    | a::L0 => remove_list L0 (remove Aeq_dec a L') 
+
+  end.
+
+
+Fixpoint head_list (n : nat) (L : list A) : list A :=
+
+  match n , L with
+                                                              
+  | 0 , _ => []
+
+  | _ , [] => []             
+
+  | S n0 , a :: L0 => a :: head_list n0 L0
+
+  end.                      
+
+
+Fixpoint tail_list (n : nat)  (L : list A) : list A :=
+
+  match n , L with
+                                                              
+  | 0 , L => L
+
+  | _ , [] => []             
+
+  | S n0 , a :: L0 => tail_list n0 L0
+
+  end.     
+
+
 (** Additional lemmas about remove an element of a list *)
 
+Lemma nil_eqdec : forall (l : list A), {l = []} + {l <> []}.
+Proof.
+  intros. destruct l. left~.
+  right~. discriminate.
+Qed.
+  
 Lemma remove_elim : forall (a b : A) (l : list A),    
                            In b (remove Aeq_dec a l) -> b <> a /\ In b l.
 Proof.
@@ -205,6 +252,41 @@ Proof.
    
 Qed.
 
+
+Lemma subset_list_eq' : forall (l l' : list A),
+    NoDup l -> NoDup l' ->
+    length l = length l' ->                  
+    (forall b, In b l -> In b l') ->
+    (forall b, In b l' -> In b l) .
+Proof.
+  intros.
+  case (set_In_dec Aeq_dec b l); intro H4; trivial.  
+  apply subset_list' in H2; trivial.
+  omega. exists b. split~.   
+Qed.
+
+
+Lemma remove_list_nil: forall (L : list A),
+      remove_list L ([]) = [] .
+Proof.
+  intros. induction L; simpl; trivial.
+Qed.  
+
+Lemma remove_list_overflow : forall (L L' : list A),
+      (forall a, In a L' -> In a L) ->
+      remove_list L L' = []. 
+Proof.
+  intros. gen_eq l : (length L); intro H1.
+  gen L L'. induction l using peano_induction; intros.
+  destruct L; simpl in *|-*; trivial.
+  destruct L'; trivial.
+  false. apply (H0 a). left~.
+  apply H with (m := length L); try omega; intros.
+  apply remove_elim in H2. destruct H2.
+  apply H0 in H3. destruct H3; trivial.
+  symmetry in H3. contradiction.
+Qed.
+
 (** Additional lemmas for naturals numbers *)
 
 Lemma nat_leq_inv : forall m n, n <= m -> m >= n.
@@ -243,6 +325,23 @@ Proof. intros; omega. Qed.
     simpl in H. destruct H. left~. right~.
   Qed.
 
+
+  Lemma set_remove_add' : forall (a b : A) (l : list A),
+      a <> b ->
+      set_remove Aeq_dec a (set_add Aeq_dec b l) =
+      set_add Aeq_dec b (set_remove Aeq_dec a l).
+  Proof.
+    intros. induction l; simpl.
+    case (Aeq_dec a b); intro H0. contradiction. fequals.
+    case (Aeq_dec b a0); case (Aeq_dec a a0); intros H0 H1.
+    rewrite <- H1 in H0. contradiction.
+    simpl. case (Aeq_dec b a0); case (Aeq_dec a a0); intros H2 H3;
+    try contradiction; trivial. 
+    simpl. case (Aeq_dec a a0); intro H2; try contradiction; trivial.
+    simpl. case (Aeq_dec b a0); case (Aeq_dec a a0); intros H2 H3;
+             try contradiction. rewrite IHl. trivial.
+  Qed.   
+    
  Lemma set_In_nil : forall (l : list A), l = [] <-> (forall a, ~ set_In a l).  
  Proof.
    intros. split~; intros.
@@ -308,5 +407,67 @@ Proof. intros; omega. Qed.
    rewrite IHl. trivial.
  Qed.
 
+
+
+ (** Lemmas about head_list and tail_list *)
+
+
+Lemma head_list_not_nil : forall (L : list A) (n : nat),
+
+     n <> 0 -> length L > 0 ->
+
+     head_list n L <> [] .
+Proof.
+  intros. 
+  destruct L; simpl in *|-*. omega.
+  destruct n; simpl. false.
+  discriminate.
+Qed.  
+
+
+Lemma head_list_length : forall (L : list A) (n : nat),
+      n <= length L ->
+      length (head_list n L) = n.
+Proof.
+  intros. gen_eq l : (length L); intro H0.
+  gen H0 H. gen n L. induction l using peano_induction; intros.
+  destruct L; simpl in *|-*.
+  assert (Q : n = 0). omega. rewrite Q. simpl; trivial.
+  destruct n. simpl. trivial.
+  simpl. rewrite H with (m := length L); omega.
+Qed.  
+
+Lemma tail_list_length : forall (L : list A) (n : nat),
+      n <= length L ->
+      length (tail_list n L) = length L - n.
+Proof.
+  intros. gen_eq l : (length L); intro H0.
+  gen H0 H. gen n L. induction l using peano_induction; intros.
+  destruct L; simpl in *|-*.
+  assert (Q : n = 0). omega. rewrite Q. simpl; omega.
+  destruct n. simpl. omega.
+  simpl. rewrite H with (m := length L); omega.
+Qed.  
+
+
+Lemma head_tail_append : forall (L L0 L1 : list A) (n : nat),
+      L0 = head_list n L ->
+      L1 = tail_list n L ->
+      L = L0 ++ L1 .
+Proof.
+  intros. gen_eq l : (length L); intro H1.
+  gen H1 H H0. gen L L0 L1 n.
+  induction l using peano_induction; intros.
+  destruct L. destruct n; simpl in *|-.
+  rewrite H0. rewrite H2. simpl; trivial.
+  rewrite H0. rewrite H2. simpl; trivial.
+  destruct n; simpl in *|-.
+  rewrite H0. rewrite H2. simpl; trivial.
+  rewrite H0. simpl. fequals. rewrite H2.
+  apply H with (m := length L) (n:=n); try omega; trivial.
+Qed.
   
-End ListFacts.
+
+End ListFacts.    
+
+

@@ -25,7 +25,22 @@ Qed.
 Hint Resolve alpha_to_aacc_equiv.
 
 
- 
+(** Some auxiliary lemmas about is_Pr *)
+
+Lemma alpha_neg_is_Pr : forall C t t', C |- t ~alpha t' -> (~ is_Pr t <-> ~ is_Pr t').
+Proof.
+  intros. inverts H; simpl in *|-*; split~; intros; trivial.
+Qed.
+
+Lemma aacc_neg_is_Pr : forall C t t', C |- t ~aacc t' -> (~ is_Pr t <-> ~ is_Pr t').
+Proof.
+  intros. inverts H; simpl in *|-*; split~; intros; trivial.
+Qed.
+
+Lemma perm_neg_is_Pr : forall pi t, ~ is_Pr (pi @ t) <-> ~ is_Pr t.
+Proof.
+  intros. destruct t; autorewrite with perm; simpl; split~; intros; trivial. 
+Qed.
 
 (** Intermediate transitivity for aacc_equiv with alpha_equiv *)
 
@@ -39,7 +54,9 @@ Proof.
   
   gen t3 H0. induction H; intros; auto.
   inverts H1. apply equiv_Pr; [apply IHequiv1 | apply IHequiv2]; trivial.
-  inverts H1. apply equiv_Fc; auto. 
+  inverts H1. apply equiv_Fc; auto. destruct H.
+  left~. destruct H. right~. split~. destruct H1. left~.
+  right~. apply alpha_neg_is_Pr in H7. apply H7; trivial.
   inverts H0. apply equiv_Ab_1; apply IHequiv; trivial.
   apply equiv_Ab_2; trivial. apply IHequiv; trivial.
   inverts H2. apply equiv_Ab_2; trivial.
@@ -126,7 +143,9 @@ Proof.
   case IHequiv2; clear IHequiv2; intros t2'' IH2.
   destruct IH1. destruct IH2. exists (<|t1'',t2''|>). split~.
   case IHequiv; clear IHequiv; intros t'' H1. destruct H1.
-  exists (Fc E n t''). split~.
+  exists (Fc E n t''). split~. apply equiv_Fc; trivial.
+  destruct H. left~. right~. destruct H. split~.
+  destruct H3. left~. left~. apply aacc_neg_is_Pr in H0. apply H0; trivial.
   case IHequiv; clear IHequiv; intros t'' H0. destruct H0.
   exists ([a]^t''). split~.
   case IHequiv; clear IHequiv; intros t'' H2. destruct H2.
@@ -160,10 +179,9 @@ Proof.
          autorewrite with perm; auto.
 
  destruct H. apply equiv_Fc; trivial.
- left~. destruct H. apply equiv_Fc.
+ left~. destruct H. apply equiv_Fc; trivial.
  right~; intros. split~; intros.
- intro. destruct t; autorewrite with perm in H2; inverts H2.
- apply (H1 t1 t2); trivial. trivial.
+ destruct H1; [left~ | right~]; apply perm_neg_is_Pr; trivial.
  
  apply equiv_Ab_2. apply perm_diff_atom; trivial.
  apply aacc_alpha_equiv_trans.
@@ -683,17 +701,21 @@ Proof.
  apply H with (t2 := t2') (m := term_size t4); try omega; trivial. 
 
  simpl in H0. apply equiv_Fc; trivial.
+ destruct H3. left~. destruct H1. right~. split~.
+ destruct H2. left~. right~. apply aacc_neg_is_Pr in H10.
+ apply H10; trivial.
+ 
  apply H with (t2 := t') (m := term_size t); try omega; trivial.
 
  false. destruct H3. apply H1. simpl. left~.
  destruct H1. omega.
  false. destruct H3. apply H1. simpl. right~.
  destruct H1. omega.
- inverts H4. false. destruct H3. apply H1. simpl. right~.
- destruct H1. apply (H2 t2 t3); trivial.
- inverts H4. false. destruct H3. apply H1. simpl. right~.
- destruct H1. apply (H2 t2 t3); trivial. 
- 
+ inverts H4. destruct H3; try contradiction.
+ destruct H1. simpl in H2. false. destruct H2; apply H2; trivial.
+ inverts H4. destruct H3; try contradiction.
+ destruct H1. simpl in H2. false. destruct H2; apply H2; trivial. 
+
  apply equiv_Ab_1. 
  apply H with (t2 := t') (m := term_size t); try omega; trivial.
  simpl in H0. apply equiv_Ab_2; trivial.
@@ -777,8 +799,8 @@ Proof.
  assert (Q2 : term_size (TPithdel 1 t 1 n) < term_size t). auto. 
  simpl. omega.
 
- inverts H11. false. destruct H10. apply H1. simpl. right~.
- destruct H1. apply (H2 t0 t4); trivial.
+ inverts H11. destruct H10; try contradiction.
+ destruct H1. simpl in H2. false. destruct H2; apply H2; trivial.
  
  apply equiv_C1. simpl. right~.
   apply H with (t2 := t0) (m := term_size s0); try omega; trivial.
@@ -788,9 +810,9 @@ Proof.
   apply H with (t2 := t0) (m := term_size s0); try omega; trivial.
   apply H with (t2 := t4) (m := term_size s1); try omega; trivial.
 
- false. destruct H10. apply H1. simpl. right~.
- destruct H1. apply (H2 t0 t4); trivial.  
-
+ inverts H11. destruct H10; try contradiction.
+ destruct H1. simpl in H2. false. destruct H2; apply H2; trivial.
+ 
  apply equiv_C2. simpl. right~.
   apply H with (t2 := t4) (m := term_size s0); try omega; trivial.
   apply H with (t2 := t0) (m := term_size s1); try omega; trivial.
@@ -970,8 +992,7 @@ Proof.
   
  apply equiv_Fc; trivial. destruct H.
  left~. right~. destruct H. split~.
- intros. intro H2. rewrite H2 in IHequiv.
- inverts IHequiv. apply (H1 t1' t2'); trivial.
+ destruct H1. right~. left~. 
  
  assert (Q0 : C |- t' ~aacc (([(a', a)]) @ t)).
   apply aacc_equiv_trans with (t2 := ([(a, a')]) @ t).
@@ -990,6 +1011,38 @@ Proof.
  apply aacc_equiv_AC with (i:=i) (j:=1); try omega; trivial.
 Qed.
 
+Lemma aacc_equiv_sub_context : forall C C' s t,
+      sub_context C C' -> C |- s ~aacc t -> C' |- s ~aacc t.
+Proof.
+  intros. induction H0.
+  apply equiv_Ut. apply equiv_At.
+  apply equiv_Pr.
+   apply IHequiv1; trivial.
+   apply IHequiv2; trivial.
+  apply aacc_equiv_Fc.
+   apply IHequiv; trivial.
+  apply equiv_Ab_1.  
+   apply IHequiv; trivial.
+  apply equiv_Ab_2; trivial.
+   apply IHequiv; trivial.
+  apply fresh_lemma_4 with (C:=C); trivial.
+  apply equiv_Su; intros.
+   unfold sub_context in H. 
+   apply H. apply H0; trivial.
+  apply equiv_A; trivial.
+   apply IHequiv1; trivial.
+   apply IHequiv2; trivial.  
+  apply equiv_AC with (i:=i); trivial. 
+   apply IHequiv1; trivial.
+   apply IHequiv2; trivial.
+  apply equiv_C1; trivial.
+   apply IHequiv1; trivial.
+   apply IHequiv2; trivial.
+  apply equiv_C2; trivial.
+   apply IHequiv1; trivial.
+   apply IHequiv2; trivial.
+Qed.
+   
 (** Soundness of aacc_equiv *)
 
 Theorem aacc_equivalence : forall C, Equivalence (equiv (0::1::[2]) C).
@@ -1038,3 +1091,28 @@ Proof.
   unfold proper_equiv_Fc; intros. apply aacc_equiv_Fc; trivial.
   apply aacc_equivalence.
 Qed.
+
+
+Corollary aacc_perm_inv_side : forall C pi s t, C |- (!pi) @ s ~aacc t -> C |- s ~aacc (pi @ t).
+Proof.
+  intros.
+  apply aacc_equivariance with (pi:=pi) in H.
+  apply aacc_equiv_trans with (t2:= pi @ ((!pi) @ s)); trivial.
+  apply aacc_alpha_equiv_trans. exists s. split~.
+  rewrite perm_comp. gen_eq g : (!pi); intro H0.
+  replace pi with (!g). apply alpha_equiv_sym.
+  apply alpha_equiv_perm_inv. rewrite H0.
+  rewrite rev_involutive. trivial.
+Qed.
+
+Corollary aacc_perm_inv_side' : forall C pi s t, C |- s ~aacc (pi @ t) <-> C |- (!pi) @ s ~aacc t.
+Proof.
+  intros. split~; intro.
+  apply aacc_equiv_sym.
+  apply aacc_perm_inv_side.
+  rewrite rev_involutive.
+  apply aacc_equiv_sym. trivial.
+  apply aacc_perm_inv_side; trivial.
+Qed.  
+
+                            

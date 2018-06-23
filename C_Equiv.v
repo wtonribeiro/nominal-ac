@@ -26,15 +26,16 @@ C |- (<|t1,t2|>) ~c (<|t1',t2'|>) -> ((C |- t1 ~c t1') /\ (C |- t2 ~c t2')).
 Proof. intros. inverts H; try split~. Qed.
 
 Lemma c_equiv_Fc_elim : forall C E E' n n' t t',
-((~set_In E (0::1::[2])) \/ (E = 2 /\ (forall s s', t <> <|s,s'|>))) ->                           
+((~set_In E (0::1::[2])) \/ (E = 2 /\ ((~ is_Pr t) \/ (~ is_Pr t')))) ->                           
 C |- Fc E n t ~c Fc E' n' t' -> (E = E' /\ n = n' /\ C |- t ~c t').  
 Proof. 
  intros. inverts H0. repeat split~.
  simpl in H6. omega.  simpl in H6. omega.
  false. destruct H. apply H. simpl. right~.
- destruct H. apply (H0 s0 s1); trivial.
+ destruct H. simpl in H0. destruct H0; apply H0; trivial.
  false. destruct H. apply H. simpl. right~.
- destruct H. apply (H0 s0 s1); trivial. 
+ destruct H.
+ destruct H. simpl in H0. destruct H0; apply H; trivial. 
 Qed.
 
 Lemma c_equiv_Fc_c_elim : forall C n n' s1 s2 t1 t2,
@@ -44,7 +45,7 @@ Lemma c_equiv_Fc_c_elim : forall C n n' s1 s2 t1 t2,
 Proof.
   intros. inverts H.
   false. destruct H3. simpl in H. omega.
-  destruct H. apply (H0 s1 s2); trivial.
+  destruct H. simpl in H0. destruct H0; apply H0; trivial.
   split~. split~.
 Qed.
   
@@ -81,7 +82,12 @@ Lemma c_alpha_equiv_trans : forall C t1 t2 t3,
 Proof.
  intros. generalize t3 H0; clear t3 H0. 
  induction H; intros t3 H'; inverts H'; auto.
- 
+
+ apply equiv_Fc.
+ destruct H. left~. right~. destruct H. split~.
+ destruct H1. left~. right~. apply alpha_neg_is_Pr in H6.
+ apply H6; trivial. apply IHequiv; trivial.
+  
  apply equiv_Ab_2; trivial. apply IHequiv.
  apply alpha_equiv_equivariance; trivial.
  apply alpha_equiv_fresh with (t1 := t'); trivial.
@@ -185,10 +191,8 @@ Proof.
  intros. induction H;
  autorewrite with perm; auto.
  apply equiv_Fc; trivial.
- destruct H. left~. destruct H. right~; intros.
- split~; intros. intro.
- destruct t; autorewrite with perm in H2; inverts H2.
- apply (H1 t1 t2); trivial.
+ destruct H. left~. right~. destruct H.
+ split~. destruct H1; [left~ | right~]; apply perm_neg_is_Pr; trivial.
  apply equiv_Ab_2. apply perm_diff_atom; trivial.
  apply c_alpha_equiv_trans with (t2 := (pi @ (([(a, a')]) @ t'))).
  apply IHequiv. apply alpha_equiv_pi_comm. apply fresh_lemma_3; trivial.

@@ -213,49 +213,93 @@ end.
 Definition psubterms (t : term) := set_remove term_eqdec t (subterms t).
 
 
-Lemma Pr_eqdec : forall s, {exists u, exists v, s = <|u,v|>} + {forall u v, s <> <|u,v|>} .
-Proof.
-  intros. destruct s.
-  right~; intros; discriminate. right~; intros; discriminate.  
-  right~; intros; discriminate.
-  left~. exists s1. exists s2; trivial.
-  right~; intros; discriminate. right~; intros; discriminate.  
-Qed.
+
+Definition is_Fc  (s:term) (E n : nat) : Prop :=
+  match s with
+    | Fc E0 n0 t => if (E0, n0) ==np (E, n) then
+                      True
+                    else False
+    | _ => False
+  end . 
 
 Definition is_Pr (s:term) : Prop :=
   match s with
     | <|s0,s1|> => True
     | _ => False
-  end . 
+  end .
 
-Lemma Su_eqdec : forall s, {exists pi, exists X, s = pi|.X} + {forall pi X, s <> pi|.X} .
-Proof.
-  intros. destruct s.
-  right~; intros; discriminate.
-  right~; intros; discriminate.  
-  right~; intros; discriminate. 
-  right~; intros; discriminate.
-  right~; intros; discriminate.  
-  left~. exists p. exists v; trivial.
-Qed.
+Definition is_Ab (s:term) : Prop :=
+  match s with
+    | [a]^t => True
+    | _ => False
+  end . 
 
 Definition is_Su (s:term) : Prop :=
   match s with
     | pi|.X => True
     | _ => False
   end .
+           
 
-Lemma is_Pr_exists : forall s, is_Pr s -> exists u, exists v, s = <|u,v|>.
+Lemma is_Fc_dec : forall s E n, is_Fc s E n \/ ~ is_Fc s E n.
+Proof.
+  intros. destruct s; simpl.
+  right~. right~. right~. right~.
+  case ((n0, n1) ==np (E, n)); intro H.
+  left~. right~. 
+  right~.
+Qed.
+
+
+Lemma is_Pr_dec : forall s, is_Pr s \/ ~ is_Pr s.
+Proof.
+  intros. destruct s; simpl.
+  right~. right~. right~.
+  left~.  right~. right~. 
+Qed.
+
+Lemma is_Ab_dec : forall s, is_Ab s \/ ~ is_Ab s.
+Proof.
+  intros. destruct s; simpl.
+  right~. right~. left~.
+  right~. right~. right~.
+Qed.
+
+Lemma is_Su_dec : forall s, is_Su s \/ ~ is_Su s.
+Proof.
+  intros. destruct s; simpl.
+  right~. right~. right~.
+  right~. right~. left~. 
+Qed.
+
+
+
+Lemma is_Fc_exists : forall E n s, is_Fc s E n -> exists t, s = Fc E n t.
+Proof.
+  intros. destruct s; simpl in H; try contradiction.
+  gen H. case ((n0, n1) ==np (E, n)); intros H0 H; try contradiction.
+  inverts H0. exists s. trivial.
+Qed.  
+
+Lemma is_Ab_exists : forall s, is_Ab s -> exists a t, s = [a]^t.
+Proof.
+  intros. destruct s; simpl in H; try contradiction.
+  exists a. exists s. trivial.
+Qed.
+  
+Lemma is_Pr_exists : forall s, is_Pr s -> exists u v, s = <|u,v|>.
 Proof.
   intros. destruct s; simpl in H; try contradiction.
   exists s1. exists s2; trivial.
 Qed.
 
-Lemma is_Pr_Su : forall s, is_Su s -> exists pi, exists X, s = pi|.X .
+Lemma is_Su_exists : forall s, is_Su s -> exists pi X, s = pi|.X .
 Proof.
   intros. destruct s; simpl in H; try contradiction.
   exists p. exists v; trivial.
-Qed.  
+Qed.
+
+
 
 Lemma isnt_Pr : forall s, (forall u v, s <> <| u, v |>) -> ~ is_Pr s.
 Proof.
@@ -278,6 +322,26 @@ Proof.
   right~; intros; discriminate.
   left~. exists n. exists n0. exists s. trivial.
   right~; intros; discriminate.  
+Qed.
+
+Lemma Pr_eqdec : forall s, {exists u, exists v, s = <|u,v|>} + {forall u v, s <> <|u,v|>} .
+Proof.
+  intros. destruct s.
+  right~; intros; discriminate. right~; intros; discriminate.  
+  right~; intros; discriminate.
+  left~. exists s1. exists s2; trivial.
+  right~; intros; discriminate. right~; intros; discriminate.  
+Qed.
+
+Lemma Su_eqdec : forall s, {exists pi, exists X, s = pi|.X} + {forall pi X, s <> pi|.X} .
+Proof.
+  intros. destruct s.
+  right~; intros; discriminate.
+  right~; intros; discriminate.  
+  right~; intros; discriminate. 
+  right~; intros; discriminate.
+  right~; intros; discriminate.  
+  left~. exists p. exists v; trivial.
 Qed.
   
 
@@ -539,4 +603,24 @@ Proof.
   assert (Q': set_In t (subterms t)).
    apply In_subterms.
   rewrite H in Q. contradiction.
+Qed.
+
+
+(** About proper terms *)
+
+(**
+	The following is a restriction over the syntax. 
+	Commutative function symbols can have only pairs as 
+	arguments.
+*)  
+  
+Definition Proper_term (t : term) :=
+  forall n s, set_In (Fc 2 n s) (subterms t) -> is_Pr s .
+
+
+Lemma Proper_subterm : forall s t, set_In s (subterms t) -> Proper_term t -> Proper_term s.
+Proof.
+  intros. unfold Proper_term in *|-*; intros.
+  apply H0 with (n:=n).
+  apply subterms_trans with (t := s); trivial.
 Qed.

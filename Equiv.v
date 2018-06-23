@@ -34,7 +34,7 @@ Inductive equiv (S : set nat): Context -> term -> term -> Prop :=
                                           equiv S C (<|t1,t2|>) (<|t1',t2'|>)  
 
  | equiv_Fc   :  forall E n t t' C, (~ set_In E S \/
-                                    (E = 2 /\ (forall s s', t <> <|s,s'|>))) -> 
+                                    (E = 2 /\ ((~ is_Pr t) \/ (~ is_Pr t')))) -> 
                                     (equiv S C t t') -> 
                               equiv S C (Fc E n t) (Fc E n t')
 
@@ -336,9 +336,8 @@ Proof.
   apply equiv_Fc; trivial.
   destruct H7.  left~. 
   right~. destruct H4. split~. intros.
-  intro. destruct t; simpl in H6; inverts H6.
-  apply (H5 t1 t2); trivial. gen H8.
-  case (set_In_dec eq_nat_dec n S2); intros; inverts H8.
+  destruct H5; [left~ | right~];
+    intro H6; apply H5; apply rpl_super_is_Pr in H6; trivial.
   apply -> H0; intros; trivial. apply H1.
   apply set_union_elim in H4. destruct H4.
   apply set_union_intro1. apply set_union_elim in H4. destruct H4.
@@ -371,9 +370,9 @@ Proof.
   assert (0 >= 1). apply H1. apply set_union_intro1. apply set_union_intro1; trivial. omega.
 
   Focus 11.  apply equiv_Fc. destruct H7.
-  left~. destruct H4. right~. split~. intros.
-  intro. destruct t; simpl in H6; inverts H6.
-  apply (H5 (rpl_super S2 E s) (rpl_super S2 E s')); trivial. 
+  left~. destruct H4. right~. split~.
+  destruct H5; [left~ | right~];
+    intro H6; apply H5; apply rpl_super_is_Pr; trivial.  
   apply <- H0; intros; trivial. apply H1.
   apply set_union_elim in H4. destruct H4.
   apply set_union_intro1. apply set_union_elim in H4. destruct H4.
@@ -774,21 +773,36 @@ Qed.
 
 Lemma equiv_Fc_c : forall C t t' n, C |- t ~aacc t' -> C |- Fc 2 n t ~aacc Fc 2 n t'.
 Proof.
-  intros. case (Pr_eqdec t); intro H0.
-   destruct H0. destruct H0. rewrite H0 in *|-*.
+  intros.
+   case (is_Pr_dec t); intro H0.
+   case (is_Pr_dec t'); intro H1.
+   apply is_Pr_exists in H0. apply is_Pr_exists in H1.
+   case H0; clear H0; intros u0 H0.
+   case H0; clear H0; intros u1 H0.
+   case H1; clear H1; intros v0 H1.
+   case H1; clear H1; intros v1 H1.
+   rewrite H0 in *|-*. rewrite H1 in *|-*. clear H0 H1.
   inverts H. apply equiv_C1; trivial.
   simpl. right~.
-  apply equiv_Fc; trivial. right~; split~; intros.
+  apply equiv_Fc; trivial. right~.
+  apply equiv_Fc; trivial. right~.  
 Qed.
 
 Lemma c_equiv_Fc : forall C t t' m n, C |- t ~c t' -> C |- Fc m n t ~c Fc m n t'.
 Proof.
-  intros. case (eq_nat_dec m 2); intro H0. rewrite H0.
-  case (Pr_eqdec t); intro H1.
-  destruct H1. destruct H1. rewrite H1 in *|-*.
+  intros. case (eq_nat_dec m 2); intro H0. rewrite H0. clear H0.
+   case (is_Pr_dec t); intro H0.
+   case (is_Pr_dec t'); intro H1.
+   apply is_Pr_exists in H0. apply is_Pr_exists in H1.
+   case H0; clear H0; intros u0 H0.
+   case H0; clear H0; intros u1 H0.
+   case H1; clear H1; intros v0 H1.
+   case H1; clear H1; intros v1 H1.
+   rewrite H0 in *|-*. rewrite H1 in *|-*. clear H0 H1.
   inverts H. apply equiv_C1; trivial.
-  simpl. left~. apply equiv_Fc; trivial.
-  right~; split~; intros.
-  apply equiv_Fc; trivial.
-  left~. simpl. omega.
+  simpl. left~. apply equiv_Fc; trivial. right~.
+  apply equiv_Fc; trivial. right~.
+  apply equiv_Fc; trivial. left~.
+  intro H1. apply H0. simpl in H1.
+  destruct H1; try contradiction. symmetry; trivial.
 Qed.
