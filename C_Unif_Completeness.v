@@ -13,24 +13,24 @@
 	       of this file. It also contains two preliminary lemmas 
 	       (equ_sys_compl and unif_step_compl).
  
- Last Modified On: November 10th, 2017.
+ Last Modified On: June 7th, 2018.
  ============================================================================
  \end{verbatim} %
 *)
 
-Require Export Soundness.
+Require Export C_Unif_Soundness.
 
 (** %\section{ Completeness of equ\_sys }% *)
 (**
 	The following lemma express the completeness of the reductions 
 	by the equational system equ_sys. Its proof is done by case 
 	analysis over equ_sys and uses Lemma equ_sol_preserv.
-*)
+ *)
 
-Lemma equ_sys_compl  : forall T Sl,
+Lemma equ_sys_compl  : forall T Sl varSet,
                        valid_triple T ->
-                       ~ NF _ equ_sys T ->
-                       (sol_c Sl T  <-> (exists T', equ_sys T T' /\ sol_c Sl T')).
+                       ~ NF _ (equ_sys varSet) T ->
+                       (sol_c Sl T  <-> (exists T', equ_sys varSet T T' /\ sol_c Sl T')).
 
 Proof.
   intros.
@@ -84,7 +84,8 @@ Proof.
   (* equ_sys_C1 *)
   generalize H6; intro H6'.
   apply H3 in H6'. simpl in H6'. inverts H6'.
-  destruct H8. simpl in H0. omega. destruct H0. false. clear H10.  
+  destruct H8. simpl in H0. omega. destruct H0. false.
+  simpl in H5. destruct H5; apply H5; trivial. 
   exists (c0,s0,(p0|+(s2~?t0)|+(s3~?t1))\
           (Fc 2 n (<|s2,s3|>)~?Fc 2 n (<|t0,t1|>))); simpl.
   repeat split~; intros. apply equ_sys_C1; trivial. 
@@ -112,7 +113,8 @@ Proof.
   (* equ_sys_C2 *)
   generalize H6; intro H6'.
   apply H3 in H6'. simpl in H6'. inverts H6'.
-  destruct H8. simpl in H0. omega. destruct H0. false. clear H10.  
+  destruct H8. simpl in H0. omega. destruct H0. false.
+  simpl in H5. destruct H5; apply H5; trivial.   
   exists (c0,s0,(p0|+(s2~?t0)|+(s3~?t1))\
           (Fc 2 n (<|s2,s3|>)~?Fc 2 n (<|t0,t1|>))); simpl.
   repeat split~; intros. apply equ_sys_C1; trivial. 
@@ -167,9 +169,10 @@ Proof.
   destruct H0. inverts H0. inverts Q. false.
   rewrite subst_perm_comm. trivial.
   apply H3; trivial.
-  
+
+
   (* equ_sys_inst *)
-  gen_eq s' : (s©([(X,(!pi)@t)])); intro H10.
+  gen_eq s' : (s©([(X,(!pi)@t)])); intro H11.
   exists (c0,s',((p0\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)]))\cup(c0/?s')); simpl.
   repeat split~; intros.  
   apply equ_sys_inst; trivial.
@@ -192,10 +195,10 @@ Proof.
   apply c_equiv_unif_fresh with (S1:=s1).
   apply subst_sym; trivial. apply H2; trivial.
 
-  unfold fresh_env in H1.
+  unfold fresh_env in H2.
   apply set_In_subs_fresh_constraints in H0.
   case H0; clear H0; intros Y H0. destruct H0.
-  apply H1 in H0. rewrite H5. rewrite H10. clear H1 H2 H3 H5 H12.
+  apply H1 in H0. rewrite H5. rewrite H11. clear H1 H2 H3 H5 H12.
   rewrite subst_comp_expand.
   rewrite <- subst_comp_expand with (t:= (([])|.Y)|^ s).
   apply c_equiv_unif_fresh with (S1:=s1). apply subst_sym; trivial.
@@ -236,7 +239,7 @@ Proof.
 
   apply c_equiv_unif in Q0.
 
-  exists s1. rewrite H10.
+  exists s1. rewrite H11.
   apply subst_trans with (S2 := s © s1).
   apply subst_assoc.
   apply subst_cancel_left; trivial.
@@ -245,7 +248,8 @@ Proof.
   apply subst_sym; trivial.
   apply subst_trans with (S2 := s © s2); trivial.
   apply subst_assoc. apply subst_idem. apply H.
-  
+
+
   (* equ_sys_inv *)
   exists (c0,s0,(p0|+((pi++(!pi'))|.X~?([]|.X)))\((pi|.X)~?(pi'|.X))); simpl.
   repeat split~; intros.  
@@ -263,9 +267,10 @@ Proof.
   apply H3; trivial.
   
   case H1; clear H1; intros T'' H1. destruct H1.
-  apply equ_sol_preserv with (T':=T''); trivial.
+  apply equ_sol_preserv with (T':=T'') (varSet:=varSet); trivial.
   
 Qed.
+
 
 
 
@@ -279,16 +284,16 @@ Qed.
 *)
 
 
-Lemma unif_step_compl : forall T Sl,
+Lemma unif_step_compl : forall T Sl varSet,
       valid_triple T ->
-      ~ leaf T ->
-      (sol_c Sl T  <-> (exists T', unif_step T T' /\ sol_c Sl T')).
+      ~ leaf varSet T ->
+      (sol_c Sl T  <-> (exists T', unif_step varSet T T' /\ sol_c Sl T')).
 Proof.
   intros. split~; intro.
   
   apply unif_step_neg_NF in H0.
   case H0; clear H0; intros T0 H0. inverts H0.
-  assert (Q : ~ NF _ equ_sys T).
+  assert (Q : ~ NF _ (equ_sys varSet) T).
    apply equ_sys_neg_NF. exists T0; trivial.
   apply equ_sys_compl with (Sl := Sl) in Q; trivial.  
   apply Q in H1. case H1; clear H1; intros T1 H1. destruct H1.
@@ -319,16 +324,16 @@ Qed.
     and Lemma unif_step_compl.		
 *)
 
-Theorem unif_path_compl : forall T Sl,
+Theorem unif_path_compl : forall T Sl varSet,
         valid_triple T ->  
-        (sol_c Sl T <-> exists T', unif_path T T' /\ sol_c Sl T').
+        (sol_c Sl T <-> exists T', unif_path varSet T T' /\ sol_c Sl T').
 Proof.
   intros. split~; intro. gen T. intro T.  
-  apply well_founded_ind with (R := unif_step_order) (a := T).  
+  apply well_founded_ind with (R := unif_step_order varSet) (a := T).  
   apply unif_step_order_wf.
 
   intros T0 H0 H1 H2. unfold unif_step_order in H0. 
-  case (unif_step_NF_dec T0); intro H3. 
+  case (unif_step_NF_dec T0) with (varSet:=varSet); intro H3. 
 
   exists T0. split~. unfold unif_path. split~. apply tr_rf.
 
@@ -341,7 +346,7 @@ Proof.
   case H'; clear H'; intros T2 H'. destruct H'. destruct H4.
   exists T2. split~. split~.
   apply tr_ms with (t := T1); trivial.
-  apply unif_step_valid_preserv with (T:=T0); trivial.
+  apply unif_step_valid_preserv with (T:=T0) (varSet:=varSet); trivial.
 
   case H0; clear H0; intros T' H0. destruct H0.
   apply c_unif_path_soundness with (Sl:=Sl) in H0; trivial.

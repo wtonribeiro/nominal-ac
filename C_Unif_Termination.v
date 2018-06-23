@@ -80,7 +80,8 @@ Notation "T <<* T'" := (unif_step_size_order T T') (at level 67).
 	The order that is induced by the relation unif_step.
 *)
 
-Definition unif_step_order (T T' : Triple) := unif_step T' T.
+Definition unif_step_order (varSet : set Var) (T T' : Triple) :=
+           unif_step varSet T' T.
 
 
 (** %\subsection{Termination of fresh\_sys}% *)
@@ -171,7 +172,9 @@ Qed.
 	This lemma is proved by case analysis over equ_sys T T'. 
 *)
 
-Lemma equ_sys_termination : forall T T', equ_sys T T' ->  T' <<* T.
+Lemma equ_sys_termination : forall T T' varSet,
+      equ_sys varSet T T' ->  T' <<* T.
+
 Proof.
   intros.
   unfold unif_step_size_order. 
@@ -404,7 +407,8 @@ Proof.
   rewrite equ_proj_subs in H2.
   case (b ==v X); intro H3. rewrite H3 in H2.
   apply In_im_subst_term_Problem in H2.
-  rewrite perm_term_vars in H2. contradiction.
+  rewrite perm_term_vars in H2.
+  false. apply H. apply set_union_intro1; trivial.
   apply In_im_subst_term_Problem' in H2; trivial.
   apply set_union_elim in H2. destruct H2.
   rewrite 2 equ_proj_rem_eq in H2.
@@ -429,7 +433,8 @@ Proof.
   simpl in H2; trivial.
   rewrite equ_proj_subs in H2.
   apply In_im_subst_term_Problem in H2.
-  rewrite perm_term_vars in H2. contradiction.
+  rewrite perm_term_vars in H2.
+  false. apply H. apply set_union_intro1; trivial.
   
   right~. right~. left~. split~. split~.
  
@@ -476,10 +481,11 @@ unif_step T T', and its proof uses Lemmas equ_sys_termination and
 fresh_sys_termination.
 *)
 
-Corollary unif_step_termination : forall T T', unif_step T T' -> T' <<* T .
+Corollary unif_step_termination : forall T T' varSet,
+          unif_step varSet T T' -> T' <<* T .
 Proof.
  intros. destruct H.
- apply equ_sys_termination; trivial.
+ apply equ_sys_termination in H; trivial.
  apply fresh_sys_termination; trivial. 
 Qed.
 
@@ -541,9 +547,10 @@ Qed.
 
 
 
-Lemma unif_step_order_wf : well_founded unif_step_order .
+Lemma unif_step_order_wf : forall varSet,
+      well_founded (unif_step_order varSet).
 Proof.
-  unfold well_founded. intro T.
+  unfold well_founded. intros varSet T.
   apply well_founded_ind with (R := unif_step_size_order).
   apply unif_step_size_order_wf. intros T' H.
   apply Acc_intro. intros T'' H0.
@@ -556,149 +563,175 @@ Qed.
 (** %\section{Decidability of the predicates NF fresh\_sys, NF equ\_sys and leaf}% *)
 
 (**
-	The following 10 lemmas and 3 corollaries are very technical results.
+	The following lemmas and corollaries are very technical results.
 	They serve the sole purpose of prooving that the predicates 
 	NF fresh_sys, NF equ_sys and leaf are decidable, which are applied 
 	to the proof of completeness of the C-unication algorithm.
 *)
 
 Lemma fresh_sys_NF_dec_singleton :
-  forall C S c, NF _ fresh_sys (C, S, [c]) \/ exists T', fresh_sys (C, S, [c]) T'.
+  forall C S c, NF _ fresh_sys (C, S, [c]) \/
+                exists C' P, fresh_sys (C, S, [c]) (C', S, P).
 Proof.
   intros. destruct c. destruct t.
-  right~. exists (C, S, [a#?(<<>>)]\(a#?(<<>>))). apply fresh_sys_Ut. left~.
+  right~. exists C ([a#?(<<>>)]\(a#?(<<>>))). apply fresh_sys_Ut. left~.
   case (a ==at a0); intro H.
-   left~. intros T' H'. inverts H'; simpl in H4; try destruct H4; trivial; try inverts H0; 
+  left~. intros T' H'. inverts H'; simpl in H4;
+   try destruct H4; trivial; try inverts H0; 
    try destruct H5; try contradiction; try inverts H0; trivial.
-  right~. exists (C, S, [a#?(% a0)]\(a#?(%a0))). apply fresh_sys_At; trivial. left~.
+  right~. exists C ([a#?(% a0)]\(a#?(%a0))).
+  apply fresh_sys_At; trivial. left~.
   right~. case (a ==at a0); intro H.
-  rewrite H. exists (C, S, [a0#?([a0]^t)]\(a0#?([a0]^t))). apply fresh_sys_Ab_1. left~.
-  exists (C, S, [a#?([a0]^t)]|+(a#?t)\(a#?([a0]^t))). apply fresh_sys_Ab_2; trivial. left~.
-  right~. exists (C, S, [a #?(<|t1,t2|>)]|+(a#?t1)|+(a#?t2)\(a#?(<|t1,t2|>))).
+  rewrite H. exists C ([a0#?([a0]^t)]\(a0#?([a0]^t))).
+  apply fresh_sys_Ab_1. left~.
+  exists C  ([a#?([a0]^t)]|+(a#?t)\(a#?([a0]^t))).
+  apply fresh_sys_Ab_2; trivial. left~.
+  right~. exists C ([a #?(<|t1,t2|>)]|+(a#?t1)|+(a#?t2)\(a#?(<|t1,t2|>))).
    apply fresh_sys_Pr. left~.
-  right~. exists (C, S, [a #? Fc n n0 t]|+(a#?t)\(a#?(Fc n n0 t))). apply fresh_sys_Fc. left~.
-  right~. exists (C|++((!p) $ a,v), S, [a #? (p|.v)]\(a#?(p|.v))). apply fresh_sys_Su. left~.
-  
+  right~. exists C ([a #? Fc n n0 t]|+(a#?t)\(a#?(Fc n n0 t))).
+   apply fresh_sys_Fc. left~.
+  right~. exists (C|++((!p) $ a,v)) ([a #? (p|.v)]\(a#?(p|.v))).
+   apply fresh_sys_Su. left~.
   left~. intros T H. inverts H; simpl in *|-;
-   try destruct H4; try inverts H; try destruct H5; try inverts H; try inverts H0.
+   try destruct H4; try inverts H; try destruct H5;
+   try inverts H; try inverts H0.
 Qed.
 
 
-Lemma fresh_sys_red_singleton : forall C S P ,
-                               (exists c T0, set_In c P /\ fresh_sys (C, S, [c]) T0) <->
-                               (exists T1, fresh_sys (C, S, P) T1).
+Lemma fresh_sys_cons : forall C C' S c P,
+      (exists P', fresh_sys (C, S, c :: P) (C', S, P')) <->
+      (exists P'', fresh_sys (C, S, [c]) (C', S, P'') \/  fresh_sys (C, S, P) (C', S, P'')) .
 Proof.
-  intros.
-  split~; intro.
-  
-  case H; clear H; intros c H.
-  case H; clear H; intros T0 H.
-  destruct H. destruct T0. destruct p.
-  inverts H0; simpl in *|-;
-   try destruct H2; try contradiction; try rewrite H0 in *|-.
-  exists (c0, s, P\(a#?(<<>>))). apply fresh_sys_Ut; trivial.
-  destruct H8; try contradiction; rewrite H0 in H.
-  exists (c0, s, P\(a#?(%b))). apply fresh_sys_At; trivial.
-  exists (c0, s, P|+(a#?s0)\(a#?(Fc E n s0))). apply fresh_sys_Fc; trivial.
-  exists (c0, s, P\(a#?([a]^s0))). apply fresh_sys_Ab_1; trivial.
-  destruct H8; try contradiction; rewrite H0 in H.
-  exists (c0, s, P|+(a#?s0)\(a#?([b]^s0))). apply fresh_sys_Ab_2; trivial.
-  exists (C|++((!pi) $ a,X), s, P\(a#?(pi|.X))). apply fresh_sys_Su; trivial.
-  exists (c0, s, P|+(a#?s0)|+(a#?t)\(a#?(<|s0, t|>))). apply fresh_sys_Pr; trivial.
-  
-  case H; clear H; intros T1  H.
+  intros. split~; intro. case H; clear H; intros P' H.
+  inverts H;  simpl in *|-*.
+
+  destruct H1. exists ([c]\c).
+  rewrite H. left~. apply fresh_sys_Ut. left~.
+  exists (P\(a#?(<<>>))). right~. apply fresh_sys_Ut; trivial. 
+  destruct H6. exists ([c]\c).
+  rewrite H. left~. apply fresh_sys_At; trivial. left~.
+  exists (P\(a#?(%b))). right~. apply fresh_sys_At; trivial.
+  destruct H1. exists ([c]|+(a#?s)\c).
+  rewrite H. left~. apply fresh_sys_Fc; trivial. left~.
+  exists (P|+(a#?s)\(a#?(Fc E n s))). right~. apply fresh_sys_Fc; trivial.
+  destruct H1. exists ([c]\c).
+  rewrite H. left~. apply fresh_sys_Ab_1; trivial. left~.  
+  exists (P\(a#?([a]^s))). right~. apply fresh_sys_Ab_1; trivial.
+  destruct H6. exists ([c]|+(a#?s)\c).
+  rewrite H. left~. apply fresh_sys_Ab_2; trivial. left~.  
+  exists (P|+(a#?s)\(a#?([b]^s))). right~. apply fresh_sys_Ab_2; trivial.
+  destruct H1. exists ([c]\c).
+  rewrite H. left~. apply fresh_sys_Su; trivial. left~.   
+  exists (P\(a#?(pi|.X))). right~. apply fresh_sys_Su; trivial.
+  destruct H1. exists (([c]|+(a#?s)|+(a#?t))\c).
+  rewrite H. left~. apply fresh_sys_Pr; trivial. left~.  
+  exists (P|+(a#?s)|+(a#?t)\(a#?(<|s, t|>))). right~. apply fresh_sys_Pr; trivial.
+
+  case H; clear H; intros P'' H.
+
+  destruct H. inverts H; simpl in *|-.
+
+  destruct H1; try contradiction. rewrite H.
+  exists (((a#?(<<>>))::P)\(a#?(<<>>))). apply fresh_sys_Ut. left~.
+  destruct H6; try contradiction. rewrite H.
+  exists (((a#?(%b))::P)\(a#?(%b))). apply fresh_sys_At; trivial. left~.
+  destruct H1; try contradiction. rewrite H.
+  exists (((a #? Fc E n s)::P)|+(a#?s)\(a#?(Fc E n s))). apply fresh_sys_Fc. left~.
+  destruct H1; try contradiction. rewrite H.
+  exists (((a#?([a]^s))::P)\(a#?([a]^s))). apply fresh_sys_Ab_1. left~.
+  destruct H6; try contradiction. rewrite H.
+  exists (((a#?([b]^s))::P)|+(a#?s)\(a#?([b]^s))). apply fresh_sys_Ab_2; trivial. left~.
+  destruct H1; try contradiction. rewrite H.  
+  exists (((a#?(pi|.X))::P)\(a#?(pi|.X))). apply fresh_sys_Su. left~.
+  destruct H1; try contradiction. rewrite H. 
+  exists (((a#?(<|s, t|>))::P)|+(a#?s)|+(a#?t)\(a#?(<|s, t|>))). apply fresh_sys_Pr. left~. 
+
   inverts H.
-  exists (a #? (<<>>)) (C, S, [a #? (<<>>)]\(a#?(<<>>))).
-   split~. apply fresh_sys_Ut. left~.
-  exists (a #? (% b)) (C, S, [a #? (% b)]\(a#?(%b))).
-   split~. apply fresh_sys_At; trivial. left~.
-  exists (a#?Fc E n s) (C, S, [a #? Fc E n s]|+(a#?s)\(a#?(Fc E n s))).
-   split~. apply fresh_sys_Fc. left~.
-  exists (a #? ([a]^s)) (C, S, [a #? ([a]^s)]\(a#?([a]^s))).
-   split~. apply fresh_sys_Ab_1. left~.
-  exists (a #? ([b]^s)) (C, S, [a #? ([b]^s)]|+(a#?s)\(a#?([b]^s))).
-   split~. apply fresh_sys_Ab_2; trivial. left~.
-  exists (a #? (pi|.X)) (C|++((!pi) $ a,X), S, [a #? (pi|.X)]\(a#?(pi|.X))).
-   split~. apply fresh_sys_Su. left~.
-  exists (a #? (<|s, t|>)) (C, S, [a #? (<|s, t|>)]|+(a#?s)|+(a#?t)\(a#?(<|s, t|>))).
-   split~. apply fresh_sys_Pr. left~. 
+  
+  exists ((c::P)\(a#?(<<>>))). apply fresh_sys_Ut. right~.
+  exists ((c::P)\(a#?(%b))). apply fresh_sys_At; trivial. right~.
+  exists ((c::P)|+(a#?s)\(a#?(Fc E n s))). apply fresh_sys_Fc. right~.
+  exists ((c::P)\(a#?([a]^s))). apply fresh_sys_Ab_1. right~.
+  exists ((c::P)|+(a#?s)\(a#?([b]^s))). apply fresh_sys_Ab_2; trivial. right~.
+  exists ((c::P)\(a#?(pi|.X))). apply fresh_sys_Su. right~.
+  exists ((c::P)|+(a#?s)|+(a#?t)\(a#?(<|s, t|>))). apply fresh_sys_Pr. right~. 
+
 Qed.
 
-Lemma fresh_sys_NF_singleton : forall C S P, NF _ fresh_sys (C, S, P) <->
-                                           (forall c, set_In c P -> NF _ fresh_sys (C, S, [c])).
+Lemma fresh_sys_eq_subs : forall T T',
+      fresh_sys T T' -> snd (fst T) = snd (fst T') .                       
 Proof.
-  intros. split~; intros.
+  intros. inverts H; simpl; trivial.
+Qed.  
   
-  intros T H'.
-  assert (Q : exists T1, fresh_sys (C, S, P) T1).
-   apply fresh_sys_red_singleton.
-   exists c T. split~.
-  case Q; clear Q; intros T' Q.
-  apply H in Q. trivial.
-
-  intros T' H0.
-  assert (Q : exists c T0, set_In c P /\ fresh_sys (C, S, [c]) T0).
-   apply fresh_sys_red_singleton. exists T'; trivial.
-  case Q; clear Q; intros c Q.    
-  case Q; clear Q; intros T'' Q.
-  destruct Q. gen H2. apply H; trivial.
-Qed.
-
-  
-Lemma fresh_sys_NF_dec_singleton'  : forall C S P,
-                             (NF _ fresh_sys (C, S, P)) \/        
-                             (exists c T', set_In c P /\ fresh_sys (C, S, [c]) T') .
-Proof.
-  intros. induction P.
-  left~. intros T' H. 
-  inverts H; simpl in *|-; trivial. 
-  destruct IHP.
-  case fresh_sys_NF_dec_singleton with (C:=C) (S:=S) (c:=a); intro H'.
-  left~. apply fresh_sys_NF_singleton.
-  intros c H0. simpl in H0. destruct H0.
-  rewrite <- H0. trivial.
-  apply fresh_sys_NF_singleton with (c:=c) in H; trivial.
-  right~. case H'; clear H'; intros T' H'.
-  exists a T'. split~. left~.
-  right~. case H; clear H; intros c H.
-  case H; clear H; intros T' H. destruct H.
-  exists c T'. split~. right~.
-Qed.
-  
-Lemma fresh_sys_NF_dec : forall T, NF _ fresh_sys T \/ exists T', fresh_sys T T'.
+Lemma fresh_sys_NF_dec : forall C S P,
+      NF _ fresh_sys (C, S, P) \/
+      exists C' P', fresh_sys (C, S, P) (C', S, P').
 Proof.  
-  intros. destruct T. destruct p.
-  case fresh_sys_NF_dec_singleton' with (C:=c) (S:=s) (P:=p0); intro H.
-  left~. right~. case H; clear H; intros a H.
-  case H; clear H; intros T' H. destruct H.
-  apply fresh_sys_red_singleton. 
-  exists a T'. split~.
+  intros. induction P.
+  left~. intros T H. inverts H; simpl in *|-; trivial.
+  destruct IHP. case (fresh_sys_NF_dec_singleton C S a); intro H0.
+  
+  left~. intros T H1. destruct T. destruct p.
+  generalize H1. intros H1'.  apply fresh_sys_eq_subs in H1'.
+  simpl in H1'. rewrite <- H1' in H1.
+
+  assert (Q : exists P'', fresh_sys (C, S, [a]) (c, S, P'') \/
+                          fresh_sys (C, S, P) (c, S, P'') ). 
+   apply fresh_sys_cons. exists p0; trivial.
+
+  case Q; clear Q. intros P' Q. destruct Q.
+  apply H0 in H2; trivial.
+  apply H in H2; trivial.
+
+  right~. case H0; clear H0. intros C' H0.
+  case H0; clear H0; intros P' H0.
+  exists C'. apply <- fresh_sys_cons.
+  exists P'. left~.
+
+  right~. case H; clear H. intros C' H.
+  case H; clear H; intros P' H.
+  exists C'. apply <- fresh_sys_cons.
+  exists P'. right~.
+  
 Qed.
+
 
 Corollary fresh_sys_neg_NF : forall T, ~ NF _ fresh_sys T <-> exists T', fresh_sys T T'.
 Proof.
   intros. split~; intro.
-  
-  case (fresh_sys_NF_dec T); intro H0; try contradiction; trivial.
 
+  destruct T. destruct p.
+  
+  case (fresh_sys_NF_dec c s p0); intro H0; try contradiction.
+  case H0; clear H0; intros C' H0.
+  case H0; clear H0; intros P' H0.
+  exists (C', s, P'); trivial.
+  
   intro H'. case H; clear H; intros T' H.
   apply H' in H. trivial.
 Qed.  
 
 
+(****)
+
 Lemma equ_sys_NF_dec_singleton :
-  forall C S c, NF _ equ_sys (C, S, [c]) \/ exists T', equ_sys (C, S, [c]) T'.
+  forall C S c varSet,
+  NF _ (equ_sys varSet) (C, S, [c]) \/
+  exists S' P, equ_sys varSet (C, S, [c]) (C, S', P).
 Proof.
   intros. destruct c.
 
-  left~. intros T H. inverts H; simpl in *|-;
-   try destruct H4; try inverts H; try destruct H5; try inverts H; try inverts H0.
+  left~. intros T H.
+  inverts H; simpl in *|-;
+    try destruct H4; try inverts H;
+    try destruct H5; try inverts H; try inverts H0.
    destruct H6; try contradiction. inverts H.
   
   case (term_eqdec t t0); intro H.
   (* t = t0 *)
    rewrite H; clear H. right~.
-   exists (C, S, [t0 ~? t0]\(t0~?t0)). apply equ_sys_refl. left~.                            
+   exists S ([t0 ~? t0]\(t0~?t0)). apply equ_sys_refl. left~.                            
   (* t <> t0 *)
    case (Su_eqdec t); case (Su_eqdec t0); intros H0 H1.
    (* t and t0 are both suspensions *)  
@@ -712,124 +745,199 @@ Proof.
       (* pi' = [] *) 
        rewrite H0 in *|-*. clear H0. 
        left~. intros T' H0. inverts H0; simpl in *|-;
-       try destruct H5; try inverts H0; try destruct H6; try inverts H0; try inverts H1.
+         try destruct H5; try inverts H0; try destruct H6;
+         try inverts H0; try inverts H1.
        symmetry in H3. contradiction.
-       apply H4. simpl. left~. apply H4. simpl. left~.
+       apply H4. simpl. apply set_union_intro1. left~.
+       apply H4. simpl. apply set_union_intro1. left~.
        destruct H7; try contradiction. inverts H0; trivial.
       (* pi' <> [] *)
-       right~. exists (C,S,([(pi|.X)~?(pi'|.X)]|+((pi++(!pi'))|.X~?([]|.X)))\((pi|.X)~?(pi'|.X))).
-       apply equ_sys_inv; trivial. intro H1. rewrite H1 in H. false. left~.    
-     (* the variables of the two suspesions are different *) 
-       right~. exists (C,S©([(X,(!pi)@(pi'|.Y))]),
-                       (([(pi|.X)~?(pi'|.Y)]\(pi|.X~?(pi'|.Y))
+       right~. exists S (([(pi|.X)~?(pi'|.X)]|+
+                        ((pi++(!pi'))|.X~?([]|.X)))\((pi|.X)~?(pi'|.X))).
+       apply equ_sys_inv; trivial. intro H1. rewrite H1 in H. false. left~.
+       
+      (* the variables of the two suspesions are different *)
+
+       case (set_In_dec Var_eqdec X varSet); intro H1.
+       (* X is in varSet *)
+        case (set_In_dec Var_eqdec Y varSet); intro H2.
+        (* Y is in varSet *)
+         left~. intros T H3. inverts H3; simpl in *|-; try destruct H8;
+         try contradiction; try inverts H3; try inverts H6. false.     
+         destruct H9; try contradiction. inverts H3.
+         destruct H9; destruct H3; try contradiction; inverts H3.
+         apply H7. apply set_union_intro2; trivial.
+         apply H7. apply set_union_intro2; trivial.
+         destruct H10; try contradiction. inverts H3. false.
+         (* Y is not in varSet *)
+         right~. gen_eq S' : (S©([(Y,(!pi')@(pi|.X))])) .
+         exists S' ((([(pi|.X)~?(pi'|.Y)]\(pi'|.Y~?(pi|.X))
+                          \((pi|.X)~?(pi'|.Y)))|^^([(Y,(!pi')@(pi|.X))]))
+                           \cup(C/?S')).
+          apply equ_sys_inst; trivial. simpl. intro H4.
+          apply set_union_elim in H4. 
+          simpl in H4. destruct H4; try contradiction.
+          destruct H4; try symmetry in H4; contradiction.
+          right~. left~.
+       (* X is not in varSet *) 
+        right~. exists (S©([(X,(!pi)@(pi'|.Y))]))
+                      ((([(pi|.X)~?(pi'|.Y)]\(pi|.X~?(pi'|.Y))
                          \((pi'|.Y)~?(pi|.X)))|^^([(X,(!pi)@(pi'|.Y))]))
                           \cup(C/?(S©([(X,(!pi)@(pi'|.Y))])))).
-       apply equ_sys_inst; trivial. simpl. intro H1. destruct H1; contradiction. left~. left~.
+        apply equ_sys_inst; trivial. simpl. intro H2.
+        apply set_union_elim in H2. simpl in H2.
+        destruct H2; try contradiction.
+        destruct H2; contradiction. left~. left~.
    (* only t is a suspension *)
     case H1; clear H1; intros pi H1.    
     case H1; clear H1; intros X H1. rewrite H1 in *|-*. clear H1.
     case (set_In_dec Var_eqdec X (term_vars t0)); intro H1.
     (* X is in (term_vars t0) *)
      left~. intros T' H2. inverts H2; simpl in *|-;
-       try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
-       false. contradiction. false. destruct H9; try contradiction. inverts H2. false.
-    (* X is not in (term_vars t0) *) 
-     right~. exists (C,S©([(X,(!pi)@t0)]),
-                        (([(pi|.X)~?t0]\(pi|.X~?t0)\(t0~?(pi|.X)))|^^([(X,(!pi)@t0)]))
+       try destruct H7; try inverts H2;
+       try destruct H8; try inverts H2; try inverts H3.
+     false. apply H6. apply set_union_intro1; trivial.
+     apply H6. apply set_union_intro1. simpl in *|-*.
+     left~. destruct H1; try contradiction. symmetry; trivial.
+     destruct H9; try contradiction.
+     inverts H2. false.
+   (* X is not in (term_vars t0) *) 
+    case (set_In_dec Var_eqdec X varSet); intro H2.
+    (* X is in varSet *)
+     left~. intros T H3. inverts H3; simpl in *|-; try destruct H8;
+     try contradiction; try inverts H3; try inverts H6. false.     
+     destruct H9; try contradiction. inverts H3.
+     destruct H9; destruct H3; try contradiction; inverts H3.
+     apply H7. apply set_union_intro2; trivial. false.
+     destruct H10; try contradiction. inverts H3. false.
+    (* X is not in varSet *)
+     right~. exists (S©([(X,(!pi)@t0)]))
+                       ((([(pi|.X)~?t0]\
+                       (pi|.X~?t0)\(t0~?(pi|.X)))|^^([(X,(!pi)@t0)]))
                           \cup(C/?(S©([(X,(!pi)@t0)])))).
-     apply equ_sys_inst; trivial. left~. left~.
+     apply equ_sys_inst; trivial.
+     intro H3. apply set_union_elim in H3. destruct H3; contradiction.
+     left~. left~.
    (* only t0 is a suspension *)  
     case H0; clear H0; intros pi H0.    
     case H0; clear H0; intros X H0. rewrite H0 in *|-*. clear H0.
     case (set_In_dec Var_eqdec X (term_vars t)); intro H2.
     (* X is in (term_vars t) *)
      left~. intros T' H3. inverts H3; simpl in *|-;
-       try destruct H7; try inverts H0; try destruct H8; try inverts H0; try inverts H3.
-       false. false. contradiction. destruct H9; try contradiction. inverts H0. false.
-    (* X is not in (term_vars t) *) 
-     right~. exists (C,S©([(X,(!pi)@t)]),
-                        (([t~?(pi|.X)]\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)]))
-                          \cup(C/?(S©([(X,(!pi)@t)])))).
-     apply equ_sys_inst; trivial. right~. left~.
-
+      try destruct H7; try inverts H0;
+      try destruct H8; try inverts H0; try inverts H3.
+     false. false. apply H6. apply set_union_intro1; trivial.
+     destruct H9; try contradiction. inverts H0. false.
+    case (set_In_dec Var_eqdec X varSet); intro H3.
+    (* X is not in (term_vars t) *)  
+     (* X is in varSet *)
+      left~. intros T H4. inverts H4; simpl in *|-; try destruct H8;
+      try contradiction; try inverts H0. false.     
+      destruct H9; try contradiction. inverts H0.
+      destruct H9; destruct H0; try contradiction; inverts H0. false.
+      apply H7. apply set_union_intro2; trivial.
+      destruct H10; try contradiction. inverts H0. false.
+     (* X is not in varSet *)
+      right~. exists (S©([(X,(!pi)@t)]))
+                     ((([t~?(pi|.X)]\(pi|.X~?t)\
+                     (t~?(pi|.X)))|^^([(X,(!pi)@t)]))
+                         \cup(C/?(S©([(X,(!pi)@t)])))).
+      apply equ_sys_inst; trivial.
+      intro H4. apply set_union_elim in H4. destruct H4; contradiction.
+      right~. left~.
   (* both t and t0 are not suspensions *)
    destruct t.
    (* t = <<>> *)
     left~. intros T' H2. inverts H2; simpl in *|-;
-       try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
-       false. false. destruct H9; try contradiction. inverts H2. 
+      try destruct H7; try inverts H2; try destruct H8;
+      try inverts H2; try inverts H3.
+    false. false. destruct H9; try contradiction. inverts H2. 
    (* t = %a *)
     left~. intros T' H2. inverts H2; simpl in *|-;
-       try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
-       false. false. destruct H9; try contradiction. inverts H2. 
+      try destruct H7; try inverts H2; try destruct H8;
+      try inverts H2; try inverts H3.
+      false. false. destruct H9; try contradiction. inverts H2. 
    (* t = [a]^s0 *)
     destruct t0.
      (* t0 = <<>> *)
       left~. intros T' H2. inverts H2; simpl in *|-;
-        try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
+        try destruct H7; try inverts H2; try destruct H8;
+        try inverts H2; try inverts H3.
         false. destruct H9; try contradiction. inverts H2.
      (* t0 = %a0 *)
       left~. intros T' H2. inverts H2; simpl in *|-;
-        try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
-        false. destruct H9; try contradiction. inverts H2.
+        try destruct H7; try inverts H2; try destruct H8;
+        try inverts H2; try inverts H3.
+      false. destruct H9; try contradiction. inverts H2.
      (* t0 = [a0]^s0 *)
       right~. case (a ==at a0); intro H2. rewrite H2 in *|-*. clear H2.
-      exists (C,S,[([a0]^t)~?([a0]^t0)]|+(t~?t0)\(([a0]^t)~?([a0]^t0))).
+      exists S ([([a0]^t)~?([a0]^t0)]|+(t~?t0)\(([a0]^t)~?([a0]^t0))).
       apply equ_sys_Ab1; trivial. left~. 
-      exists (C,S,(([([a]^t)~?([a0]^t0)]|+(t~?([(a,a0)]@t0))|+(a#?t0)))\(([a]^t)~?([a0]^t0))).
+      exists S ((([([a]^t)~?([a0]^t0)]|+
+               (t~?([(a,a0)]@t0))|+(a#?t0)))\(([a]^t)~?([a0]^t0))).
       apply equ_sys_Ab2; trivial. left~.
      (* t0 = <| t0_1, t0_2|> *)
       left~. intros T' H2. inverts H2; simpl in *|-;
-        try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
-        false. destruct H9; try contradiction. inverts H2.
+        try destruct H7; try inverts H2; try destruct H8;
+        try inverts H2; try inverts H3.
+      false. destruct H9; try contradiction. inverts H2.
      (* t0 = Fc n n0 s0 *)
       left~. intros T' H2. inverts H2; simpl in *|-;
-        try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
-        false. destruct H9; try contradiction. inverts H2.
+        try destruct H7; try inverts H2; try destruct H8;
+        try inverts H2; try inverts H3.
+      false. destruct H9; try contradiction. inverts H2.
      (* t0 = p|.v *)
       false.        
    (* t = <|s1, s2|> *)
     destruct t0.
      (* t0 = <<>> *)
       left~. intros T' H2. inverts H2; simpl in *|-;
-        try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
-        false. destruct H9; try contradiction. inverts H2.
+        try destruct H7; try inverts H2; try destruct H8;
+        try inverts H2; try inverts H3.
+      false. destruct H9; try contradiction. inverts H2.
      (* t0 = %a0 *)
       left~. intros T' H2. inverts H2; simpl in *|-;
-        try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
-        false. destruct H9; try contradiction. inverts H2.
+        try destruct H7; try inverts H2;
+        try destruct H8; try inverts H2; try inverts H3.
+      false. destruct H9; try contradiction. inverts H2.
      (* t0 = [a0]^s0 *)
       left~. intros T' H2. inverts H2; simpl in *|-;
-        try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
-        false. destruct H9; try contradiction. inverts H2.
+        try destruct H7; try inverts H2; try destruct H8;
+        try inverts H2; try inverts H3.
+      false. destruct H9; try contradiction. inverts H2.
      (* t0 = <| t0_1, t0_2|> *)
-        right~. exists (C,S,(([(<|t1,t2|>)~?(<|t0_1,t0_2|>)]|+
+        right~. exists S ((([(<|t1,t2|>)~?(<|t0_1,t0_2|>)]|+
                        (t1~?t0_1))|+(t2~?t0_2))\(<|t1,t2|>~?<|t0_1,t0_2|>)).
         apply equ_sys_Pr; trivial. left~.
      (* t0 = Fc n n0 s0 *)
       left~. intros T' H2. inverts H2; simpl in *|-;
-        try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
-        false. destruct H9; try contradiction. inverts H2.
+        try destruct H7; try inverts H2; try destruct H8;
+        try inverts H2; try inverts H3.
+      false. destruct H9; try contradiction. inverts H2.
      (* t0 = p|.v *)
       false.  
    (* t = Fc n n0 s0 *)
     destruct t0.
      (* t0 = <<>> *)
       left~. intros T' H2. inverts H2; simpl in *|-;
-        try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
-        false. destruct H9; try contradiction. inverts H2.
+        try destruct H7; try inverts H2; try destruct H8;
+        try inverts H2; try inverts H3.
+      false. destruct H9; try contradiction. inverts H2.
      (* t0 = %a0 *)
       left~. intros T' H2. inverts H2; simpl in *|-;
-        try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
-        false. destruct H9; try contradiction. inverts H2.
+        try destruct H7; try inverts H2; try destruct H8;
+        try inverts H2; try inverts H3.
+      false. destruct H9; try contradiction. inverts H2.
      (* t0 = [a0]^s0 *)
       left~. intros T' H2. inverts H2; simpl in *|-;
-        try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
-        false. destruct H9; try contradiction. inverts H2.
+        try destruct H7; try inverts H2; try destruct H8;
+        try inverts H2; try inverts H3.
+      false. destruct H9; try contradiction. inverts H2.
      (* t0 = <| t0_1, t0_2|> *)
       left~. intros T' H2. inverts H2; simpl in *|-;
-        try destruct H7; try inverts H2; try destruct H8; try inverts H2; try inverts H3.
-        false. destruct H9; try contradiction. inverts H2.
+        try destruct H7; try inverts H2; try destruct H8;
+        try inverts H2; try inverts H3.
+      false. destruct H9; try contradiction. inverts H2.
      (* t0 = Fc n n0 s0 *)
       case ((n, n0) ==np (n1, n2)); intro H2. inverts H2.
       case (eq_nat_dec n1 2); intro H2. rewrite H2 in *|-*; clear H2.
@@ -837,8 +945,9 @@ Proof.
       case H2; clear H2; intros u0 H2. case H2; clear H2; intros u1 H2.
       case H3; clear H3; intros v0 H3. case H3; clear H3; intros v1 H3.
       rewrite H2 in *|-*. rewrite H3 in *|-*. clear H2 H3.
-      right~. exists (C,S,(([Fc 2 n2 (<|u0,u1|>)~?Fc 2 n2 (<|v0,v1|>)]
-                     |+(u0~?v0))|+(u1~?v1))\(Fc 2 n2 (<|u0,u1|>)~?(Fc 2 n2 (<|v0,v1|>)))).
+      right~. exists S ((([Fc 2 n2 (<|u0,u1|>)~?Fc 2 n2 (<|v0,v1|>)]
+                        |+(u0~?v0))|+(u1~?v1))\
+                        (Fc 2 n2 (<|u0,u1|>)~?(Fc 2 n2 (<|v0,v1|>)))).
       apply equ_sys_C1; trivial. left~.
       left~. intros T' H4. inverts H4; simpl in *|-;
         try destruct H9; trivial; try inverts H4; try destruct H10; trivial;
@@ -850,9 +959,11 @@ Proof.
         try inverts H3; trivial.
       symmetry in H6. contradiction. false. false. false. false.
       destruct H10; try contradiction. false.
-      right~. exists (C,S,([Fc n1 n2 t ~? Fc n1 n2 t0]|+(t~?t0))\(Fc n1 n2 t ~?(Fc n1 n2 t0))).
+      right~. exists S (([Fc n1 n2 t ~? Fc n1 n2 t0]|+(t~?t0))\
+                         (Fc n1 n2 t ~?(Fc n1 n2 t0))).
       apply equ_sys_Fc; trivial. left~.
-      left~. intros T' H3. inverts H3; simpl in *|-; try destruct H8; trivial; try inverts H3.
+      left~. intros T' H3. inverts H3; simpl in *|-;
+         try destruct H8; trivial; try inverts H3.
       false. false. false. false. destruct H9; try contradiction. false.
       destruct H9; destruct H3; try contradiction; try inverts H3.
       destruct H10; trivial. false.
@@ -863,169 +974,223 @@ Proof.
 Qed.  
 
 
-Lemma equ_sys_red_singleton : forall C S P,
-                               (exists c T0, set_In c P /\  equ_sys (C, S, [c]) T0) <->
-                               (exists T1, equ_sys (C, S, P) T1).
-                                           
+Lemma equ_sys_cons : forall C S S' c P varSet,
+      (exists P', equ_sys varSet (C, S, c :: P) (C, S', P')) <->
+      (exists P'', equ_sys varSet (C, S, [c]) (C, S', P'') \/ equ_sys varSet (C, S, P) (C, S', P'')) .
 Proof.
-  intros. split~; intros.
-
-  case H; clear H; intros c H.
-  case H; clear H; intros T0 H0.
-  destruct H0. destruct T0. destruct p.
-  inverts H0; simpl in *|-;
-   try destruct H2; try contradiction; try rewrite H0 in *|-.
-
-  exists (c0, s, P\(s0~?s0)). apply equ_sys_refl; trivial.
-  exists (c0, s, P|+(s0~?t0)|+(s1~?t1)\((<|s0, s1|>)~?(<|t0, t1|>))).
-   apply equ_sys_Pr; trivial.
-  destruct H3; try contradiction; rewrite H0 in H.
-  exists (c0, s, P|+(t~?t')\(Fc E n t ~? Fc E n t')).
-   apply equ_sys_Fc; trivial. 
-  exists (c0, s, P|+(s0~?t0)|+(s1~?t1)\(Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))).
-   apply equ_sys_C1; trivial.   
-  exists (c0, s, P|+(s0~?t1)|+(s1~?t0)\(Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))).
-   apply equ_sys_C2; trivial.   
-  exists (c0, s, P|+(t~?t')\(([a]^t) ~? ([a]^t'))).
-   apply equ_sys_Ab1; trivial.      
-  destruct H8; try contradiction; rewrite H0 in H. 
-  exists (c0, s, P|+(t~?(([(a,b)])@t'))|+(a#?t')\(([a]^t) ~? ([b]^t'))).
-   apply equ_sys_Ab2; trivial.
-  destruct H8; try contradiction. destruct H0; try contradiction; rewrite H0 in H.  
-  exists (c0, S©([(X,(!pi)@t)]),((P\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)]))
-                          \cup(c0/?(S©([(X,(!pi)@t)])))).
-   apply equ_sys_inst; trivial. left~.
-  destruct H0; try contradiction; rewrite H0 in H.  
-  exists (c0, S©([(X,(!pi)@t)]),((P\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)]))
-                          \cup(c0/?(S©([(X,(!pi)@t)])))).
-   apply equ_sys_inst; trivial. right~.
-  destruct H9; try contradiction; rewrite H0 in H. 
-  exists (c0, s, (P|+((pi++(!pi'))|.X~?([]|.X)))\((pi|.X)~?(pi'|.X))).
-   apply equ_sys_inv; trivial.
-
-  case H; clear H; intros T1 H.
-  destruct T1. destruct p. inverts H.
-  exists (s0~?s0) (c, s, [s0~?s0]\(s0~?s0)).
-   split~. apply equ_sys_refl. left~.
-   exists ((<|s0, s1|>)~?(<|t0, t1|>))
-          (c, s, [(<|s0, s1|>)~?(<|t0, t1|>)]|+(s0~?t0)|+(s1~?t1)\((<|s0, s1|>)~?(<|t0, t1|>))).
-   split~. apply equ_sys_Pr. left~.
-  exists (Fc E n t ~? Fc E n t') (c, s, [Fc E n t ~? Fc E n t']|+(t~?t')\(Fc E n t ~? Fc E n t')).
-   split~. apply equ_sys_Fc; trivial. left~.
-   exists (Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))
-          (c, s, [Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>)]
-                   |+(s0~?t0)|+(s1~?t1)\(Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))).
-   split~. apply equ_sys_C1. left~.  
-   exists (Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))
-          (c, s, [Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>)]
-                   |+(s0~?t1)|+(s1~?t0)\(Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))).
-   split~. apply equ_sys_C2. left~.     
-  exists (([a]^t) ~? ([a]^t')) (c, s, [([a]^t) ~? ([a]^t')]|+(t~?t')\(([a]^t) ~? ([a]^t'))).
-   split~. apply equ_sys_Ab1. left~.
-  exists (([a]^t) ~? ([b]^t')) (c, s, [([a]^t) ~? ([b]^t')]
-              |+(t~?(([(a,b)])@t'))|+(a#?t')\(([a]^t) ~? ([b]^t'))).
-   split~. apply equ_sys_Ab2; trivial. left~.
-  destruct H7.
-  exists (pi|.X~?t) (c, S©([(X,(!pi)@t)]),(([pi|.X~?t]\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)]))
-                          \cup(c/?(S©([(X,(!pi)@t)])))).
-   split~. apply equ_sys_inst; trivial. left~. left~.
-  exists (t~?(pi|.X)) (c, S©([(X,(!pi)@t)]),(([t~?(pi|.X)]\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)]))
-                          \cup(c/?(S©([(X,(!pi)@t)])))).
-   split~. apply equ_sys_inst; trivial. right~. left~.
-   exists ((pi|.X)~?(pi'|.X)) (c, s, ([(pi|.X)~?(pi'|.X)]
-                                        |+((pi++(!pi'))|.X~?([]|.X)))\((pi|.X)~?(pi'|.X))).
-   split~. apply equ_sys_inv; trivial. left~.
-Qed.
-
-
-Lemma equ_sys_NF_singleton : forall C S P, NF _ equ_sys (C, S, P) <->
-                                           (forall c, set_In c P -> NF _ equ_sys (C, S, [c])).
-Proof.
-  intros. split~; intros.
   
-  intros T H'.
-  assert (Q : exists T1, equ_sys (C, S, P) T1).
-   apply equ_sys_red_singleton.
-   exists c T. split~.
-  case Q; clear Q; intros T' Q.
-  apply H in Q. trivial.
+  intros. split~; intro. case H; clear H; intros P' H.
+  inverts H;  simpl in *|-*.
 
-  intros T' H0.
-  assert (Q : exists c T0, set_In c P /\ equ_sys (C, S, [c]) T0).
-   apply equ_sys_red_singleton. exists T'; trivial.
-  case Q; clear Q; intros c Q.    
-  case Q; clear Q; intros T'' Q.
-  destruct Q. gen H2. apply H; trivial. 
+  destruct H1. exists ([c]\c). left~.
+  rewrite H. apply equ_sys_refl. left~.
+  exists (P\(s~?s)). right~. apply equ_sys_refl; trivial. 
+  destruct H1. exists ([c]|+(s0~?t0)|+(s1~?t1)\c). left~.
+  rewrite H. apply equ_sys_Pr; trivial. left~.
+  exists (P|+(s0~?t0)|+(s1~?t1)\
+                   ((<|s0, s1|>)~?(<|t0, t1|>))).
+  right~. apply equ_sys_Pr; trivial.
+  destruct H2. exists ([c]|+(t~?t')\c). left~.
+  rewrite H. apply equ_sys_Fc; trivial. left~.
+  exists (P|+(t~?t')\(Fc E n t ~? Fc E n t')).
+  right~. apply equ_sys_Fc; trivial. 
+  destruct H1. exists ([c]|+(s0~?t0)|+(s1~?t1)\c).
+  left~. rewrite H. apply equ_sys_C1. left~.
+  exists (P|+(s0~?t0)|+(s1~?t1)\
+           (Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))).
+  right~. apply equ_sys_C1; trivial.   
+  destruct H1. exists ([c]|+(s0~?t1)|+(s1~?t0)\c).
+  left~. rewrite H. apply equ_sys_C2. left~.
+  exists (P|+(s0~?t1)|+(s1~?t0)\
+           (Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))).
+  right~. apply equ_sys_C2; trivial.  
+  destruct H1. exists ([c]|+(t~?t')\c).
+  left~. rewrite H. apply equ_sys_Ab1; trivial. left~.
+  exists (P|+(t~?t')\(([a]^t) ~? ([a]^t'))).
+  right~. apply equ_sys_Ab1; trivial.      
+  destruct H6. exists ([c]|+(t~?(([(a,b)])@t'))|+(a#?t')\c).
+  left~. rewrite H. apply equ_sys_Ab2; trivial. left~.
+  exists (P|+(t~?(([(a,b)])@t'))|+(a#?t')\
+                   (([a]^t) ~? ([b]^t'))).
+  right~. apply equ_sys_Ab2; trivial.
+  gen_eq S' : (S©([(X,(!pi)@t)])); intro H7.
+  gen_eq P' : (([c]\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)])
+                      \cup (C/?S')). intro H8.
+  gen_eq P'' :  ((P\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)])
+                         \cup(C/?S')). intro H9.  
+  destruct H6.
+  destruct H.
+  exists P'. left~. rewrite H8. rewrite H. 
+  apply equ_sys_inst; trivial. left~. left~.  
+  exists P''. right~. rewrite H9.  
+  apply equ_sys_inst; trivial. left~.  
+  destruct H.
+  exists P'. left~. rewrite H8. rewrite H. 
+  apply equ_sys_inst; trivial. right~. left~.  
+  exists P''. right~. rewrite H9.  
+  apply equ_sys_inst; trivial. right~.  
+  destruct H7. exists ([c]|+((pi++(!pi'))|.X~?([]|.X))\c).
+  left~. rewrite H. apply equ_sys_inv; trivial. left~.
+  exists ((P|+((pi++(!pi'))|.X~?([]|.X)))\((pi|.X)~?(pi'|.X))).
+  right~. apply equ_sys_inv; trivial.  
+
+  case H; clear H; intros P'' H.
+  destruct H.
+
+  inverts H; simpl in *|-.
+
+  destruct H1; try contradiction. rewrite H.
+  exists (((s~?s)::P)\(s~?s)). apply equ_sys_refl. left~.
+  destruct H1; try contradiction. rewrite H.
+  exists (((((<|s0, s1|>)~?(<|t0, t1|>))::P)
+             |+(s0~?t0)|+(s1~?t1))\((<|s0, s1|>)~?(<|t0, t1|>))).
+  apply equ_sys_Pr. left~.
+  destruct H2; try contradiction. rewrite H.
+  exists ((((Fc E n t ~? Fc E n t')::P)|+(t~?t'))\(Fc E n t ~? Fc E n t')).
+  apply equ_sys_Fc; trivial. left~.
+  destruct H1; try contradiction. rewrite H.
+  exists ((((Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))::P)
+             |+(s0~?t0)|+(s1~?t1))\(Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))).
+  apply equ_sys_C1. left~.
+  destruct H1; try contradiction. rewrite H.
+  exists ((((Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))::P)
+             |+(s0~?t1)|+(s1~?t0))\(Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))).
+  apply equ_sys_C2. left~.
+  destruct H1; try contradiction. rewrite H.
+  exists ((((([a]^t)~?([a]^t'))::P)|+(t~?t'))\(([a]^t)~?([a]^t'))).
+  apply equ_sys_Ab1. left~.
+  destruct H6; try contradiction. rewrite H.
+  exists ((((([a]^t)~?([b]^t'))::P)
+             |+(t~?(([(a,b)])@t'))|+(a#?t'))\(([a]^t)~?([b]^t'))).
+  apply equ_sys_Ab2; trivial. left~.
+  gen_eq S' : (S©([(X,(!pi)@t)])); intro H7.
+  exists (((c::P)\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)])\cup(C/?S')).
+  apply equ_sys_inst; trivial.
+  destruct H6. destruct H; try contradiction. rewrite H. left~. left~.
+  destruct H; try contradiction. rewrite H. right~. left~.
+  destruct H7; try contradiction. rewrite H.
+  exists (((((pi|.X)~?(pi'|.X))::P)
+             |+((pi++(!pi'))|.X~?([]|.X)))\((pi|.X)~?(pi'|.X))) .
+  apply equ_sys_inv; trivial. left~.
+
+  inverts H.
+
+  exists ((c::P)\(s~?s)). apply equ_sys_refl. right~.
+  exists (((c::P)|+(s0~?t0)|+(s1~?t1))\((<|s0, s1|>)~?(<|t0, t1|>))).
+   apply equ_sys_Pr. right~.
+  exists (((c::P)|+(t~?t'))\(Fc E n t ~? Fc E n t')).
+   apply equ_sys_Fc; trivial. right~.
+  exists (((c::P)|+(s0~?t0)|+(s1~?t1))
+          \(Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))).
+   apply equ_sys_C1. right~.
+  exists (((c::P)|+(s0~?t1)|+(s1~?t0))
+          \(Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))).
+   apply equ_sys_C2. right~.
+  exists (((c::P)|+(t~?t'))\(([a]^t)~?([a]^t'))).
+   apply equ_sys_Ab1. right~.
+  exists (((c::P)|+(t~?(([(a,b)])@t'))|+(a#?t'))
+            \(([a]^t)~?([b]^t'))).
+   apply equ_sys_Ab2; trivial. right~.
+  gen_eq S' : (S©([(X,(!pi)@t)])); intro H7.
+  exists (((c::P)\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)])\cup(C/?S')).
+  apply equ_sys_inst; trivial.
+  destruct H6. left~. right~. right~. right~.
+  exists (((c::P)|+((pi++(!pi'))|.X~?([]|.X)))\((pi|.X)~?(pi'|.X))) .
+  apply equ_sys_inv; trivial. right~.
+
 Qed.
 
-
-
-Lemma equ_sys_NF_dec_singleton'  : forall C S P,
-                             (NF _ equ_sys (C, S, P)) \/        
-                             (exists c T', set_In c P /\ equ_sys (C, S, [c]) T') .
+Lemma equ_sys_eq_ctx : forall T T' varSet,
+      equ_sys varSet T T' -> fst (fst T) = fst (fst T') .                       
 Proof.
+  intros. inverts H; simpl; trivial.
+Qed.  
+
+
+Lemma equ_sys_NF_dec : forall C S P varSet,
+      NF _ (equ_sys varSet) (C, S, P) \/ exists S' P', equ_sys varSet (C, S, P) (C, S', P').
+Proof.
+  
   intros. induction P.
-  left~. intros T' H. 
-  inverts H; simpl in *|-; trivial. destruct H5; trivial.
-  destruct IHP.
-  case equ_sys_NF_dec_singleton with (C:=C) (S:=S) (c:=a); intro H'.
-  left~. apply equ_sys_NF_singleton.
-  intros c H0. simpl in H0. destruct H0.
-  rewrite <- H0. trivial.
-  apply equ_sys_NF_singleton with (c:=c) in H; trivial.
-  right~. case H'; clear H'; intros T' H'.
-  exists a T'. split~. left~.
-  right~. case H; clear H; intros c H.
-  case H; clear H; intros T' H. destruct H.
-  exists c T'. split~. right~.
+  left~. intros T H. inverts H; simpl in *|-; trivial.
+  destruct H5; trivial.
+  destruct IHP. case (equ_sys_NF_dec_singleton C S a varSet); intro H0.
+  
+  left~. intros T H1. destruct T. destruct p.
+  generalize H1. intros H1'.  apply equ_sys_eq_ctx in H1'.
+  simpl in H1'. rewrite <- H1' in H1.
+
+  assert (Q : exists P'', equ_sys varSet (C, S, [a]) (C, s, P'') \/
+                          equ_sys varSet (C, S, P) (C, s, P'') ). 
+   apply equ_sys_cons. exists p0; trivial.
+
+  case Q; clear Q. intros P' Q. destruct Q.
+  apply H0 in H2; trivial.
+  apply H in H2; trivial.
+
+  right~. case H0; clear H0. intros S' H0.
+  case H0; clear H0; intros P' H0.
+  exists S'. apply <- equ_sys_cons.
+  exists P'. left~.
+
+  right~. case H; clear H. intros S' H.
+  case H; clear H; intros P' H.
+  exists S'. apply <- equ_sys_cons.
+  exists P'. right~.
+
 Qed.
-    
 
 
-Lemma equ_sys_NF_dec : forall T, NF _ equ_sys T \/ exists T', equ_sys T T'.
-Proof.
-  intros. destruct T. destruct p.
-  case equ_sys_NF_dec_singleton' with (C:=c) (S:=s) (P:=p0); intro H.
-  left~. right~. case H; clear H; intros a H.
-  case H; clear H; intros T' H. destruct H.
-  apply equ_sys_red_singleton.
-  exists a T'. split~.
-Qed.
 
-
-Corollary equ_sys_neg_NF : forall T, ~ NF _ equ_sys T <-> exists T', equ_sys T T'.
+Corollary equ_sys_neg_NF : forall T varSet,
+          ~ NF _ (equ_sys varSet) T <-> exists T', equ_sys varSet T T'.
 Proof.
   intros. split~; intro.
-  
-  case (equ_sys_NF_dec T); intro H0; try contradiction; trivial.
 
+  destruct T. destruct p.
+  
+  case (equ_sys_NF_dec c s p0 varSet); intro H0;
+    try contradiction; trivial.
+
+  case H0; clear H0; intros S' H0.
+  case H0; clear H0; intros P' H0.
+
+  exists (c, S', P'); trivial.
+  
   intro H'. case H; clear H; intros T' H.
   apply H' in H. trivial.
 Qed.
 
 
 
-Lemma unif_step_NF_dec :  forall T, NF _ unif_step T \/ exists T', unif_step T T'.
+Lemma unif_step_NF_dec : forall T varSet,
+      NF _ (unif_step varSet) T \/ exists T', unif_step varSet T T'.
 Proof.
-  intros.
-  case (equ_sys_NF_dec T); intro H.
+  intros. destruct T. destruct p.
+  case (equ_sys_NF_dec c s p0 varSet); intro H.
+  gen_eq T : (c, s, p0); intro H'.
   case (fixpoint_Problem_eqdec (equ_proj (snd T))); intro H0.
-  case (fresh_sys_NF_dec T); intro H1.
+  case (fresh_sys_NF_dec c s p0); intro H1.
   left~. intros T' H2. destruct H2.
-   apply H in H2; trivial. apply H1 in H3; trivial.
-   right~. case H1; clear H1; intros T' H1. exists T'.
-   apply fresh_unif_step; trivial.   
+  apply H in H2; trivial. rewrite H' in H3.
+  apply H1 in H3; trivial.
+   right~. case H1; clear H1; intros c' H1.
+           case H1; clear H1; intros P' H1.
+   exists (c', s, P').
+   apply fresh_unif_step; trivial. rewrite H'; trivial.   
   left~. intros T' H2. destruct H2; try contradiction.
   apply H in H1; trivial.
-  right~. case H; clear H; intros T' H.
-  exists T'. apply equ_unif_step; trivial.
+  right~. case H; clear H; intros S' H.
+  case H; clear H; intros P' H.
+  exists (c, S', P'). apply equ_unif_step; trivial.
 Qed.
   
-Corollary unif_step_neg_NF : forall T, ~ leaf T <-> exists T', unif_step T T'.
+Corollary unif_step_neg_NF : forall T varSet,
+          ~ leaf varSet T <-> exists T', unif_step varSet T T'.
 Proof.
   intros. split~; intro.
   
-  case (unif_step_NF_dec T); intro H0; try contradiction; trivial.
+  case (unif_step_NF_dec T varSet); intro H0; try contradiction; trivial.
 
   intro H'. case H; clear H; intros T' H.
   apply H' in H. trivial.

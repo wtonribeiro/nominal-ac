@@ -68,66 +68,75 @@ Inductive fresh_sys : Triple -> Triple -> Prop :=
                                                 (C,S,(((P|+(a#?s))|+(a#?t))\(a#?(<|s,t|>))))   
 .
 
+(** Definition of A_equivalence between two terms w.r.t. the function symbol f^E_n *)
+
+Definition A_equiv (s t : term) (E n : nat) :=
+                    term_size s = term_size t /\
+                    (forall i, i <= TPlength s E n -> TPith i s E n = TPith i t E n) . 
+
+
+
 (** %\section{The equ\_sys relation}% *)
             
-Inductive equ_sys : Triple -> Triple -> Prop :=
+Inductive equ_sys (varSet : set Var) : Triple -> Triple -> Prop :=
   
  | equ_sys_refl : forall C S P s, (set_In (s~?s) P) ->
-                                   equ_sys (C,S,P)
-                                           (C,S,P\(s~?s))
+                                   equ_sys varSet (C,S,P)
+                                                  (C,S,P\(s~?s))
                                            
  | equ_sys_Pr : forall C S P s0 s1 t0 t1,
                   (set_In ((<|s0,s1|>)~?(<|t0,t1|>)) P) ->
-                   equ_sys (C,S,P)
-                           (C,S,(((P|+(s0~?t0))|+(s1~?t1))\((<|s0,s1|>)~?(<|t0,t1|>))))
+                   equ_sys varSet (C,S,P)
+                                  (C,S,(((P|+(s0~?t0))|+(s1~?t1))\((<|s0,s1|>)~?(<|t0,t1|>))))
                            
                           
  | equ_sys_Fc : forall C S P E n t t', (set_In ((Fc E n t)~?(Fc E n t')) P) -> E <> 2 ->
                                                                                       
-                                        equ_sys (C,S,P)
-                                                (C,S,(P|+(t~?t'))\((Fc E n t)~?(Fc E n t'))) 
+                                        equ_sys varSet (C,S,P)
+                                                       (C,S,(P|+(t~?t'))\((Fc E n t)~?(Fc E n t'))) 
 
 
  | equ_sys_C1 : forall C S P n s0 s1 t0 t1,    
                   
    (set_In ((Fc 2 n (<|s0,s1|>))~?(Fc 2 n (<|t0,t1|>)))) P ->
                   
-     equ_sys (C,S,P)
-             (C,S,((P|+(s0~?t0))|+(s1~?t1))\(Fc 2 n (<|s0,s1|>)~?(Fc 2 n (<|t0,t1|>))))
+     equ_sys varSet (C,S,P)
+                    (C,S,((P|+(s0~?t0))|+(s1~?t1))\(Fc 2 n (<|s0,s1|>)~?(Fc 2 n (<|t0,t1|>))))
 
 
  | equ_sys_C2 : forall C S P n s0 s1 t0 t1,    
                   
    (set_In ((Fc 2 n (<|s0,s1|>))~?(Fc 2 n (<|t0,t1|>)))) P ->
                   
-     equ_sys (C,S,P)
-             (C,S,((P|+(s0~?t1))|+(s1~?t0))\(Fc 2 n (<|s0,s1|>)~?(Fc 2 n (<|t0,t1|>))))
-
+     equ_sys varSet (C,S,P)
+                    (C,S,((P|+(s0~?t1))|+(s1~?t0))\(Fc 2 n (<|s0,s1|>)~?(Fc 2 n (<|t0,t1|>))))
+                       
+                    
 
  | equ_sys_Ab1 : forall C S P a t t', (set_In (([a]^t)~?([a]^t')) P) ->
-                                       equ_sys (C,S,P)
-                                               (C,S,(P|+(t~?t'))\(([a]^t)~?([a]^t')))
+                                       equ_sys varSet (C,S,P)
+                                                      (C,S,(P|+(t~?t'))\(([a]^t)~?([a]^t')))
 
  | equ_sys_Ab2 : forall C S P a b t t',
                     a <> b -> (set_In (([a]^t)~?([b]^t')) P) ->
-                    equ_sys (C,S,P)
-                            (C,S,((P|+(t~?([(a,b)]@t'))|+(a#?t')))\(([a]^t)~?([b]^t')))
+                    equ_sys varSet (C,S,P)
+                                   (C,S,((P|+(t~?([(a,b)]@t'))|+(a#?t')))\(([a]^t)~?([b]^t')))
 
  | equ_sys_inst : forall C S S' P pi X t,
 
-                    (~ set_In X (term_vars t)) ->
+                    (~ set_In X (set_union Var_eqdec (term_vars t) varSet)) ->
 
                     ((set_In (pi|.X~?t) P) \/ (set_In (t~?(pi|.X)) P)) ->
 
                     S' = S©([(X,(!pi)@t)]) ->
 
-                    equ_sys (C,S,P)
-                            (C,S',((P\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)]))\cup(C/?S'))
+                    equ_sys varSet (C,S,P)
+                                   (C,S',((P\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)]))\cup(C/?S'))
                                                           
  | equ_sys_inv : forall C S P pi pi' X,
                    pi <> pi' -> pi' <> [] -> (set_In ((pi|.X)~?(pi'|.X)) P) ->
-                   equ_sys (C,S,P)
-                   (C,S,(P|+((pi++(!pi'))|.X~?([]|.X)))\((pi|.X)~?(pi'|.X)))
+                   equ_sys varSet (C,S,P)
+                                  (C,S,(P|+((pi++(!pi'))|.X~?([]|.X)))\((pi|.X)~?(pi'|.X)))
 .
 
 (** %\section{Definition of valid triples}% *)
@@ -139,24 +148,6 @@ Definition valid_triple (T : Triple) :=
   (* 1 *) ( set_inter Var_eqdec (dom_rec S) (Problem_vars P) = [] ) /\
   (* 2 *) ( set_inter Var_eqdec (dom_rec S) (im_vars S) = [] ) .
 
-
-(** %\section{Definition of proper terms and proper problems}% *)  
-  
-(**
-	The following is a restriction over the syntax. 
-	Commutative function symbols can have only pairs as 
-	arguments.
-*)  
-  
-Definition Proper_term (t : term) :=
-  forall n s, set_In (Fc 2 n s) (subterms t) -> is_Pr s .
-
-(**
-	Proper problems contais only proper terms in its equations.
-*) 
-  
-Definition Proper_Problem (P : Problem) :=
-  (forall s t, set_In (s~?t) P -> ((Proper_term s) /\ (Proper_term t))) .
 
   
 (** %\section{Definitions of normal forms and of a reflexive-transitive closure}% *)    
@@ -178,12 +169,12 @@ Inductive tr_clos (T:Type) (R:T->T->Prop) : T->T->Prop :=
 	constraints are all fixpoint equations.
 *)
 
-Inductive unif_step : Triple -> Triple -> Prop :=
+Inductive unif_step  (varSet : set Var) : Triple -> Triple -> Prop :=
 
- | equ_unif_step   : forall T T', equ_sys T T' -> unif_step T T'
+ | equ_unif_step   : forall T T', equ_sys varSet T T' -> unif_step varSet T T'
   
  | fresh_unif_step : forall T T', fixpoint_Problem (equ_proj (snd T)) ->
-                                  fresh_sys T T' -> unif_step T T'
+                                  fresh_sys T T' -> unif_step varSet T T'
 .
  
 (** %\section{Definition of leaf and unif\_path}% *) 
@@ -192,15 +183,15 @@ Inductive unif_step : Triple -> Triple -> Prop :=
 	A leaf T is a normal form of relation unif_step.
 *) 
  
-Definition leaf (T : Triple) := NF _ unif_step T .  
+Definition leaf (varSet : set Var) (T : Triple) := NF _ (unif_step varSet) T .  
 
 (**
 	A unifcation path from T to T' (unif_path T T') is zero
-	or more steps of unif_step from T and T' 
+	or more steps of unif_step from T and T'  
 	where T' is a normal form (w.r.t. unif_path), ie, a leaf.
 *) 
 
-Definition unif_path (T T' : Triple) := tr_clos _ unif_step T T' /\ leaf T'.
+Definition unif_path  (varSet : set Var) (T T' : Triple) := tr_clos _ (unif_step varSet) T T' /\ leaf varSet T'.
 
  
 
@@ -211,8 +202,8 @@ Definition unif_path (T T' : Triple) := tr_clos _ unif_step T T' /\ leaf T'.
 	are fixpoint equations, then T is a normal form w.r.t equ_sys. 
 *)
   
-Lemma equ_proj_fixpoint_is_NF : forall C S P, fixpoint_Problem (equ_proj P) ->
-                                NF _ equ_sys (C,S,P).
+Lemma equ_proj_fixpoint_is_NF : forall C S P varSet, fixpoint_Problem (equ_proj P) ->
+                                NF _ (equ_sys varSet) (C,S,P).
 Proof.
   intros. unfold NF; intro T. intro H0.
   unfold fixpoint_Problem in H.
@@ -224,13 +215,13 @@ Proof.
     try apply H in H2; try destruct H2;
     try apply H in H3; try destruct H3;
     try destruct H0; try destruct H0; try inverts H1.
-  inverts H4. apply H0; trivial.
+  inverts H4. false.
   apply equ_proj_set_In_eq in H8.
   apply H in H8. destruct H8.
-  destruct H0. destruct H0. inverts H1. 
-  destruct H8;  apply equ_proj_set_In_eq in H0;  apply H in H0;
+  destruct H0. destruct H0. inverts H1.
+  destruct H8; apply equ_proj_set_In_eq in H0;  apply H in H0;
   destruct H0; destruct H0; destruct H0; inverts H1;
-  apply H5; simpl; left~.
+  apply H5; simpl; apply set_union_intro1; left~.
   apply equ_proj_set_In_eq in H9. apply H in H9.
   destruct H9. destruct H0. destruct H0.  
   inverts H1. apply H8; trivial.
@@ -241,13 +232,14 @@ Qed.
 *)
 
 
-Lemma fixpoint_preserv : forall T T',
-                           unif_step T T' ->
+Lemma fixpoint_preserv : forall T T' varSet,
+                           unif_step varSet T T' ->
                            fixpoint_Problem (equ_proj (snd T)) -> 
                            fixpoint_Problem (equ_proj (snd T')).
 Proof.
   intros. destruct H. destruct T. destruct p.
-  simpl in H0. apply equ_proj_fixpoint_is_NF with (C:=c) (S:=s) in H0.
+  simpl in H0.
+  apply equ_proj_fixpoint_is_NF with (C:=c) (S:=s) (varSet := varSet) in H0.
   apply H0 in H. contradiction.
   inverts H1; simpl in *|-*;
   rewrite equ_proj_rem_eq; rewrite set_remove_eq;
@@ -261,77 +253,6 @@ Qed.
 *)
 
   
-Lemma Proper_subterm : forall s t, set_In s (subterms t) -> Proper_term t -> Proper_term s.
-Proof.
-  intros. unfold Proper_term in *|-*; intros.
-  apply H0 with (n:=n).
-  apply subterms_trans with (t := s); trivial.
-Qed.
-
-Lemma perm_is_Pr : forall pi t, is_Pr t -> is_Pr (pi @ t).
-Proof.
-  intros. induction t; autorewrite with perm; simpl in *|-*; trivial.
-Qed.
-
-Lemma subs_is_Pr : forall s t X, is_Pr s -> is_Pr (s|^([(X,t)])).
-Proof.
-  intros. induction s; simpl in *|-*; trivial.
-  contradiction.
-Qed.
-
-Lemma perm_Proper_term : forall pi t, Proper_term t -> Proper_term (pi @ t) .
-Proof.
-  intros. induction t; autorewrite with perm; trivial.
-  unfold Proper_term; intros. 
-  simpl in H0. destruct H0; try contradiction. inverts H0.
-  unfold Proper_term in *|-*; intros. apply IHt with (n:=n); intros.
-  apply H with (n:=n0). simpl. apply set_add_intro1; trivial.
-  simpl in H0. apply set_add_elim in H0. destruct H0; trivial. inverts H0.
-  unfold Proper_term in *|-*; intros.
-  simpl in H0. apply set_add_elim in H0. destruct H0. inverts H0.
-  apply set_union_elim in H0. destruct H0.
-  apply IHt1 with (n:=n); intros; trivial. 
-  apply H with (n := n0). simpl.
-  apply set_add_intro1. apply set_union_intro1; trivial.
-  apply IHt2 with (n:=n); intros; trivial. 
-  apply H with (n := n0). simpl.
-  apply set_add_intro1. apply set_union_intro2; trivial.
-  unfold Proper_term in *|-*; intros.
-  simpl in H0. apply set_add_elim in H0. destruct H0.
-  inverts H0. apply perm_is_Pr. apply H with (n:=n0).
-  simpl. apply set_add_intro2; trivial.
-  apply IHt with (n:=n1); trivial; intros.
-  apply H with (n1:=n2); trivial. simpl.
-  apply set_add_intro1; trivial.
-  unfold Proper_term in *|-*; intros.
-  simpl in H0. destruct H0; try contradiction. inverts H0.
-Qed.
-
-
-Lemma subs_Proper_term : forall s t X, Proper_term s -> Proper_term t -> Proper_term (s|^([(X,t)])).
-Proof.
-  intros. induction s; simpl; trivial.
-  unfold Proper_term in *|-*; intros.
-  simpl in H1. apply set_add_elim in H1; destruct H1. inverts H1.
-  apply IHs with (n:=n); intros; trivial. apply H with (n:=n0); trivial.
-  simpl. apply set_add_intro1; trivial.
-  unfold Proper_term in *|-*; intros.
-  simpl in H1. apply set_add_elim in H1; destruct H1. inverts H1.
-  apply set_union_elim in H1. destruct H1.
-  apply IHs1 with (n:=n); intros; trivial. apply H with (n:=n0); trivial.
-  simpl. apply set_add_intro1. apply set_union_intro1; trivial.
-  apply IHs2 with (n:=n); intros; trivial. apply H with (n:=n0); trivial.
-  simpl. apply set_add_intro1. apply set_union_intro2; trivial.
-  unfold Proper_term in *|-*; intros.
-  simpl in H1. apply set_add_elim in H1; destruct H1. inverts H1.
-  apply subs_is_Pr. apply H with (n:=n0). simpl. apply set_add_intro2; trivial.
-  apply IHs with (n:=n1); intros; trivial. apply H with (n1:=n2); trivial.
-  simpl. apply set_add_intro1; trivial.
-  case (X ==v v); intro H1; autorewrite with perm; simpl; trivial.
-  apply perm_Proper_term; trivial.
-Qed.
-
-  
 Lemma fresh_Proper_Problem : forall T T', fresh_sys T T' ->
                                           Proper_Problem (snd T) -> Proper_Problem (snd T').
 Proof.
@@ -343,8 +264,9 @@ Proof.
 Qed.  
 
 
-Lemma equ_Proper_Problem : forall T T', equ_sys T T' ->
-                                        Proper_Problem (snd T) -> Proper_Problem (snd T').
+Lemma equ_Proper_Problem : forall T T' varSet,
+      equ_sys varSet T T' ->
+      Proper_Problem (snd T) -> Proper_Problem (snd T').
 Proof.
   intros. destruct T. destruct T'. simpl in *|-*.
   destruct p. destruct p1. unfold Proper_Problem in *|-*; intros.
@@ -436,21 +358,23 @@ Proof.
 Qed.
 
 
-Lemma unif_step_Proper_Problem : forall T T', unif_step T T' ->
-                                              Proper_Problem (snd T) -> Proper_Problem (snd T').
+Lemma unif_step_Proper_Problem : forall T T' varSet,
+      unif_step varSet T T' ->
+      Proper_Problem (snd T) -> Proper_Problem (snd T').
 Proof.
   intros. inverts H.
-  apply equ_Proper_Problem with (T:=T); trivial.
+  apply equ_Proper_Problem with (T:=T) (varSet := varSet); trivial.
   apply fresh_Proper_Problem with (T:=T); trivial.
 Qed.
 
-Lemma unif_path_Proper_Problem : forall T T', unif_path T T' ->
-                                              Proper_Problem (snd T) -> Proper_Problem (snd T').
+Lemma unif_path_Proper_Problem : forall T T' varSet,
+      unif_path varSet T T' ->
+      Proper_Problem (snd T) -> Proper_Problem (snd T').
 Proof.
   intros. inverts H. induction H1; trivial.
-  apply unif_step_Proper_Problem with (T:=s); trivial.
+  apply unif_step_Proper_Problem with (T:=s) (varSet := varSet); trivial.
   apply IHtr_clos; trivial.
-  apply unif_step_Proper_Problem with (T:=s); trivial. 
+  apply unif_step_Proper_Problem with (T:=s) (varSet := varSet); trivial. 
 Qed.
   
 
@@ -459,7 +383,8 @@ Qed.
 *)
 
 
-Lemma fresh_valid_preservation : forall T T', valid_triple T -> fresh_sys T T' -> valid_triple T'.
+Lemma fresh_valid_preservation : forall T T',
+      valid_triple T -> fresh_sys T T' -> valid_triple T'.
 Proof.
   intros. unfold valid_triple in *|-*. destruct H;
   destruct H0; simpl in *|-*; split~;
@@ -484,9 +409,10 @@ Proof.
 Qed.
 
 
-Lemma equ_valid_preservation_aux : forall T T',
-                     valid_triple T -> equ_sys T T' ->
-                     (set_inter Var_eqdec (dom_rec (snd (fst T'))) (im_vars (snd (fst T'))) = []) .
+Lemma equ_valid_preservation_aux : forall T T' varSet,
+      valid_triple T -> equ_sys varSet T T' ->
+      (set_inter Var_eqdec (dom_rec (snd (fst T')))
+                 (im_vars (snd (fst T'))) = []) .
                                                 
 Proof.
   intros. unfold valid_triple in *|-. destruct H;
@@ -516,7 +442,8 @@ Proof.
   apply dom_comp_add1 in H4.
   destruct H4. rewrite H4 in H5.
   apply im_vars_comp_add2 in H5; trivial.
-  autorewrite with perm in H5. contradiction.
+  autorewrite with perm in H5. apply H0.
+  apply set_union_intro1; trivial.
   apply im_vars_comp_add1 in H5; trivial.
   apply set_union_elim in H5. destruct H5.
   apply set_inter_nil with (a:=Y) in H1.
@@ -530,11 +457,12 @@ Proof.
   
 Qed.
    
-Lemma equ_valid_preservation : forall T T',
-                               valid_triple T -> equ_sys T T' -> valid_triple T' .   
+Lemma equ_valid_preservation : forall T T' varSet,
+      valid_triple T -> equ_sys varSet T T' -> valid_triple T' .   
 Proof.
   intros. unfold valid_triple in *|-*. split~.
-  Focus 2. apply equ_valid_preservation_aux with (T:=T); trivial.
+  Focus 2.
+  apply equ_valid_preservation_aux with (T:=T) (varSet := varSet); trivial.
    destruct H. apply set_inter_nil. intros Y H2.
    apply set_inter_elim in H2. destruct H2.
   generalize H; intro H'.
@@ -619,7 +547,9 @@ Proof.
   rewrite H5 in H2. apply In_dom_eq_dom_rec in H2.
   apply dom_comp_add1 in H2. destruct H2.
   rewrite H2 in H3. apply In_im_subst_term_Problem in H3.
-  autorewrite with perm in H3. contradiction.
+  autorewrite with perm in H3.
+  false. apply H0. apply set_union_intro1; trivial.
+
   apply In_im_subst_term_Problem' in H3. 
   apply set_union_elim in H3. destruct H3.
   repeat apply Problem_vars_remove in H3.
@@ -637,7 +567,7 @@ Proof.
   apply subs_fresh_vars_im in H3.
   assert (Q:  set_inter Var_eqdec (dom_rec S') (im_vars S') = []).
    replace S' with (snd (fst (C,S',((P\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)]))\cup(C/?S')))).
-   apply equ_valid_preservation_aux with (T := (C,S,P)).
+   apply equ_valid_preservation_aux with (T := (C,S,P)) (varSet := varSet).
    unfold valid_triple. simpl. split~.
    apply equ_sys_inst; trivial.
    simpl; trivial.
@@ -653,20 +583,22 @@ Proof.
 Qed.
 
 
-Lemma unif_step_valid_preserv : forall T T', valid_triple T -> unif_step T T' -> valid_triple T'.
+Lemma unif_step_valid_preserv : forall T T' varSet,
+      valid_triple T -> unif_step varSet T T' -> valid_triple T'.
 Proof.
   intros. destruct H0. 
-  apply equ_valid_preservation with (T:=T); trivial.
+  apply equ_valid_preservation with (T:=T) (varSet:=varSet); trivial.
   apply fresh_valid_preservation with (T:=T); trivial. 
 Qed.
 
 
-Lemma unif_path_valid_preserv : forall T T', valid_triple T -> unif_path T T' -> valid_triple T'.
+Lemma unif_path_valid_preserv : forall T T' varSet,
+      valid_triple T -> unif_path varSet T T' -> valid_triple T'.
 Proof.
   intros. destruct H0. induction H0; trivial.
-  apply unif_step_valid_preserv with (T := s); trivial.
+  apply unif_step_valid_preserv with (T := s) (varSet:=varSet); trivial.
   apply IHtr_clos; trivial.
-  apply unif_step_valid_preserv with (T := s); trivial.
+  apply unif_step_valid_preserv with (T := s) (varSet:=varSet); trivial.
 Qed.
 
 
