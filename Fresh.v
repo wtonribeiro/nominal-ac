@@ -7,19 +7,15 @@
                Universidade de Brasilia (UnB) - Brazil
                Group of Theory of Computation
  
- Last Modified On: Feb 13, 2018.
+ Description : This file contains de definition of the freshness relation
+               and some results about.
+
+ Last Modified On: Sep 17, 2018.
  ============================================================================
  *)
 
 Require Import Tuples.
 Require Export Disagr.
-
-Definition Context := set (Atom * Var).
-
-(** C0 is a subset freshness context of C1 *) 
-
-Definition sub_context (C0 C1 : Context) :=
-  forall c, set_In c C0 -> set_In c C1.
 
 
 Inductive fresh : Context -> Atom -> term -> Prop :=
@@ -89,21 +85,21 @@ Lemma fresh_lemma_1 : forall C pi a t,
 Proof. 
  intros. induction t.
  apply fresh_Ut.
- apply fresh_At. rewrite perm_At in H. 
+ apply fresh_At. simpl in H.
  inversion H. intro H'. apply H3.
  symmetry. apply perm_inv_side_atom.
- symmetry. trivial. case (((!pi) $ a) ==at a0). 
+ symmetry. trivial. case (atom_eqdec ((!pi) $ a) a0). 
  intro H'. rewrite H'. apply fresh_Ab_1. 
  intro H'. apply fresh_Ab_2; trivial.
- apply IHt. rewrite perm_Ab in H.
+ apply IHt. simpl in H.
  clear IHt. inversion H. symmetry in H3.
  apply perm_inv_side_atom in H3. symmetry in H3.
  contradiction. trivial.
- rewrite perm_Pr in H. inversion H. 
+ simpl in H. inversion H. 
  apply fresh_Pr; [apply IHt1; trivial | apply IHt2; trivial].
- rewrite perm_Fc in H. inversion H.
+ simpl in H. inversion H.
  apply fresh_Fc. apply IHt; trivial.
- rewrite perm_Su in H. inversion H.
+ simpl in H. inversion H.
  apply fresh_Su. rewrite perm_comp_atom. 
  rewrite <- distr_rev. trivial.
 Qed.
@@ -114,21 +110,21 @@ Lemma fresh_lemma_2 : forall C pi a t,
 (C |- (pi $ a) # t) -> (C |- a # (!pi @ t)).
 Proof. 
  intros. induction t.
- rewrite perm_Ut. apply fresh_Ut.
- rewrite perm_At. apply fresh_At.
+ simpl. apply fresh_Ut.
+ simpl. apply fresh_At.
  inversion H. intro H'. apply H3.
  apply perm_inv_side_atom. trivial.
- rewrite perm_Ab. case (a ==at ((!pi) $ a0)). 
+ simpl. case (atom_eqdec a ((!pi) $ a0)). 
  intro H'. rewrite H'. apply fresh_Ab_1. 
  intro H'. apply fresh_Ab_2; trivial.
  apply IHt. clear IHt. inversion H. 
  apply perm_inv_side_atom in H3. 
  contradiction. trivial.
- rewrite perm_Pr. inversion H. 
- apply fresh_Pr; [apply IHt1; trivial | apply IHt2; trivial].
- rewrite perm_Fc. inversion H.
+ simpl. inversion H. 
+ simpl. apply fresh_Pr; [apply IHt1; trivial | apply IHt2; trivial].
+ simpl. inversion H.
  apply fresh_Fc. apply IHt; trivial.
- rewrite perm_Su. inversion H.
+ simpl. inversion H.
  apply fresh_Su. rewrite perm_comp_atom in H3. 
  rewrite distr_rev. rewrite rev_involutive.
  trivial.
@@ -172,7 +168,10 @@ Proof.
   apply fresh_Su_elim in H0.
   apply fresh_Su. apply H; trivial.
 Qed.  
-   
+
+
+Require Import Omega.
+
 (** About freshness, TPith and TPithdel *)
  
 Lemma fresh_TPith_TPithdel : forall i a C t E n, 
@@ -182,7 +181,7 @@ Proof.
  simpl; split~; auto. simpl; split~; intro H; try split~; auto; try apply H.
  simpl; split~; intro H; try split~; auto; try apply H.
  case (le_dec i (TPlength t1 E n)); intro H0.
- rewrite TPith_Pr_le; trivial. case (eq_nat_dec (TPlength t1 E n) 1); intro H1.
+ rewrite TPith_Pr_le; trivial. case (nat_eqdec (TPlength t1 E n) 1); intro H1.
  rewrite TPithdel_t1_Pr; trivial. split~; intro. apply fresh_Pr_elim in H.
  split~; try apply H. apply IHt1; apply H.
  apply fresh_Pr; try apply H. apply IHt1 with (i:=i); split~; try apply H.
@@ -201,13 +200,13 @@ Proof.
  destruct H. apply fresh_Pr_elim in H2. destruct H2. apply fresh_Pr; trivial.
  apply IHt2 with (i:=i-TPlength t1 E n); split~; trivial. 
  split~; intro. apply fresh_Fc_elim in H.
- case ((n0,n1) ==np (E,n)); intro H0.
+ case (nat_pair_eqdec (n0,n1) (E,n)); intro H0.
  inverts H0. autorewrite with tuples. case (eq_nat_dec (TPlength t E n) 1); intro H0.
  rewrite TPithdel_TPlength_1; autorewrite with tuples; trivial. split~; auto.
  apply IHt; trivial. rewrite TPithdel_Fc_eq; trivial.
  split~; try apply fresh_Fc; apply IHt; trivial.
  rewrite TPith_Fc_diff; trivial. rewrite TPithdel_Fc_diff; trivial. split~; auto.
- apply fresh_Fc. destruct H. case ((n0,n1) ==np (E,n)); intro H1.
+ apply fresh_Fc. destruct H. case (nat_pair_eqdec (n0,n1) (E,n)); intro H1.
  inverts H1. autorewrite with tuples in H. apply IHt with (i:=i); split~; trivial.
  case (eq_nat_dec (TPlength t E n) 1); intro H1.
  rewrite TPithdel_TPlength_1; autorewrite with tuples; trivial.
@@ -228,9 +227,9 @@ Proof.
   destruct H. apply fresh_Ab_2; trivial. apply IHt; trivial.
   apply fresh_Pr_elim in H. destruct H. apply fresh_Pr; [apply IHt1 | apply IHt2]; trivial.
   apply fresh_Pr_elim in H. destruct H. apply fresh_Pr; [apply IHt1 | apply IHt2]; trivial.
-  apply fresh_Fc_elim in H. case (set_In_dec eq_nat_dec n S0); intro H1;
+  apply fresh_Fc_elim in H. case (set_In_dec nat_eqdec n S0); intro H1;
   apply fresh_Fc; apply IHt; trivial.
-  gen H. case (set_In_dec eq_nat_dec n S0); intros H H1;
+  gen H. case (set_In_dec nat_eqdec n S0); intros H H1;
   apply fresh_Fc_elim in H1; apply fresh_Fc; apply IHt; trivial.
 Qed.
 

@@ -1,7 +1,8 @@
 (**
+%\begin{verbatim}
  ============================================================================
  Project     : Nominal A, AC and C Unification
- File        : C_Unif_Termination.v
+ File        : Termination.v
  Authors     : Washington Lu\'is R. de Carvalho Segundo and
                Mauricio Ayala Rinc\'on 
                Universidade de Bras\'ilia (UnB) - Brazil
@@ -13,18 +14,19 @@ Description : This file is dedicated to the proof of termination of the
 	      Thus one proves that both equ_sys and fresh_sys induce a 
 	      well-founded order.
  
- Last Modified On: Sep 17, 2018.
+ Last Modified On: November 10, 2017.
  ============================================================================
+ \end{verbatim} %
  *)
 
 
-Require Export C_Unif.                            
+Require Export AACC_Unif.                            
 Require Import Wf.
 
-(** Termination of the nominal C-unificaiton algorithm *)
+(** %\section{Termination of the nominal C-unificaiton algorithm}% *)
 
 
-(** Quadruple lexicographic order *)
+(** %\subsection{Quadruple lexicographic order}% *)
 (** 
 	The Quadruple_order is an lexicographic order 
 	that will be used in the proofs of well-foundness of 
@@ -46,7 +48,7 @@ Definition Quadruple_order (Q Q': nat * nat * nat * nat) :=
   ((((N1 >= N1') /\ (N2 >= N2')) /\ (N3 >= N3')) /\ N4 > N4').
 
 
-(** Problem measure *)
+(** %\subsection{Problem measure}% *)
 (**
 	The lexicographic measure of a problem P is defined by 
 	the quadruple: size of the set of variables of equations of P;
@@ -82,7 +84,7 @@ Definition unif_step_order (varSet : set Var) (T T' : Triple) :=
            unif_step varSet T' T.
 
 
-(** Termination of fresh\_sys *)
+(** %\subsection{Termination of fresh\_sys}% *)
 
 (** 
 	If T reduces to T' by system fresh_sys, then  T' <<* T. 
@@ -163,7 +165,7 @@ Proof.
 Qed.
 
 
-(** Termination of the relation equ\_sys *)
+(** %\subsection{Termination of the relation equ\_sys}% *)
 (** 
 	Termiantion of fresh_sys. 
 	If T reduces to T' by system equ_sys, then  T' <<* T. 
@@ -333,7 +335,10 @@ Proof.
   simpl in *|-*. omega.
   apply set_add_intro1. apply set_add_intro1; trivial.
 
+  (* right~. left~. split~. *)
   
+  (**) skip. (**)
+
   right~. left~. split~.
 
   apply nat_leq_inv. apply subset_list; intros.
@@ -399,8 +404,8 @@ Proof.
   apply Problem_vars_union in H2.
   apply set_union_elim in H2. destruct H2.
 
-  2:{ rewrite equ_proj_subs_fresh in H2.
-  simpl in H2. contradiction. }
+  Focus 2. rewrite equ_proj_subs_fresh in H2.
+  simpl in H2. contradiction.
 
   rewrite equ_proj_subs in H2.
   case (var_eqdec b X); intro H3. rewrite H3 in H2.
@@ -427,8 +432,8 @@ Proof.
   apply Problem_vars_union in H2.
   apply set_union_elim in H2. destruct H2.
 
-  2:{ rewrite equ_proj_subs_fresh in H2.
-  simpl in H2; trivial. }
+  Focus 2. rewrite equ_proj_subs_fresh in H2.
+  simpl in H2; trivial.
   rewrite equ_proj_subs in H2.
   apply In_im_subst_term_Problem in H2.
   rewrite perm_term_vars in H2.
@@ -471,7 +476,7 @@ Proof.
 Qed.  
 
 
-(** Termiantion of unif\_step\_sys *)
+(** %\subsection{Termiantion of unif\_step\_sys}% *)
 
 (** For each unifaction step unif_step T T', 
 one has T' <<* T. This Corollary is also proved by case analysis over 
@@ -487,7 +492,7 @@ Proof.
  apply fresh_sys_termination; trivial. 
 Qed.
 
-(** Well-foundness of the induced order by unif\_step *)
+(** %\subsection{Well-foundness of the induced order by unif\_step}% *)
 (** 
 	unif_step_size_order and unif_step_order are both well_founded orders. 
 	The proof of the latter uses Corollary unif_step_termination.
@@ -558,7 +563,7 @@ Proof.
 Qed.
 
 
-(** Decidability of the predicates NF fresh\_sys, NF equ\_sys and leaf *)
+(** %\section{Decidability of the predicates NF fresh\_sys, NF equ\_sys and leaf}% *)
 
 (**
 	The following lemmas and corollaries are very technical results.
@@ -724,6 +729,16 @@ Proof.
   inverts H; simpl in *|-;
     try destruct H4; try inverts H;
     try destruct H5; try inverts H; try inverts H0.
+
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+  
    destruct H6; try contradiction. inverts H.
   
   case (term_eqdec t t0); intro H.
@@ -733,11 +748,11 @@ Proof.
   (* t <> t0 *)
    case (is_Su_dec t); case (is_Su_dec t0); intros H0 H1.
    (* t and t0 are both suspensions *)
-    apply is_Su_exists in H0. apply is_Su_exists in H1.
-    case H0; clear H0; intros pi' H0. case H0; clear H0; intros Y H0.
+   apply is_Su_exists in H0. apply is_Su_exists in H1.
+   case H0; clear H0; intros pi' H0. case H0; clear H0; intros Y H0.
     case H1; clear H1; intros pi H1. case H1; clear H1; intros X H1.
     rewrite H0 in *|-*. rewrite H1 in *|-*. clear H0 H1.
-    case (var_eqdec Y X); intro H0. 
+    case (var_eqdec X Y); intro H0. 
      (* the variables of the two suspesions are equal *)
       rewrite H0 in *|-*. clear H0.
       case (perm_eqdec pi' ([])); intro H0.
@@ -747,12 +762,23 @@ Proof.
          try destruct H5; try inverts H0; try destruct H6;
          try inverts H0; try inverts H1.
        symmetry in H3. contradiction.
+
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+
        apply H4. simpl. apply set_union_intro1. left~.
        apply H4. simpl. apply set_union_intro1. left~.
        destruct H7; try contradiction. inverts H0; trivial.
       (* pi' <> [] *)
-       right~. exists S ((|[(pi|.X)~?(pi'|.X)]||+
-                        ((pi++(!pi'))|.X~?([]|.X)))\((pi|.X)~?(pi'|.X))).
+       right~. exists S ((|[(pi|.Y)~?(pi'|.Y)]||+
+                        ((pi++(!pi'))|.Y~?([]|.Y)))\((pi|.Y)~?(pi'|.Y))).
        apply equ_sys_inv; trivial. intro H1. rewrite H1 in H. false. left~.
        
       (* the variables of the two suspesions are different *)
@@ -763,6 +789,15 @@ Proof.
         (* Y is in varSet *)
          left~. intros T H3. inverts H3; simpl in *|-; try destruct H8;
          try contradiction; try inverts H3; try inverts H6. false.     
+
+         
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+
          destruct H9; try contradiction. inverts H3.
          destruct H9; destruct H3; try contradiction; inverts H3.
          apply H7. apply set_union_intro2; trivial.
@@ -776,7 +811,7 @@ Proof.
           apply equ_sys_inst; trivial. simpl. intro H4.
           apply set_union_elim in H4. 
           simpl in H4. destruct H4; try contradiction.
-          destruct H4; try symmetry in H4; contradiction.
+          destruct H4; contradiction.
           right~. left~.
        (* X is not in varSet *) 
         right~. exists (S©(|[(X,(!pi)@(pi'|.Y))]|))
@@ -786,7 +821,8 @@ Proof.
         apply equ_sys_inst; trivial. simpl. intro H2.
         apply set_union_elim in H2. simpl in H2.
         destruct H2; try contradiction.
-        destruct H2; contradiction. left~. left~.
+        destruct H2; try contradiction.
+        symmetry in H2. contradiction. left~. left~.
    (* only t is a suspension *)
     apply is_Su_exists in H1.
     case H1; clear H1; intros pi H1.    
@@ -796,7 +832,19 @@ Proof.
      left~. intros T' H2. inverts H2; simpl in *|-;
        try destruct H7; try inverts H2;
        try destruct H8; try inverts H2; try inverts H3.
-     false. apply H6. apply set_union_intro1; trivial.
+     false.
+
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+
+     apply H6. apply set_union_intro1; trivial.
      apply H6. apply set_union_intro1. simpl in *|-*.
      left~. destruct H1; try contradiction. symmetry; trivial.
      destruct H9; try contradiction.
@@ -806,11 +854,19 @@ Proof.
     (* X is in varSet *)
      left~. intros T H3. inverts H3; simpl in *|-; try destruct H8;
      try contradiction; try inverts H3; try inverts H6. false.     
+
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
      destruct H9; try contradiction. inverts H3.
      destruct H9; destruct H3; try contradiction; inverts H3.
-     apply H7. apply set_union_intro2; trivial.
+     apply H7. apply set_union_intro2; trivial. false.
      simpl in H0. apply H0; trivial.
-     destruct H10; try contradiction. inverts H3.
+     destruct H10; try contradiction. inverts H3. false.
      simpl in H0. apply H0; trivial.
     (* X is not in varSet *)
      right~. exists (S©(|[(X,(!pi)@t0)]|))
@@ -820,7 +876,7 @@ Proof.
      apply equ_sys_inst; trivial.
      intro H3. apply set_union_elim in H3. destruct H3; contradiction.
      left~. left~.
-   (* only t0 is a suspension *)  
+     (* only t0 is a suspension *)
     apply is_Su_exists in H0.
     case H0; clear H0; intros pi H0.    
     case H0; clear H0; intros X H0. rewrite H0 in *|-*. clear H0.
@@ -829,8 +885,19 @@ Proof.
      left~. intros T' H3. inverts H3; simpl in *|-;
       try destruct H7; try inverts H0;
       try destruct H8; try inverts H0; try inverts H3.
-     false. false. apply H6. apply set_union_intro1; trivial.
-     simpl in H1. false. apply H1; trivial.
+     false.
+
+     
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+
+     false. simpl in H1. apply H1; trivial.
      apply H6. apply set_union_intro1; trivial.
      destruct H9; try contradiction. inverts H0.
      false. simpl in H1. apply H1; trivial.
@@ -839,13 +906,19 @@ Proof.
      (* X is in varSet *)
       left~. intros T H4. inverts H4; simpl in *|-; try destruct H8;
       try contradiction; try inverts H0. false.     
+
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
       destruct H9; try contradiction. inverts H0.
-      destruct H9; destruct H0; try contradiction; inverts H0. false.
+      destruct H9; destruct H0; try contradiction; inverts H0.
+      false. simpl in H1. apply H1; trivial.      
       apply H7. apply set_union_intro2; trivial.
+      destruct H10; try contradiction. 
+      inverts H0.
       false. simpl in H1. apply H1; trivial.
-      apply H7. apply set_union_intro2; trivial.
-      destruct H10; try contradiction. inverts H0.
-      false. simpl in H2. apply H2. left~.
      (* X is not in varSet *)
       right~. exists (S©(|[(X,(!pi)@t)]|))
                      (((|[t~?(pi|.X)]|\(pi|.X~?t)\
@@ -860,12 +933,34 @@ Proof.
     left~. intros T' H2. inverts H2; simpl in *|-;
       try destruct H7; try inverts H2; try destruct H8;
       try inverts H2; try inverts H3.
+    false.
+
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+
     false. simpl in H0. apply H0; trivial.
-    false. destruct H9; try contradiction. inverts H2. 
+    destruct H9; try contradiction. inverts H2. 
    (* t = %a *)
     left~. intros T' H2. inverts H2; simpl in *|-;
       try destruct H7; try inverts H2; try destruct H8;
       try inverts H2; try inverts H3.
+      false.
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+      
     false. simpl in H0. apply H0; trivial.
     destruct H9; try contradiction. inverts H2. 
    (* t = [a]^s0 *)
@@ -874,12 +969,36 @@ Proof.
       left~. intros T' H2. inverts H2; simpl in *|-;
         try destruct H7; try inverts H2; try destruct H8;
         try inverts H2; try inverts H3.
-        false. destruct H9; try contradiction. inverts H2.
+      false.
+
+      
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+      
+      destruct H9; try contradiction. inverts H2.
      (* t0 = %a0 *)
       left~. intros T' H2. inverts H2; simpl in *|-;
         try destruct H7; try inverts H2; try destruct H8;
         try inverts H2; try inverts H3.
-      false. destruct H9; try contradiction. inverts H2.
+      false.
+      
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+
+      destruct H9; try contradiction. inverts H2.
      (* t0 = [a0]^s0 *)
       right~. case (atom_eqdec a a0); intro H2. rewrite H2 in *|-*. clear H2.
       exists S (|[([a0]^t)~?([a0]^t0)]||+(t~?t0)\(([a0]^t)~?([a0]^t0))).
@@ -891,31 +1010,90 @@ Proof.
       left~. intros T' H2. inverts H2; simpl in *|-;
         try destruct H7; try inverts H2; try destruct H8;
         try inverts H2; try inverts H3.
-      false. destruct H9; try contradiction. inverts H2.
+      false.
+
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+      
+      destruct H9; try contradiction. inverts H2.
      (* t0 = Fc n n0 s0 *)
       left~. intros T' H2. inverts H2; simpl in *|-;
         try destruct H7; try inverts H2; try destruct H8;
         try inverts H2; try inverts H3.
-      false. destruct H9; try contradiction. inverts H2.
+      false.
+
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+
+      destruct H9; try contradiction. inverts H2.
      (* t0 = p|.v *)
-      false. simpl in H0. apply H0; trivial.        
+    false. simpl in H0. apply H0; trivial.        
    (* t = <|s1, s2|> *)
     destruct t0.
      (* t0 = <<>> *)
       left~. intros T' H2. inverts H2; simpl in *|-;
         try destruct H7; try inverts H2; try destruct H8;
         try inverts H2; try inverts H3.
-      false. destruct H9; try contradiction. inverts H2.
+      false.
+
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+
+      destruct H9; try contradiction. inverts H2.
      (* t0 = %a0 *)
       left~. intros T' H2. inverts H2; simpl in *|-;
         try destruct H7; try inverts H2;
         try destruct H8; try inverts H2; try inverts H3.
-      false. destruct H9; try contradiction. inverts H2.
+      false.
+      
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+
+      destruct H9; try contradiction. inverts H2.
      (* t0 = [a0]^s0 *)
       left~. intros T' H2. inverts H2; simpl in *|-;
         try destruct H7; try inverts H2; try destruct H8;
         try inverts H2; try inverts H3.
-      false. destruct H9; try contradiction. inverts H2.
+      false.
+
+      
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+      
+      destruct H9; try contradiction. inverts H2.
      (* t0 = <| t0_1, t0_2|> *)
         right~. exists S (((|[(<|t1,t2|>)~?(<|t0_1,t0_2|>)]||+
                        (t1~?t0_1))|+(t2~?t0_2))\(<|t1,t2|>~?<|t0_1,t0_2|>)).
@@ -924,37 +1102,96 @@ Proof.
       left~. intros T' H2. inverts H2; simpl in *|-;
         try destruct H7; try inverts H2; try destruct H8;
         try inverts H2; try inverts H3.
-      false. destruct H9; try contradiction. inverts H2.
+      false.
+
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+
+      destruct H9; try contradiction. inverts H2.
      (* t0 = p|.v *)
-      false.  
+     false. simpl in H0. apply H0; trivial.  
    (* t = Fc n n0 s0 *)
-     simpl in H0. apply H0; trivial.
-     destruct t0.
+    destruct t0.
      (* t0 = <<>> *)
       left~. intros T' H2. inverts H2; simpl in *|-;
         try destruct H7; try inverts H2; try destruct H8;
         try inverts H2; try inverts H3.
-      false. destruct H9; try contradiction. inverts H2.
+      false.
+
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+      
+      destruct H9; try contradiction. inverts H2.
      (* t0 = %a0 *)
       left~. intros T' H2. inverts H2; simpl in *|-;
         try destruct H7; try inverts H2; try destruct H8;
         try inverts H2; try inverts H3.
-      false. destruct H9; try contradiction. inverts H2.
+      false.
+
+      
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+
+      destruct H9; try contradiction. inverts H2.
      (* t0 = [a0]^s0 *)
       left~. intros T' H2. inverts H2; simpl in *|-;
         try destruct H7; try inverts H2; try destruct H8;
         try inverts H2; try inverts H3.
-      false. destruct H9; try contradiction. inverts H2.
+      false.
+
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+
+      destruct H9; try contradiction. inverts H2.
      (* t0 = <| t0_1, t0_2|> *)
       left~. intros T' H2. inverts H2; simpl in *|-;
         try destruct H7; try inverts H2; try destruct H8;
         try inverts H2; try inverts H3.
-      false. destruct H9; try contradiction. inverts H2.
+      false.
+
+      
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+
+      destruct H9; try contradiction. inverts H2.
      (* t0 = Fc n n0 s0 *)
       case (nat_pair_eqdec (n, n0) (n1, n2)); intro H2. inverts H2.
-      case (eq_nat_dec n1 2); intro H2. rewrite H2 in *|-*; clear H2.
+      case (nat_eqdec n1 2); intro H2. rewrite H2 in *|-*; clear H2.
       case (is_Pr_dec t); intro H2. case (is_Pr_dec t0); intro H3.
-      apply is_Pr_exists in H2. apply is_Pr_exists in H3. 
+      apply is_Pr_exists in H2. apply is_Pr_exists in H3.
       case H2; clear H2; intros u0 H2. case H2; clear H2; intros u1 H2.
       case H3; clear H3; intros v0 H3. case H3; clear H3; intros v1 H3.
       rewrite H2 in *|-*. rewrite H3 in *|-*. clear H2 H3.
@@ -965,30 +1202,87 @@ Proof.
       left~. intros T' H4. inverts H4; simpl in *|-;
         try destruct H9; trivial; try inverts H4; try destruct H10; trivial;
         try inverts H4; trivial.
-      symmetry in H7. contradiction. false. false. false.
-      simpl in H3. apply H3; trivial.
-      simpl in H3. apply H3; trivial. inverts H5. inverts H5.
+      symmetry in H7. contradiction. false. false. 
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+         
+
+      false. false.
       destruct H11; try contradiction. false.
       left~. intros T' H3. inverts H3; simpl in *|-;
         try destruct H8; trivial; try inverts H3; try destruct H9; trivial;
         try inverts H3; trivial.
-      symmetry in H6. contradiction. false. false. false.
-      simpl in H2. apply H2; trivial.
-      simpl in H2. apply H2; trivial.
-      inverts H4. inverts H4.
+      symmetry in H6. contradiction. false. false.
+
+      
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+      
+      false. false.
       destruct H10; try contradiction. false.
       right~. exists S ((|[Fc n1 n2 t ~? Fc n1 n2 t0]||+(t~?t0))\
                          (Fc n1 n2 t ~?(Fc n1 n2 t0))).
       apply equ_sys_Fc; trivial. left~.
+
+  (**) skip. (**)
+      
       left~. intros T' H3. inverts H3; simpl in *|-;
          try destruct H8; trivial; try inverts H3.
-      false. false. false. false. destruct H9; try contradiction. false.
+      false. false.
+
+      
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+
+  (**) skip. (**)
+ 
+
+      false. simpl in H0. apply H0; trivial.
+      false. simpl in H1. apply H1; trivial.
+
+(*
+      destruct H9; try contradiction. false.
       destruct H9; destruct H3; try contradiction; try inverts H3.
       destruct H10; trivial. false.
      (* t0 = p|.v *)
-      false. simpl in H0. apply H0; trivial.  
+      false.  
    (* t = p|.v *) 
-    false. simpl in H1. apply H1; trivial.
+    false. 
+*)
+
 Qed.  
 
 
@@ -1022,6 +1316,11 @@ Proof.
   exists (P|+(s0~?t1)|+(s1~?t0)\
            (Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))).
   right~. apply equ_sys_C2; trivial.  
+
+      
+  (**) skip. (**)    
+
+
   destruct H1. exists (|[c]||+(t~?t')\c).
   left~. rewrite H. apply equ_sys_Ab1; trivial. left~.
   exists (P|+(t~?t')\(([a]^t) ~? ([a]^t'))).
@@ -1074,6 +1373,11 @@ Proof.
   exists ((((Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))::P)
              |+(s0~?t1)|+(s1~?t0))\(Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))).
   apply equ_sys_C2. left~.
+
+      
+  (**) skip. (**)    
+
+
   destruct H1; try contradiction. rewrite H.
   exists ((((([a]^t)~?([a]^t'))::P)|+(t~?t'))\(([a]^t)~?([a]^t'))).
   apply equ_sys_Ab1. left~.
@@ -1103,7 +1407,12 @@ Proof.
    apply equ_sys_C1. right~.
   exists (((c::P)|+(s0~?t1)|+(s1~?t0))
           \(Fc 2 n (<|s0, s1|>) ~? Fc 2 n (<|t0, t1|>))).
-   apply equ_sys_C2. right~.
+  apply equ_sys_C2. right~.
+
+      
+  (**) skip. (**)    
+
+  
   exists (((c::P)|+(t~?t'))\(([a]^t)~?([a]^t'))).
    apply equ_sys_Ab1. right~.
   exists (((c::P)|+(t~?((|[(a,b)]|)@t'))|+(a#?t'))

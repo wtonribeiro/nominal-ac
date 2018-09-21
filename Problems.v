@@ -1,6 +1,5 @@
 (**
-%\begin{verbatim}
- ============================================================================
+============================================================================
  Project     : Nominal A, AC and C Unification
  File        : Problems.v
  Authors     : Washington Lu\'is R. de Carvalho Segundo and
@@ -11,9 +10,8 @@
  Description : This contains the definitions and basic lemmas related to
                unification problems.  
 
- Last Modified On: May 28, 2018.
+ Last Modified On: Sep 17, 2018.
  ============================================================================
-\end{verbatim}%
 *)
 
 Require Export C_Equiv.
@@ -21,7 +19,7 @@ Require Export C_Equiv.
 Close Scope nat_scope.
 
 
-(** %\section{Definitions}% *)
+(** Definitions *)
 
 (** A constraint is inductive defined as being 
     an equation or a freshness constraint *)
@@ -45,7 +43,7 @@ Definition Triple := (Context * Subst * Problem) .
 Lemma Constraint_eqdec : forall x y : Constraint, {x = y} + {x <> y}.
 Proof.
   intros. destruct x; destruct y.
-  case (a ==at a0); intro H.
+  case (atom_eqdec a a0); intro H.
   case (term_eqdec t t0); intro H0.
   rewrite H. rewrite H0. left~.
   right~. intro. inverts H1. apply H0; trivial.
@@ -64,8 +62,8 @@ Qed.
 Lemma Context_eqdec : forall x y : (Atom * Var), {x = y} + {x <> y}.
 Proof.
   intros. destruct x; destruct y.
-  case (a ==at a0); intro H.
-  case (v ==v v0); intro H0.
+  case (atom_eqdec a a0); intro H.
+  case (var_eqdec v v0); intro H0.
   rewrite H. rewrite H0. left~.
   right~. intro. inverts H1. apply H0; trivial.
   right~. intro. inverts H0. apply H; trivial.  
@@ -88,9 +86,9 @@ Notation "P0 \cup P1" := (set_union Constraint_eqdec P0 P1) (at level 67).
 Fixpoint Problem_vars (P : Problem) : set Var :=
   match P with
     | [] => []
-    | (a#?t)::P0 => set_union Var_eqdec (term_vars t) (Problem_vars P0)
-    | (s~?t)::P0 => set_union Var_eqdec (term_vars s)
-                   (set_union Var_eqdec (term_vars t) (Problem_vars P0))                         
+    | (a#?t)::P0 => set_union var_eqdec (term_vars t) (Problem_vars P0)
+    | (s~?t)::P0 => set_union var_eqdec (term_vars s)
+                   (set_union var_eqdec (term_vars t) (Problem_vars P0))                         
   end.
 
 
@@ -135,7 +133,7 @@ Fixpoint rhvars_Probl (P : Problem) :=
   match P with
   | [] => []
   | (a#?s) :: P0 => rhvars_Probl P0
-  | (s~?t) :: P0 => set_union Var_eqdec (term_vars t) (rhvars_Probl P0)
+  | (s~?t) :: P0 => set_union var_eqdec (term_vars t) (rhvars_Probl P0)
   end.  
 
 
@@ -150,10 +148,10 @@ Fixpoint fresh_context (S : set Atom) (X : Var) :=
 
 
 
-(** %\section{Lemmas}% *)
+(** Lemmas *)
 
-(** %\subsection{Decidability of existence of equations and freshness constraints
-  in a problem}% *)
+(** Decidability of existence of equations and freshness constraints
+  in a problem *)
 
 Lemma  set_In_equ_Problem_eqdec : forall P, {exists s, exists t, set_In (s~?t) P} + {forall s t, ~ set_In (s~?t) P}.
 Proof.
@@ -179,7 +177,7 @@ Proof.
 Qed.
 
 
-(** %\subsection{Basic results about fixpoint equations and fixpoint problems}% *)
+(** Basic results about fixpoint equations and fixpoint problems *)
 
 Lemma fixpoint_equ_eqdec : forall u, {fixpoint_equ u} + {~ fixpoint_equ u}.
 Proof.
@@ -198,10 +196,10 @@ Proof.
   right~. intro H. destruct H. destruct H. destruct H. inverts H0.
   right~. intro H. destruct H. destruct H. destruct H. inverts H0.
   destruct p0.
-  case (Perm_eqdec p ([])); intro H'.
+  case (perm_eqdec p ([])); intro H'.
   right~. intro H. destruct H. destruct H. destruct H. inverts H0.
   symmetry in H1; contradiction.
-  case (v ==v v0); intro H. rewrite H.
+  case (var_eqdec v v0); intro H. rewrite H.
   left~. exists p. exists v0. split~.
   right~. intro H''. destruct H''. destruct H0. destruct H0. inverts H1. 
   apply H; trivial.
@@ -269,7 +267,7 @@ Proof.
   intro H2. apply Q. right~.
 Qed. 
 
-(** %\subsection{Basic results about subsets of equations and freshness constraints}% *)
+(** Basic results about subsets of equations and freshness constraints *)
 
 Lemma fresh_not_In_equ_proj : forall a s P, ~ set_In (a #? s) (equ_proj P).
 Proof.
@@ -399,7 +397,7 @@ Qed.
 
 
 
-(** %\subsection{Basic results about adding and removing constraints and also the operation of union of problems}% *)
+(** Basic results about adding and removing constraints and also the operation of union of problems *)
 
 Lemma Problem_add_fresh_rem_equ : forall P a s t u,
                                  (P|+(a#?s))\(t~?u) = (P\(t~?u))|+(a#?s).  
@@ -434,7 +432,7 @@ Proof.
 Qed.
 
 Lemma Problem_vars_set_In : forall u X P, set_In u P ->
-                                          set_In X (Problem_vars ([u])) -> set_In X (Problem_vars P).  
+                                          set_In X (Problem_vars (|[u]|)) -> set_In X (Problem_vars P).  
 Proof.
   intros. induction P; simpl in H; try contradiction.
   
@@ -458,7 +456,7 @@ Qed.
 
 Lemma Problem_vars_set_In_app : forall X P P',
                                 set_In X (Problem_vars (P ++ P'))  <->
-                                set_In X (set_union Var_eqdec (Problem_vars P) (Problem_vars P')).
+                                set_In X (set_union var_eqdec (Problem_vars P) (Problem_vars P')).
 Proof.
   intros. induction P; simpl; split~; intros.
   apply set_union_intro2; trivial.
@@ -500,7 +498,7 @@ Qed.
 
   
 Lemma Problem_vars_add : forall P u X, set_In X (Problem_vars (P|+u)) <->
-                         set_In X (set_union Var_eqdec (Problem_vars P) (Problem_vars ([u]))).  
+                         set_In X (set_union var_eqdec (Problem_vars P) (Problem_vars (|[u]|))).  
 Proof.
   intros. case (in_dec Constraint_eqdec u P); intro H.
   rewrite set_add_In; trivial. split~; intro.
@@ -512,7 +510,7 @@ Proof.
 Qed.  
 
 Lemma Problem_vars_union : forall P P' X, set_In X (Problem_vars (P \cup P')) <->
-                                          set_In X (set_union Var_eqdec (Problem_vars P) (Problem_vars P')).
+                                          set_In X (set_union var_eqdec (Problem_vars P) (Problem_vars P')).
 Proof.
   intros. induction P'; simpl. split~; intro; trivial.
   split~; intro. apply Problem_vars_add in H. 
@@ -550,7 +548,7 @@ Proof.
   apply set_union_intro2; trivial.
 Qed.
 
-(** %\subsection{Sets of variables have no repeated elements}% *)
+(** Sets of variables have no repeated elements *)
 
 
 Lemma NoDup_term_vars : forall t, NoDup (term_vars t).
@@ -578,29 +576,29 @@ Qed.
 Open Scope nat_scope.
 
 
-(** %\subsection{Sizes of sets of variables} % *)
+(** Sizes of sets of variables} % *)
 
 Lemma length_Problem_vars_rem : forall P u,  length (Problem_vars P) >= length (Problem_vars (P\u)).
 Proof.
   intros.
   apply nat_leq_inv. apply subset_list; intros.
-  apply Var_eqdec. apply NoDup_Problem_vars.  
+  apply var_eqdec. apply NoDup_Problem_vars.  
   apply Problem_vars_remove in H. trivial.
 Qed.
 
 
 Lemma length_Problem_vars_add : forall P u,  length (Problem_vars (P|+u)) =
-                                             length (set_union Var_eqdec (Problem_vars P) (Problem_vars ([u]))).
+                                             length (set_union var_eqdec (Problem_vars P) (Problem_vars (|[u]|))).
 Proof.
   intros. apply subset_list_eq; intros.
-  apply Var_eqdec. apply NoDup_Problem_vars.
+  apply var_eqdec. apply NoDup_Problem_vars.
   apply set_union_nodup; apply NoDup_Problem_vars.  
   apply Problem_vars_add.
 Qed.
   
   
-(**  %\subsection{Auxiliary definitions and lemmas to 
-    prove termination of fresh\_sys and equ\_sys}% *)
+(**  Auxiliary definitions and lemmas to 
+    prove termination of fresh\_sys and equ\_sys *)
 
 
 Fixpoint fresh_Problem_size (P : Problem) {struct P} : nat :=
@@ -626,20 +624,12 @@ Fixpoint non_fixpoint_equ (P : Problem) {struct P} : nat :=
                   (1 + (non_fixpoint_equ P0))
   end.  
            
-             
-Fixpoint func_symbols_equ (P : Problem) {struct P} : nat :=
-  match P with
-    | [] => 0
-    | (s~?t)::P0 => (func_symbols_term s) + (func_symbols_term t) +
-                    func_symbols_equ P0
-    | (a#?s)::P0 => func_symbols_equ P0
-  end.
 
-(**  %\subsection{Basic results about the size of problems}% *)
+(** Basic results about the size of problems *)
 
 
 Lemma equ_Problem_size_term : forall s t,
-      equ_Problem_size ([s~?t]) = term_size s + term_size t. 
+      equ_Problem_size (|[s~?t]|) = term_size s + term_size t. 
 Proof.
   intros. simpl. omega.
 Qed.  
@@ -684,7 +674,7 @@ Proof.
   inverts H. apply IHP; trivial.
 Qed.
 
-Lemma equ_Problem_size_neq_nil : forall u P, set_In u P -> equ_Problem_size P >= equ_Problem_size ([u]).
+Lemma equ_Problem_size_neq_nil : forall u P, set_In u P -> equ_Problem_size P >= equ_Problem_size (|[u]|).
 Proof.
   intros. induction P; intros. simpl in H. contradiction.
   simpl in H. destruct H. rewrite H. destruct u. simpl. omega.
@@ -705,7 +695,7 @@ Proof.
   inverts H0. simpl. apply IHP; trivial.
   case (Constraint_eqdec (s ~? t) (t0 ~? t1)); intro H0.
   inverts H0. omega. simpl. rewrite IHP; trivial.
-  assert (Q : equ_Problem_size P >= equ_Problem_size ([s ~? t])).
+  assert (Q : equ_Problem_size P >= equ_Problem_size (|[s ~? t]|)).
     apply equ_Problem_size_neq_nil; trivial.
   simpl in Q. omega.
 Qed.
@@ -719,7 +709,7 @@ Proof.
   omega.  
 Qed.
 
-Lemma equ_Problem_size_add : forall P u, equ_Problem_size P + (equ_Problem_size ([u])) >= equ_Problem_size (P|+u). 
+Lemma equ_Problem_size_add : forall P u, equ_Problem_size P + (equ_Problem_size (|[u]|)) >= equ_Problem_size (P|+u). 
 Proof.
   intros. induction P. simpl; omega.
   simpl in *|-*. destruct u; destruct a.
@@ -734,7 +724,7 @@ Qed.
 Lemma equ_Problem_size_add' : forall P u,
       ~ set_In u P ->
       equ_Problem_size (P|+u) =
-      equ_Problem_size P + equ_Problem_size ([u]).
+      equ_Problem_size P + equ_Problem_size (|[u]|).
 Proof.
   intros. rewrite set_add_not_In; trivial.
   induction P; trivial; simpl in *|-*.
@@ -834,136 +824,6 @@ Proof.
  inverts H0. rewrite IHP; trivial.
 Qed.
 
-(** Lemmas about the operator func_symbols_equ *)
-
-Lemma func_symbols_set_In : forall P u,
-    set_In u P ->
-    func_symbols_equ P >= func_symbols_equ ([u]).
-Proof.
-  intros. destruct u; simpl. omega.
-  induction P; simpl in *|-*. contradiction.
-  destruct a. destruct H. inverts H.
-  apply IHP in H. omega.
-  destruct H. inverts H. omega.
-  apply IHP in H. omega.
-Qed.  
-
-Lemma func_symbols_equ_remove : forall P u,
-                                set_In u P ->
-                                func_symbols_equ (P\u) =
-                                func_symbols_equ P -
-                                func_symbols_equ ([u])  .
-Proof.
-  intros. destruct u. simpl.
-
-  clear H.
-  induction P; simpl; trivial.
-  case (Constraint_eqdec (a #? t) a0); intro H0.
-  destruct a0. omega. inverts H0.
-  simpl. destruct a0. trivial.
-  rewrite IHP. omega.
-  
-  induction P; simpl in *|-*; trivial.
-  case (Constraint_eqdec (t ~? t0) a); intro H0.
-  destruct a; inverts H0. omega.
-  simpl. destruct a. destruct H. inverts H.
-  apply IHP in H. trivial.
-  destruct H. inverts H. false.
-  rewrite IHP; trivial.
-  assert (Q : func_symbols_equ P >= func_symbols_equ ([t~?t0])).
-   apply func_symbols_set_In; trivial.
-  simpl in Q. omega.   
-Qed.
-
-
-Lemma func_symbols_equ_add : forall P u,
-    ~ set_In u P ->
-    func_symbols_equ (P|+u) =
-    func_symbols_equ P + func_symbols_equ ([u]).
-Proof.
-  intros. rewrite set_add_not_In; trivial.
-
-  destruct u. simpl. clear H.
-
-  induction P; simpl; trivial. destruct a0; trivial.
-  rewrite IHP. omega.
-
-  induction P; simpl; trivial.
-  destruct a.
-  rewrite IHP.
-  simpl. trivial. intro H0.
-  apply H. right~.
-  rewrite IHP.
-  simpl. omega. intro H0.
-  apply H. right~.
-Qed.
-
-Lemma func_symbols_equ_add' : forall P u,
-    set_In u P ->
-    func_symbols_equ (P|+u) = func_symbols_equ P.
-Proof.
-  intros. rewrite set_add_In; trivial.
-Qed.  
- 
-  
-Lemma func_symbols_equ_remove_add : forall P u u',
-      set_In u P ->
-      func_symbols_equ ([u]) > func_symbols_equ ([u']) -> 
-      func_symbols_equ P > func_symbols_equ ((P|+u')\u).
-Proof.
-  intros. case (Constraint_eqdec u u'); intro H1.
-  rewrite H1 in H0. omega.
-  rewrite set_remove_add'; trivial.
-
-  case (set_In_dec Constraint_eqdec u' (P\u)); intro H2.
-
-  rewrite func_symbols_equ_add'; trivial.
-  rewrite func_symbols_equ_remove; trivial.
-  apply func_symbols_set_In in H. omega.
-
-  rewrite func_symbols_equ_add; trivial.
-  rewrite func_symbols_equ_remove; trivial.
-  apply func_symbols_set_In in H. omega.  
-
-Qed.
-
-Lemma func_symbols_equ_remove_add' : forall P u u' v,
-      set_In v P ->
-      func_symbols_equ ([v]) >
-      func_symbols_equ ([u]) + func_symbols_equ ([u']) -> 
-      func_symbols_equ P > func_symbols_equ ((P|+u|+u')\v).
-Proof.
-  intros.
-  
-  case (Constraint_eqdec v u'); intro H1.
-  rewrite H1 in H0. omega.
-  case (Constraint_eqdec v u); intro H2.
-  rewrite H2 in H0. omega.
-
-  rewrite 2 set_remove_add'; trivial.
-
-  case (set_In_dec Constraint_eqdec u' ((P\v)|+u)); intro H3.
-  rewrite func_symbols_equ_add'; trivial.
-  case (set_In_dec Constraint_eqdec u (P\v)); intro H4.
-  rewrite func_symbols_equ_add'; trivial.
-  rewrite func_symbols_equ_remove; trivial.
-  apply func_symbols_set_In in H. omega.
-  rewrite func_symbols_equ_add; trivial.
-  rewrite func_symbols_equ_remove; trivial.
-  apply func_symbols_set_In in H. omega.
-  rewrite func_symbols_equ_add; trivial. 
-  case (set_In_dec Constraint_eqdec u (P\v)); intro H4.
-  rewrite func_symbols_equ_add'; trivial.
-  rewrite func_symbols_equ_remove; trivial.
-  apply func_symbols_set_In in H. omega.
-  rewrite func_symbols_equ_add; trivial. 
-  rewrite func_symbols_equ_remove; trivial.
-  apply func_symbols_set_In in H. omega.  
-
-Qed.
-
-
-(** *)
 
 (** Characterising the memebers of the set (fresh_context St X)  *)
 
@@ -1008,7 +868,7 @@ Proof.
 Qed.  
   
 Lemma rhvars_Prob_add : forall X P u, set_In X (rhvars_Probl (P|+u)) ->
-                                      (set_In X (rhvars_Probl ([u])) \/ set_In X (rhvars_Probl P)).
+                                      (set_In X (rhvars_Probl (|[u]|)) \/ set_In X (rhvars_Probl P)).
 Proof.
   intros. induction P; simpl in *|-*; auto.
   gen H. case (Constraint_eqdec u a); intros H H0.

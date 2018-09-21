@@ -6,21 +6,25 @@
                Mauricio Ayala Rincón 
                Universidade de Brasília (UnB) - Brazil
                Group of Theory of Computation
+
+ Description : This file contains the definition of the grammar of
+               terms in the nominal syntax and basic results about.
+
  
- Last Modified On: May 28, 2018.
+ Last Modified On: Jul 24, 2018.
  ============================================================================
 *)
 
 Set Implicit Arguments.
-Require Import Max.
-Require Export List ListFacts ListSet Omega LibTactics.
+Require Export Basics.
 
 Inductive Atom : Set := atom : nat -> Atom.
 Inductive Var  : Set := var  : nat -> Var.
 Definition Perm := list (Atom * Atom).
+Definition Context := list (Atom * Var).
 
 
-(** Grammar *)
+(** Grammar of terms *)
 
 Inductive term : Set :=
   | Ut : term
@@ -40,115 +44,145 @@ Notation "pi |. X" := (Su pi X) (at level 67).
 
 (** Atoms decidability *)
 
-Lemma Atom_eqdec : forall a b : Atom, {a = b} + {a <> b}.
+Definition eq_atom_rec (a b : Atom) :=
+  match a, b with atom m, atom n => eq_nat_rec m n end.
+
+Lemma atom_eqdec : forall (a b : Atom), {a = b} + {a <> b}.
 Proof.
- intros. destruct a. destruct b. case (eq_nat_dec n n0); intros.
- left~. right~. intro. inversion H. contradiction.
-Qed.
+  intros. destruct a. destruct b.
+  case (nat_eqdec n n0); intro H.
+  rewrite H. left. trivial.
+  right. intro H0. apply H.
+  inversion H0. trivial.
+Defined.
 
-Notation "a ==at b" := (Atom_eqdec a b) (at level 67).
-
-
-(** Variables decidability *)
-
-Lemma Var_eqdec : forall X Y : Var, {X = Y} + {X <> Y}.
+Lemma atom_pair_eqdec: forall (p1 p2 : Atom * Atom), {p1 = p2} + {p1 <> p2}. 
 Proof.
- intros. destruct X. destruct Y. case (eq_nat_dec n n0); intros.
- left~. right~. intro. inversion H. contradiction.
-Qed.
+  intros. apply (Aeq_pair_eqdec _ atom_eqdec).
+Defined.
 
-Notation "X ==v Y" := (Var_eqdec X Y) (at level 67).
-
-
-(** Decidability of nat pairs *)
-
-Lemma nat_pair_eqdec: forall (p1 p2 : nat * nat), {p1 = p2} + {p1 <> p2}. 
+Lemma atom_list_eqdec: forall (l1 l2 : list Atom), {l1 = l2} + {l1 <> l2}. 
 Proof.
-  intros. destruct p1. destruct p2.
-  case (eq_nat_dec n n1); case (eq_nat_dec n0  n2);
-  intros H1 H2; try rewrite H1; try rewrite H2.
-  left~; trivial. right~; fequals.
-  right~; fequals. right~; fequals.
-Qed.
+  intros. apply (eq_list_dec _ atom_eqdec).
+Defined.  
 
-Notation "p1 ==np p2" := (nat_pair_eqdec p1 p2) (at level 67).
+(** Variables decidability. *)
 
-(** Decidability of atom pairs *)
+Definition eq_var_rec (X Y : Var) :=
+  match X, Y with var m, var n => eq_nat_rec m n end.
 
-Lemma Atom_pair_eqdec: forall (p1 p2 : Atom * Atom), {p1 = p2} + {p1 <> p2}. 
+Lemma var_eqdec : forall (X Y : Var), {X = Y} + {X <> Y}.
+Proof.  
+  intros. destruct X. destruct Y.
+  case (nat_eqdec n n0); intro H.
+  rewrite H. left. trivial.
+  right. intro H0. apply H.
+  inversion H0. trivial.
+Defined.
+
+(** Contexts membership decidability *)
+
+Lemma atom_var_eqdec : forall (c c' : Atom * Var), {c = c'} + {c <> c'}.
 Proof.
-  intros. destruct p1. destruct p2.
-  case (a ==at a1); case (a0 ==at a2);
-  intros H1 H2; try rewrite H1; try rewrite H2.
-  left~; trivial. right~; fequals.
-  right~; fequals. right~; fequals.
-Qed.
+  intros. destruct c. destruct c'.
+  case (atom_eqdec a a0); intro H.  
+  case (var_eqdec v v0); intro H0.
+  left~. f_equal; trivial.
+  right~. intro H1. inverts H1. false.
+  right~. intro H2. inverts H2. false.
+Defined.  
 
-Lemma Atom_list_eqdec: forall (l1 l2 : list Atom), {l1 = l2} + {l1 <> l2}. 
+Lemma in_context_dec : forall (c : Atom * Var) (C : Context),
+  {In c C} + {~In c C}.   
 Proof.
-  intros. gen l2. induction l1; intro l2; destruct l2.
-  left~; right~. right~. discriminate.
-  right~. discriminate. case (IHl1 l2); intro H0.
-  case (a ==at a0); intro H1.
-  left~. rewrite H0. rewrite H1. trivial.
-  right~. intro H2. inversion H2. contradiction.
-  right~. intro H2. inversion H2. contradiction. 
-Qed.
+  intros. apply (eq_mem_list_dec _ atom_var_eqdec).
+Defined.
 
 
-Lemma Perm_eqdec : forall p p' : Perm, {p = p'} + {p <> p'}.
+(** Permutations decidability. *)
+   
+Lemma perm_eqdec : forall pi pi' : Perm, {pi = pi'} + {pi <> pi'}.
 Proof.
- intro p. induction p.
- intro p'; destruct p'. left~. right~.
- intro H. inversion H. 
- intro p'. destruct p'. right~.
- intro H. inversion H. destruct a. destruct p0.
- case (Atom_pair_eqdec (a, a0) (a1, a2)); intros. 
- case (IHp p'); intros. left~. rewrite e. rewrite e0; trivial.
- right~. intro H. inverts H. apply n; trivial.
- right~. intro H. inverts H. apply n; trivial.
-Qed.
+  intros. apply (eq_list_dec _ atom_pair_eqdec).
+Defined.
 
-Notation "p0 ==P p1" := (Perm_eqdec p0 p1) (at level 67). 
- 
+
+(** Terms decidability. *)
+
+Fixpoint eq_term_rec (t1 t2 : term) : bool :=
+  match t1, t2 with
+  | <<>>, <<>> => true
+  | %a, %b => eq_atom_rec a b
+  | [a]^s, [b]^t => eq_atom_rec a b && eq_term_rec s t
+  | Fc E n s, Fc E' n' t => eq_nat_rec E E' &&
+                            eq_nat_rec n n' &&
+                            eq_term_rec s t           
+  | <|s0, s1|>, <|t0, t1|> => eq_term_rec s0 t0 &&
+                              eq_term_rec s1 t1
+  | pi|.X, pi'|.Y => if perm_eqdec pi pi'
+                     then eq_var_rec X Y
+                     else false
+  | _, _ => false                          
+  end.                         
+
+Lemma eq_term_refl : forall t1 t2,
+      eq_term_rec t1 t2 = true <-> t1 = t2.
+Proof.
+  intro t1. induction t1; intro t2; destruct t2; simpl;
+            split~; intro H; trivial; inverts H.  
+  destruct a. destruct a0. simpl in H1.
+  apply eq_nat_refl' in H1. rewrite H1. trivial.
+  destruct a0. simpl. apply eq_nat_refl.
+  symmetry in H1. apply andb_true_eq in H1.
+  destruct H1. symmetry in H. symmetry in H0.
+  destruct a. destruct a0. simpl in H.
+  apply eq_nat_refl' in H. rewrite H.
+  f_equal. apply IHt1; trivial.
+  destruct a0. simpl. rewrite eq_nat_refl.
+  simpl. apply IHt1; trivial.
+  symmetry in H1. apply andb_true_eq in H1.
+  destruct H1. symmetry in H. symmetry in H0.
+  f_equal; [apply IHt1_1 | apply IHt1_2]; trivial.
+  assert (Q : eq_term_rec t2_1 t2_1 = true).
+   apply IHt1_1. trivial.
+   rewrite Q. simpl.
+  apply IHt1_2. trivial.   
+  symmetry in H1. apply andb_true_eq in H1.
+  destruct H1. apply andb_true_eq in H.
+  destruct H. symmetry in H. symmetry in H1.
+  symmetry in H0.
+  rewrite eq_nat_refl' in H. rewrite eq_nat_refl' in H1.
+  rewrite H. rewrite H1. f_equal.
+  apply IHt1; trivial.
+  rewrite 2 eq_nat_refl. simpl. apply IHt1; trivial.
+  gen H1. case (perm_eqdec p p0); intros H H0.
+  rewrite H. destruct v. destruct v0.
+  simpl in H0. apply eq_nat_refl' in H0.
+  rewrite H0. trivial. inverts H0.
+  destruct v0. simpl. rewrite eq_nat_refl.
+  case (perm_eqdec p0 p0); intro H; trivial.
+  apply False_ind. apply H; trivial.
+Defined.
+
+Lemma eq_term_diff : forall t1 t2,
+      eq_term_rec t1 t2 = false <-> t1 <> t2.
+Proof.
+  intros.
+  gen_eq b : (eq_term_rec t1 t2); intro H.
+  symmetry in H. destruct b.
+  apply eq_term_refl in H. split~; intro.
+  inverts H0. contradiction.
+  split~; intro H0. inverts H0.
+  intro H0. apply eq_term_refl in H0.
+  rewrite H in H0. inverts H0.
+Defined.
+
 Lemma term_eqdec : forall t1 t2 : term, {t1 = t2} + {t1 <> t2}.
 Proof.
- intro t1. induction t1; intro t2; destruct t2. left~.
- right~; discriminate.  right~; discriminate.
- right~; discriminate.  right~; discriminate.
- right~; discriminate.  right~; discriminate.
- case (a ==at a0); intro H. rewrite H. left~.
- right~. intro H'. inverts H'. apply H; trivial.
- right~; discriminate.  right~; discriminate.
- right~; discriminate.  right~; discriminate.
- right~; discriminate.  right~; discriminate.
- case (a ==at a0); intro H. rewrite H.
- case (IHt1 t2); intro H'. rewrite H'. left~.
- right~. intro H''. inverts H''. apply H'; trivial.
- right~. intro H''. inverts H''. apply H; trivial. 
- right~; discriminate.  right~; discriminate.
- right~; discriminate.  right~; discriminate.
- right~; discriminate.  right~; discriminate.
- case (IHt1_1 t2_1); intro H0. case (IHt1_2 t2_2); intro H1.
- rewrite H0. rewrite H1. left~.
- right~. intro H'. inverts H'. apply H1; trivial.
- right~. intro H'. inverts H'. apply H0; trivial.  
- right~; discriminate.  right~; discriminate.
- right~; discriminate.  right~; discriminate.
- right~; discriminate.  right~; discriminate.
- case ((n,n0) ==np (n1,n2)); intro H. inverts H.
- case (IHt1 t2); intro H'. rewrite H'. left~.
- right~. intro H''. inverts H''. apply H'; trivial. 
- right~. intro H''. inverts H''. apply H; trivial. 
- right~; discriminate.  right~; discriminate.
- right~; discriminate.  right~; discriminate.
- right~; discriminate.  right~; discriminate.
- case (p ==P p0); intro H. case (v ==v v0); intro H'.
- rewrite H. rewrite H'. left~.
- right~. intro H''. inverts H''. apply H'; trivial.
- right~. intro H'. inverts H'. apply H; trivial.  
-Qed.  
-
+  intros. gen_eq b : (eq_term_rec t1 t2); intro H.
+  symmetry in H. destruct b;
+  [apply eq_term_refl in H; left~| apply eq_term_diff in H; right~].
+Defined.
 
 
 (** Size of a term  *)
@@ -162,25 +196,18 @@ Fixpoint term_size (t : term) {struct t} : nat :=
  end.
 
 
-Lemma term_size_Pr_l : forall t1 t2, term_size t1 < term_size (<|t1,t2|>).
-Proof. intros. simpl. omega. Qed.
-
-Lemma term_size_Pr_r : forall t1 t2, term_size t2 < term_size (<|t1,t2|>).
-Proof. intros. simpl. omega. Qed.
-
-Lemma term_size_Fc : forall E n t, term_size t < term_size (Fc E n t).
-Proof. intros. simpl. omega. Qed.
-
-Lemma term_size_Ab : forall a t, term_size t < term_size ([a]^t).
-Proof. intros. simpl. omega. Qed.
-
-Hint Resolve term_size_Pr_l.
-Hint Resolve term_size_Pr_r.
-Hint Resolve term_size_Fc.
-Hint Resolve term_size_Ab.
+Lemma term_size_1_le : forall t, 1 <= term_size t.
+Proof.
+  intros. induction t; simpl; try apply le_n.
+  apply le_S; trivial. apply le_S.
+  apply le_trans' with (l := term_size t1); trivial.
+  apply le_plus. apply le_S; trivial.
+Defined.
 
 Lemma term_size_gt_0 : forall t, term_size t > 0.
-Proof. introv. induction t; simpl; try omega; auto. Qed.
+Proof.
+  intros. unfold gt. unfold lt. apply term_size_1_le.
+Defined.  
 
 Hint Resolve term_size_gt_0.
 
@@ -191,8 +218,8 @@ Fixpoint term_vars (t : term) {struct t} : set Var :=
 match t with
  | Ut       => empty_set _
  | At a     => empty_set _
- | Su p X   => set_add Var_eqdec X (empty_set _)
- | Pr t1 t2 => set_union Var_eqdec (term_vars t1) (term_vars t2)
+ | Su p X   => set_add var_eqdec X (empty_set _)
+ | Pr t1 t2 => set_union var_eqdec (term_vars t1) (term_vars t2)
  | Ab a t1  => term_vars t1
  | Fc E n t1  => term_vars t1
 end.
@@ -216,11 +243,18 @@ Definition psubterms (t : term) := set_remove term_eqdec t (subterms t).
 
 Definition is_Fc  (s:term) (E n : nat) : Prop :=
   match s with
-    | Fc E0 n0 t => if (E0, n0) ==np (E, n) then
-                      True
-                    else False
+  | Fc E0 n0 t => if eq_nat_rec E0 E &&
+                     eq_nat_rec n0 n           
+                  then True
+                  else False
     | _ => False
-  end . 
+  end .
+
+Definition is_Fc' (s:term) : Prop :=
+  match s with
+    | Fc E n t => True
+    | _ => False
+  end .
 
 Definition is_Pr (s:term) : Prop :=
   match s with
@@ -245,9 +279,15 @@ Lemma is_Fc_dec : forall s E n, is_Fc s E n \/ ~ is_Fc s E n.
 Proof.
   intros. destruct s; simpl.
   right~. right~. right~. right~.
-  case ((n0, n1) ==np (E, n)); intro H.
+  case (nat_pair_eqdec (n0, n1) (E, n)); intro H.
+  inverts H. rewrite 2 eq_nat_refl. simpl.
   left~. right~. 
-  right~.
+  intro H0. gen_eq b : (eq_nat_rec n0 E && eq_nat_rec n1 n); intro H1.
+  destruct b. apply andb_true_eq in H1.
+  destruct H1. symmetry in H1. symmetry in H2.
+  apply eq_nat_refl' in H1. rewrite eq_nat_refl' in H2.
+  rewrite H1 in H. rewrite H2 in H. apply H; trivial.
+  contradiction. right~.
 Qed.
 
 
@@ -273,12 +313,17 @@ Proof.
 Qed.
 
 
-
 Lemma is_Fc_exists : forall E n s, is_Fc s E n -> exists t, s = Fc E n t.
 Proof.
   intros. destruct s; simpl in H; try contradiction.
-  gen H. case ((n0, n1) ==np (E, n)); intros H0 H; try contradiction.
+  gen H. case (nat_pair_eqdec  (n0, n1) (E, n));
+           intros H0 H; try contradiction.
   inverts H0. exists s. trivial.
+  gen_eq b : (eq_nat_rec n0 E && eq_nat_rec n1 n); intro H1.
+  destruct b. apply andb_true_eq in H1. destruct H1.
+  symmetry in H1. symmetry in H2.
+  apply eq_nat_refl' in H1.  apply eq_nat_refl' in H2.  
+  false. contradiction.
 Qed.  
 
 Lemma is_Ab_exists : forall s, is_Ab s -> exists a t, s = [a]^t.
@@ -300,7 +345,6 @@ Proof.
 Qed.
 
 
-
 Lemma isnt_Pr : forall s, (forall u v, s <> <| u, v |>) -> ~ is_Pr s.
 Proof.
   intros. intro H0. destruct s; simpl in H0; trivial.
@@ -311,37 +355,6 @@ Lemma isnt_Su : forall s, (forall pi X, s <> pi|.X) -> ~ is_Su s.
 Proof.
   intros. intro H0. destruct s; simpl in H0; trivial.
   apply (H p v); trivial.
-Qed.
-
-Lemma Fc_eqdec : forall s, {exists E, exists n, exists u, s = Fc E n u} + {forall E n u, s <> Fc E n u} .
-Proof.
-  intros. destruct s.
-  right~; intros; discriminate.
-  right~; intros; discriminate.  
-  right~; intros; discriminate. 
-  right~; intros; discriminate.
-  left~. exists n. exists n0. exists s. trivial.
-  right~; intros; discriminate.  
-Qed.
-
-Lemma Pr_eqdec : forall s, {exists u, exists v, s = <|u,v|>} + {forall u v, s <> <|u,v|>} .
-Proof.
-  intros. destruct s.
-  right~; intros; discriminate. right~; intros; discriminate.  
-  right~; intros; discriminate.
-  left~. exists s1. exists s2; trivial.
-  right~; intros; discriminate. right~; intros; discriminate.  
-Qed.
-
-Lemma Su_eqdec : forall s, {exists pi, exists X, s = pi|.X} + {forall pi X, s <> pi|.X} .
-Proof.
-  intros. destruct s.
-  right~; intros; discriminate.
-  right~; intros; discriminate.  
-  right~; intros; discriminate. 
-  right~; intros; discriminate.
-  right~; intros; discriminate.  
-  left~. exists p. exists v; trivial.
 Qed.
   
 
@@ -401,6 +414,8 @@ Proof.
   intro H. induction t; inverts H. apply IHt2; trivial.
 Qed.
 
+
+Require Import Omega.
   
 Lemma subterms_term_size_leq : forall s t, set_In s (subterms t) -> term_size s <= term_size t.
 Proof.
@@ -610,7 +625,7 @@ Qed.
 
 (**
 	The following is a restriction over the syntax. 
-	Commutative function symbols can have only pairs as 
+	commutative function symbols can have only pairs as 
 	arguments.
 *)  
   

@@ -1,7 +1,7 @@
 (**
  ============================================================================
  Project     : Nominal A, AC and C Unification
- File        : C_Unif_Completeness.v
+ File        : AACC_Unif_Completeness.v
  Authors     : Washington Lu\'is R. de Carvalho Segundo and
                Mauricio Ayala Rinc\'on 
                Universidade de Bras\'ilia (UnB) - Brazil
@@ -12,11 +12,11 @@
 	       of this file. It also contains two preliminary lemmas 
 	       (equ_sys_compl and unif_step_compl).
  
- Last Modified On: Sep 17, 2018.
+ Last Modified On: Sep 17, 2017.
  ============================================================================
 *)
 
-Require Export C_Unif_Soundness.
+Require Export AACC_Unif_Soundness.
 
 (** Completeness of equ\_sys *)
 (**
@@ -137,6 +137,12 @@ Proof.
   apply set_add_elim in H0. destruct H0. inverts H0; trivial.
   apply H3; trivial.
 
+  (* equiv_sys_AC *)
+ 
+      
+  (**) skip. (**)     
+
+  
   (* equ_sys_Ab1 *)
   exists (c0,s0,(p0|+(t~?t'))\(([a]^t)~?([a]^t'))); simpl.
   repeat split~; intros.  
@@ -150,7 +156,7 @@ Proof.
   apply H3; trivial.
   
   (* equ_sys_Ab2 *) 
-  exists (c0,s0,((p0|+(t~?(|[(a,b)]|@t'))|+(a#?t')))\(([a]^t)~?([b]^t'))); simpl.
+  exists (c0,s0,((p0|+(t~?([(a,b)]@t'))|+(a#?t')))\(([a]^t)~?([b]^t'))); simpl.
   repeat split~; intros.  
   apply equ_sys_Ab2; trivial.
   apply set_remove_1 in H0.
@@ -170,8 +176,8 @@ Proof.
 
 
   (* equ_sys_inst *)
-  gen_eq s' : (s©(|[(X,(!pi)@t)]|)); intro H11.
-  exists (c0,s',((p0\(pi|.X~?t)\(t~?(pi|.X)))|^^(|[(X,(!pi)@t)]|))\cup(c0/?s')); simpl.
+  gen_eq s' : (s©([(X,(!pi)@t)])); intro H11.
+  exists (c0,s',((p0\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)]))\cup(c0/?s')); simpl.
   repeat split~; intros.  
   apply equ_sys_inst; trivial.
  

@@ -6,8 +6,11 @@
                Mauricio Ayala Rincon 
                Universidade de Brasilia (UnB) - Brazil
                Group of Theory of Computation
+
+ Description : This file contains the soundness proofs of 
+               the relations ~aacc, ~a, ~c and ~ac. 
  
- Last Modified On: Feb 13, 2018.
+ Last Modified On: Sep 17, 2018.
  ============================================================================
 *)
 
@@ -64,10 +67,10 @@ Proof.
   apply alpha_equiv_eq_equiv; trivial.
   apply alpha_equiv_equivariance; trivial.
   apply alpha_equiv_fresh with (t1 := t'); trivial.
-  case (a ==at a'0); intro H10. rewrite H10.
+  case (atom_eqdec a a'0); intro H10. rewrite H10.
   apply equiv_Ab_1. apply IHequiv. apply alpha_equiv_sym.
-  replace ([(a, a')]) with (! ([(a, a')])). apply perm_inv_side.
-  apply alpha_equiv_trans with (t2 := ([ (a', a)]) @ t'0).
+  replace (|[(a, a')]|) with (! (|[(a, a')]|)). apply perm_inv_side.
+  apply alpha_equiv_trans with (t2 := (|[(a', a)]|) @ t'0).
   apply alpha_equiv_pi. intros b H11. false. apply H11. apply swap_comm.
   apply alpha_equiv_sym. rewrite H10; trivial. simpl; trivial.
   assert (Q : C |- a # t'0).
@@ -75,18 +78,18 @@ Proof.
    apply fresh_lemma_1 in H7. simpl rev in H7. 
    rewrite swap_neither in H7; auto.
   apply equiv_Ab_2; trivial. apply IHequiv.
-  replace ([(a, a')]) with (!([(a, a')])). 
+  replace (|[(a, a')]|) with (!(|[(a, a')]|)). 
   apply perm_inv_side'. simpl.
-  apply alpha_equiv_trans with (t2 := ([ (a', a'0)]) @ t'0); trivial.
+  apply alpha_equiv_trans with (t2 := (|[(a', a'0)]|) @ t'0); trivial.
   apply alpha_equiv_trans with 
-  (t2 := ([ ([(a, a')] $ a, [(a, a')] $ a'0)]) @ (([ (a, a')]) @ t'0)); trivial.
+  (t2 := (|[(|[(a, a')]| $ a, |[(a, a')]| $ a'0)]|) @ ((|[(a, a')]|) @ t'0)); trivial.
   rewrite swap_left. rewrite swap_neither; auto.
   apply alpha_equiv_equivariance. apply alpha_equiv_sym. 
   apply alpha_equiv_swap_neither; trivial. apply alpha_equiv_sym. 
   apply alpha_equiv_pi_comm. simpl; trivial.
 
   inverts H0. apply equiv_Su. intros. unfold In_ds in *|-.
-  case (a ==at (!p $ (p' $ a))); intro H1. rewrite H1. apply H5.
+  case (atom_eqdec a (!p $ (p' $ a))); intro H1. rewrite H1. apply H5.
   rewrite <- H1. apply perm_inv_side_atom in H1. rewrite <- H1. trivial.
   rewrite perm_diff_atom with (p:=p) in H1. gen_eq g : (!p). intro H2.
   replace (p $ (g $ (p' $ a))) with (!g $ (g $ (p' $ a))) in H1.
@@ -102,7 +105,7 @@ Proof.
   apply alpha_equiv_TPlength with (E:=0) (n:=n) in H8'.
   apply aacc_equiv_TPlength with (E:=0) (n:=n) in Q.
   autorewrite with tuples in Q.
-  case (eq_nat_dec (TPlength t 0 n) 1); intro H9.
+  case (nat_eqdec (TPlength t 0 n) 1); intro H9.
   rewrite 2 TPithdel_TPlength_1;
   autorewrite with tuples; try omega; auto.
   apply IHequiv2.
@@ -117,7 +120,7 @@ Proof.
   autorewrite with tuples in Q.
   apply equiv_AC with (i:=i); simpl set_In; repeat split~; try omega.
   apply IHequiv1. apply alpha_equiv_TPith; auto.
-  case (eq_nat_dec (TPlength t 1 n) 1); intro H9.
+  case (nat_eqdec (TPlength t 1 n) 1); intro H9.
   rewrite 2 TPithdel_TPlength_1;
   autorewrite with tuples; try omega; auto.
   apply IHequiv2.
@@ -175,8 +178,8 @@ Qed.
 Lemma aacc_equivariance : forall C t1 t2 pi,  
  C |- t1 ~aacc t2 -> C |- (pi @ t1) ~aacc (pi @ t2).
 Proof.
- intros. induction H; intros;
-         autorewrite with perm; auto.
+  intros. induction H; intros; 
+      autorewrite with tuples in *|-*; simpl perm_act in *|-*; auto.        
 
  destruct H. apply equiv_Fc; trivial.
  left~. destruct H. apply equiv_Fc; trivial.
@@ -185,52 +188,36 @@ Proof.
  
  apply equiv_Ab_2. apply perm_diff_atom; trivial.
  apply aacc_alpha_equiv_trans.
- exists (pi @ (([(a, a')]) @ t')). split~.
+ exists (pi @ ((|[(a, a')]|) @ t')). split~.
  apply alpha_equiv_pi_comm.
  apply fresh_lemma_3; trivial.
 
  apply equiv_Su. intros. apply H. intro. apply H0.
  rewrite <- 2 perm_comp_atom. rewrite H1; trivial. 
- apply equiv_A; simpl set_In;
- autorewrite with tuples in *|-*; try omega.
- rewrite <- 2 Perm_TPith; trivial.
- assert (Q : C |- Fc 0 n t ~aacc Fc 0 n t').
-  apply equiv_A; simpl set_In; try omega; autorewrite with tuples; trivial.              
- apply aacc_equiv_TPlength with (E:=0) (n:=n) in Q.
- autorewrite with tuples in Q. 
- case (eq_nat_dec (TPlength t 0 n) 1); intro H2.
- rewrite 2 TPithdel_TPlength_1;
- autorewrite with tuples; try omega; auto.
- rewrite 2 TPithdel_Fc_eq in *|-*; autorewrite with tuples; try omega.
- autorewrite with perm in IHequiv2.
- rewrite 2 Perm_TPithdel in IHequiv2; trivial.
 
-
- apply equiv_AC with (i:=i); repeat split~; simpl set_In;
- autorewrite with tuples in *|-*; try omega.
- rewrite <- 2 Perm_TPith; trivial.
+ apply equiv_AC with (i:=i); repeat split~; simpl set_In; try omega.
+ autorewrite with tuples in *|-*; trivial.
  assert (Q : C |- Fc 1 n t ~aacc Fc 1 n t').
   apply equiv_AC with (i:=i); repeat split~; simpl set_In; try omega;
   autorewrite with tuples; trivial.              
  apply aacc_equiv_TPlength with (E:=1) (n:=n) in Q.
  autorewrite with tuples in Q.
- case (eq_nat_dec (TPlength t 1 n) 1); intro H4.
+ case (nat_eqdec (TPlength t 1 n) 1); intro H4.
  rewrite 2 TPithdel_TPlength_1;
  autorewrite with tuples; try omega; auto.
  rewrite 2 TPithdel_Fc_eq in *|-*; autorewrite with tuples; try omega.
- autorewrite with perm in IHequiv2.
- rewrite 2 Perm_TPithdel in IHequiv2; trivial.
+ autorewrite with perm in IHequiv2; trivial.
 Qed.
 
 
 (** A corollary about the swapping inversion of side in aacc_equiv *) 
 
 Lemma aacc_equiv_swap_inv_side : forall C a a' t t', 
- C |- t ~aacc (([ (a, a')]) @ t') -> C |- (([ (a', a)]) @ t) ~aacc t'. 
+ C |- t ~aacc ((|[(a, a')]|) @ t') -> C |- ((|[(a', a)]|) @ t) ~aacc t'. 
 Proof.
  intros. 
  apply aacc_alpha_equiv_trans.
- exists (([ (a', a)]) @ (([ (a, a')]) @ t')). split~.
+ exists ((|[(a', a)]|) @ ((|[(a, a')]|) @ t')). split~.
  apply aacc_equivariance; trivial.
  apply perm_inv_side'. simpl.
  apply alpha_equiv_pi. intros b H11. false. apply H11. apply swap_comm.
@@ -251,13 +238,13 @@ Proof.
  destruct H0. apply fresh_Ab_2; trivial. apply IHequiv; trivial.
  apply fresh_Ab_elim in H0. destruct H0. apply fresh_Ab_2.
  intro. apply H. rewrite <- H0. trivial. rewrite <- H0 in H2. trivial.
- destruct H0. case (a ==at a'); intros.
+ destruct H0. case (atom_eqdec a a'); intros.
  rewrite e. apply fresh_Ab_1. apply fresh_Ab_2; trivial.
- assert (Q : C |- a # (([(a0, a')]) @ t')).  apply IHequiv; trivial.
+ assert (Q : C |- a # ((|[(a0, a')]|) @ t')).  apply IHequiv; trivial.
  apply fresh_lemma_1 in Q. simpl rev in Q. rewrite swap_neither in Q; trivial.
  intro. apply H0. rewrite H4; trivial. intro. apply n. rewrite H4; trivial.
  apply fresh_Su. apply fresh_Su_elim in H0.
- case (((!p) $ a) ==at ((!p') $ a)); intros. rewrite <- e; trivial.
+ case (atom_eqdec ((!p) $ a) ((!p') $ a)); intros. rewrite <- e; trivial.
  apply H; intros. intro. apply n. gen_eq g : (!p'); intro. 
  replace p' with (!g) in H1. rewrite perm_inv_atom in H1. 
  replace ((!p) $ a) with ((!p) $ (p $ (g $ a))). rewrite perm_inv_atom. trivial.
@@ -271,7 +258,7 @@ Proof.
   apply equiv_A; simpl set_In; try omega; trivial.              
  apply aacc_equiv_TPlength with (E:=0) (n:=n) in Q.
  autorewrite with tuples in Q. 
- case (eq_nat_dec (TPlength t 0 n) 1); intro H4.
+ case (nat_eqdec (TPlength t 0 n) 1); intro H4.
  rewrite TPithdel_TPlength_1;
  autorewrite with tuples; try omega; auto.
  rewrite 2 TPithdel_Fc_eq in *|-; autorewrite with tuples; try omega.
@@ -286,7 +273,7 @@ Proof.
   apply equiv_AC with (i:=i); repeat split~; simpl set_In; try omega; trivial.              
  apply aacc_equiv_TPlength with (E:=1) (n:=n) in Q.
  autorewrite with tuples in Q.
- case (eq_nat_dec (TPlength t 1 n) 1); intro H7.
+ case (nat_eqdec (TPlength t 1 n) 1); intro H7.
  rewrite TPithdel_TPlength_1;
  autorewrite with tuples; try omega; auto.
  rewrite 2 TPithdel_Fc_eq in *|-; autorewrite with tuples; try omega.
@@ -319,10 +306,10 @@ Hint Resolve aacc_equiv_refl.
 (** A Corollary: the order of the atoms inside a swapping doesn't matter in aacc_equiv *)
 
 Corollary aacc_equiv_swap_comm : forall C t a a', 
-  C |- ([ (a, a')]) @ t ~aacc (([ (a', a)]) @ t) .
+  C |- (|[(a, a')]|) @ t ~aacc ((|[(a', a)]|) @ t) .
 Proof.
  intros. apply aacc_alpha_equiv_trans. 
- exists (([ (a, a')]) @ t). split~.
+ exists ((|[(a, a')]|) @ t). split~.
  apply alpha_equiv_pi. intros b H11. false. apply H11. apply swap_comm.
 Qed.
 
@@ -350,7 +337,7 @@ Proof.
   case H with (m:=term_size t1) (i:=i) (t:=t1) (t':=t1'); try omega; trivial; clear H.
   intros j H6. destruct H6. destruct H6. destruct H7. exists j.
   rewrite 2 TPith_Pr_le; try omega. 
-  case (eq_nat_dec (TPlength t1 E n) 1); intro H9.
+  case (nat_eqdec (TPlength t1 E n) 1); intro H9.
   rewrite 2 TPithdel_t1_Pr; try omega. simpl.
   repeat split~; try omega; trivial.
   rewrite 2 TPithdel_Pr_le; try omega.
@@ -361,17 +348,17 @@ Proof.
   intros j H6. destruct H6. destruct H6. destruct H7. exists (TPlength t1 E n + j).
   rewrite 2 TPith_Pr_gt; try omega. rewrite <- H0'.
   replace (TPlength t1 E n + j - TPlength t1 E n) with j; try omega. 
-  case (eq_nat_dec (TPlength t2 E n) 1); intro H9.
+  case (nat_eqdec (TPlength t2 E n) 1); intro H9.
   rewrite 2 TPithdel_t2_Pr; try omega.
   repeat split~; try omega; trivial. simpl; omega.
   rewrite 2 TPithdel_Pr_gt; try omega.
   replace (TPlength t1 E n + j - TPlength t1' E n) with j; try omega.
   simpl; repeat split~; try omega; auto.
 
-  case ((E0,n0) ==np (E,n)); intro H5. inverts H5.
+  case (nat_pair_eqdec (E0,n0) (E,n)); intro H5. inverts H5.
   generalize H4; intro H4'.
   apply aacc_equiv_TPlength with (E:=E) (n:=n) in H4'.
-  case (eq_nat_dec (TPlength t E n) 1); intro H5. exists 1.
+  case (nat_eqdec (TPlength t E n) 1); intro H5. exists 1.
   rewrite 2 TPithdel_TPlength_1; autorewrite with tuples; try omega; auto.
   assert (i=1). autorewrite with tuples in H3. omega. rewrite H6 in *|-*.
   repeat split~; try omega; trivial.
@@ -401,7 +388,7 @@ Proof.
   exists 1. simpl. repeat split~; try omega; auto.
   exists 1. simpl. repeat split~; try omega; auto.
   
-  clear H0. case (set_In_dec eq_nat_dec E (1::([2]))); intro H4.
+  clear H0. case (set_In_dec nat_eqdec E (1::(|[2]|))); intro H4.
   exists 1. assert (Q:(0,n0) <> (E,n)). intro. inverts H0.
   simpl in H4. omega.
   rewrite TPlength_Fc_diff in *|-*; trivial.
@@ -416,12 +403,12 @@ Proof.
   apply aacc_equiv_TPith_E_diff_1_2 with (E:=E) (n:=n) (i:=i) in Q; trivial.
   destruct Q. repeat split~; try omega; trivial.
 
-  clear H0. case ((1,n0) ==np (E,n)); intro H4. inverts H4.
+  clear H0. case (nat_pair_eqdec (1,n0) (E,n)); intro H4. inverts H4.
   autorewrite with tuples in *|-*.  
   
-  case (eq_nat_dec i 1); intro H4. rewrite H4.
+  case (nat_eqdec i 1); intro H4. rewrite H4.
   case (le_dec i0 1); intro H5.
-  exists 1. case (eq_nat_dec i0 0); intro H6; repeat rewrite H6 in *|-;
+  exists 1. case (nat_eqdec i0 0); intro H6; repeat rewrite H6 in *|-;
   repeat rewrite TPith_0 in *|-; repeat rewrite TPithdel_0 in *|-. 
   repeat split~; trivial; autorewrite with tuples; auto.
   assert (Qi0:i0=1). omega. rewrite Qi0 in *|-.
@@ -441,7 +428,7 @@ Proof.
   apply aacc_equiv_TPlength with (E:=1) (n:=n) in Q0.
   autorewrite with tuples in Q0. 
   assert (Q: TPlength t 1 n >=1). auto.
-  case (eq_nat_dec (TPlength t 1 n) 1); intro H5; try omega.
+  case (nat_eqdec (TPlength t 1 n) 1); intro H5; try omega.
   rewrite 2 TPithdel_Fc_eq in H0_0; try omega. 
   
   case H with (m  := term_size (Fc 1 n (TPithdel 1 t 1 n))) (i := i-1)
@@ -466,14 +453,14 @@ Proof.
   replace (i - 1 + 1) with i in *|-; try omega.
   rewrite 2 TPithdel_Fc_eq; try omega. 
   repeat split~; try omega; trivial.
-  case (eq_nat_dec i0 0); intro H9. rewrite H9 in *|-.
+  case (nat_eqdec i0 0); intro H9. rewrite H9 in *|-.
   rewrite TPith_0 in H0_. rewrite TPithdel_0 in H7.
   
   apply equiv_AC with (i:=1); simpl set_In;
   repeat split~; try rewrite TPlength_TPithdel; try omega; trivial. 
   autorewrite with tuples. 
   rewrite 2 TPith_TPithdel_lt; try omega; trivial.
-  case (eq_nat_dec (TPlength t 1 n) 2); intro H10.
+  case (nat_eqdec (TPlength t 1 n) 2); intro H10.
   rewrite 2 TPithdel_TPlength_1; autorewrite with tuples;
   try rewrite TPlength_TPithdel; try omega; auto.
   rewrite 2 TPithdel_Fc_eq; try rewrite TPlength_TPithdel; try omega.
@@ -486,7 +473,7 @@ Proof.
   repeat split~; try rewrite TPlength_TPithdel; try omega; trivial. 
   autorewrite with tuples. 
   rewrite 2 TPith_TPithdel_lt; try omega; trivial.
-  case (eq_nat_dec (TPlength t 1 n) 2); intro H10.
+  case (nat_eqdec (TPlength t 1 n) 2); intro H10.
   rewrite 2 TPithdel_TPlength_1; autorewrite with tuples;
   try rewrite TPlength_TPithdel; try omega; auto.
   rewrite 2 TPithdel_Fc_eq; try rewrite TPlength_TPithdel; try omega.
@@ -509,7 +496,7 @@ Proof.
   autorewrite with tuples. rewrite TPith_TPithdel_lt; try omega; trivial.
   rewrite TPith_TPithdel_geq; try omega; trivial.
   replace (i0 - 1 + 1) with i0; try omega; trivial.
-  case (eq_nat_dec (TPlength t 1 n) 2); intro H10.
+  case (nat_eqdec (TPlength t 1 n) 2); intro H10.
   assert (Qi0:i0=2). omega. rewrite Qi0.
   replace (2-1) with 1; try omega.
   rewrite 2 TPithdel_TPlength_1; autorewrite with tuples;
@@ -528,7 +515,7 @@ Proof.
   autorewrite with tuples. rewrite TPith_TPithdel_lt; try omega; trivial.
   rewrite TPith_TPithdel_geq; try omega; trivial.
   replace (TPlength t' 1 n - 1 + 1) with (TPlength t' 1 n); try omega; trivial.
-  case (eq_nat_dec (TPlength t 1 n) 2); intro H10.
+  case (nat_eqdec (TPlength t 1 n) 2); intro H10.
   assert (Qi0:TPlength t' 1 n=2). omega. rewrite Qi0.
   replace (2-1) with 1; try omega.
   rewrite 2 TPithdel_TPlength_1; autorewrite with tuples;
@@ -546,7 +533,7 @@ Proof.
   repeat split~; try omega.
   apply equiv_AC with (i:=i0); simpl set_In; try omega; trivial.  
 
-  simpl in H2. clear H0. case ((2,n0) ==np (E,n)); intro H4.
+  simpl in H2. clear H0. case (nat_pair_eqdec (2,n0) (E,n)); intro H4.
   inverts H4. autorewrite with tuples in H3|-*. simpl in H3.
   case H with (m := term_size (<|s0,s1|>)) (i:=i) (t:=<| s0, s1 |>) (t':=<| t0, t1 |>);
     simpl TPlength; simpl term_size; try omega.
@@ -560,7 +547,7 @@ Proof.
   rewrite 2 TPithdel_TPlength_1; try rewrite TPlength_Fc_diff; trivial.
   repeat split~. apply equiv_C1; trivial. simpl. right~.
 
-  simpl in H2. clear H0. case ((2,n0) ==np (E,n)); intro H4.
+  simpl in H2. clear H0. case (nat_pair_eqdec (2,n0) (E,n)); intro H4.
   inverts H4. autorewrite with tuples in H3. simpl in H3.
  
   generalize H0_ H0_0. intros H' H''.
@@ -582,14 +569,14 @@ Proof.
   rewrite 2 TPith_Pr_le; trivial.
   rewrite TPith_Pr_gt in H4; try omega. rewrite TPith_Pr_le in H4; trivial.
   replace (TPlength s1 2 n + i - TPlength s1 2 n) with i in H4;try omega; trivial.
-  case (eq_nat_dec (TPlength s0 2 n) 1); intro H9.
+  case (nat_eqdec (TPlength s0 2 n) 1); intro H9.
   rewrite TPithdel_t1_Pr; try omega.
   rewrite TPithdel_t2_Pr in H5; try omega.
   apply equiv_Fc_c; trivial.
   rewrite TPithdel_Pr_le; trivial.
   rewrite TPithdel_Pr_gt in H5; try omega.
   replace (TPlength s1 2 n + i - TPlength s1 2 n) with i in H5; try omega.
-  case (eq_nat_dec (TPlength t0 2 n) 1); intro H10.
+  case (nat_eqdec (TPlength t0 2 n) 1); intro H10.
   rewrite TPithdel_t1_Pr; try omega.
   rewrite TPithdel_t1_Pr in H5; try omega. inverts H5.
   apply equiv_C2; trivial. simpl; right~.
@@ -602,14 +589,14 @@ Proof.
   rewrite TPith_Pr_gt; try omega.
   rewrite TPith_Pr_gt in H4; try omega. rewrite TPith_Pr_gt in H4; try omega.
   replace (TPlength s1 2 n + i - TPlength s1 2 n) with i in H4;try omega; trivial.
-  case (eq_nat_dec (TPlength s0 2 n) 1); intro H9.
+  case (nat_eqdec (TPlength s0 2 n) 1); intro H9.
   rewrite TPithdel_t1_Pr; try omega.
   rewrite TPithdel_t2_Pr in H5; try omega.
   apply equiv_Fc_c; trivial.
   rewrite TPithdel_Pr_le; trivial.
   rewrite TPithdel_Pr_gt in H5; try omega.
   replace (TPlength s1 2 n + i - TPlength s1 2 n) with i in H5; try omega.
-  case (eq_nat_dec (TPlength t1 2 n) 1); intro H10.
+  case (nat_eqdec (TPlength t1 2 n) 1); intro H10.
   rewrite TPithdel_t2_Pr; try omega.
   rewrite TPithdel_Pr_gt; try omega.
   rewrite TPithdel_Pr_gt in H5; try omega. inverts H5.
@@ -628,13 +615,13 @@ Proof.
   rewrite TPith_Pr_gt; try omega.
   rewrite TPith_Pr_le; try omega.
   rewrite 2 TPith_Pr_le in H4; try omega; trivial.
-   case (eq_nat_dec (TPlength s1 2 n) 1); intro H9.
+   case (nat_eqdec (TPlength s1 2 n) 1); intro H9.
   rewrite TPithdel_t2_Pr; try omega.
   rewrite TPithdel_t1_Pr in H5; try omega.
   apply equiv_Fc_c; trivial.
   rewrite TPithdel_Pr_gt; try omega.
   rewrite TPithdel_Pr_le in H5; try omega.
-  case (eq_nat_dec (TPlength t0 2 n) 1); intro H10.
+  case (nat_eqdec (TPlength t0 2 n) 1); intro H10.
   rewrite TPithdel_t1_Pr; try omega.
   rewrite TPithdel_Pr_le; try omega.
   rewrite TPithdel_Pr_le in H5; try omega. inverts H5.
@@ -643,13 +630,13 @@ Proof.
   repeat split~; try omega. 
   rewrite 2 TPith_Pr_gt; try omega.
   rewrite TPith_Pr_le in H4; try omega. rewrite TPith_Pr_gt in H4; try omega; trivial.
-   case (eq_nat_dec (TPlength s1 2 n) 1); intro H9.
+   case (nat_eqdec (TPlength s1 2 n) 1); intro H9.
   rewrite TPithdel_t2_Pr; try omega.
   rewrite TPithdel_t1_Pr in H5; try omega.
   apply equiv_Fc_c; trivial.
   rewrite TPithdel_Pr_gt; try omega.
   rewrite TPithdel_Pr_le in H5; try omega.
-   case (eq_nat_dec (TPlength t1 2 n) 1); intro H10.
+   case (nat_eqdec (TPlength t1 2 n) 1); intro H10.
   rewrite TPithdel_t2_Pr; try omega.
   rewrite TPithdel_t2_Pr in H5; try omega. inverts H5.
   apply equiv_C2; trivial. simpl; right~.
@@ -668,7 +655,7 @@ Lemma aacc_equiv_TPith_l' : forall C t t' E n,  C |- t ~aacc t' ->
                            forall i, exists j, C |- TPith i t E n ~aacc TPith j t' E n /\ 
                                                C |- TPithdel i t E n ~aacc TPithdel j t' E n.
 Proof.
-  intros. case (eq_nat_dec i 0); intro H0.
+  intros. case (nat_eqdec i 0); intro H0.
   rewrite H0. rewrite TPith_0. rewrite TPithdel_0.
   apply aacc_equiv_TPith_l with (i:=1) (E:=E) (n:=n) in H; try omega; auto.
   destruct H. destruct H. destruct H1. destruct H2.
@@ -721,13 +708,13 @@ Proof.
  simpl in H0. apply equiv_Ab_2; trivial.
  apply H with (t2 := t') (m := term_size t); try omega; trivial. 
  simpl in H0. apply equiv_Ab_2; trivial.
- apply H with (t2 := (([ (a, a')]) @ t')) (m := term_size t); try omega; trivial.
+ apply H with (t2 := ((|[(a, a')]|) @ t')) (m := term_size t); try omega; trivial.
  apply aacc_equivariance; trivial. 
  apply aacc_equiv_fresh with (a:=a) in H9; trivial.
 
- case (a ==at a'0); intro H1. rewrite H1. 
+ case (atom_eqdec a a'0); intro H1. rewrite H1. 
  simpl in H0. apply equiv_Ab_1.
- apply H with (t2 := (([ (a, a')]) @ t')) (m := term_size t); try omega; trivial.
+ apply H with (t2 := ((|[(a, a')]|) @ t')) (m := term_size t); try omega; trivial.
  apply aacc_equiv_swap_inv_side. rewrite H1. trivial.
 
  assert (Q:  C |- a # t'0). 
@@ -735,13 +722,13 @@ Proof.
   apply fresh_lemma_1 in H9. simpl rev in H9. 
   rewrite swap_neither in H9; auto.
  apply equiv_Ab_2; trivial.
- assert (Q' : C |- t ~aacc (([ (a, a')]) @ (([ (a', a'0)]) @ t'0))). 
-  apply H with (t2 := (([ (a, a')]) @ t')) (m := term_size t); trivial. 
+ assert (Q' : C |- t ~aacc ((|[(a, a')]|) @ ((|[(a', a'0)]|) @ t'0))). 
+  apply H with (t2 := ((|[(a, a')]|) @ t')) (m := term_size t); trivial. 
   simpl in H0. omega. apply aacc_equivariance; trivial.
  apply aacc_alpha_equiv_trans.
- exists ((([ (a, a')]) @ (([ (a', a'0)]) @ t'0))); split~. 
+ exists (((|[(a, a')]|) @ ((|[(a', a'0)]|) @ t'0))); split~. 
  apply alpha_equiv_trans with 
- (t2 := ([ (([(a,a')]) $ a', ([(a,a')]) $ a'0)]) @ (([ (a, a')]) @ t'0)). 
+ (t2 := (|[((|[(a,a')]|) $ a', (|[(a,a')]|) $ a'0)]|) @ ((|[(a, a')]|) @ t'0)). 
  apply alpha_equiv_pi_comm. rewrite swap_right. rewrite swap_neither; trivial.
  apply alpha_equiv_equivariance. apply alpha_equiv_swap_neither; trivial.
 
@@ -757,7 +744,9 @@ Proof.
  autorewrite with tuples in *|-*.
  apply H with (m:=term_size (TPith 1 t 0 n))
               (t2:=  TPith 1 t' 0 n); trivial.
- assert (Q: term_size (TPith 1 t 0 n) <= term_size t). auto. omega.
+ assert (Q: term_size (TPith 1 t 0 n) <= term_size t).
+  apply term_size_TPith.
+ omega.
  assert (Q0: C |- Fc 0 n t ~aacc Fc 0 n t'). 
   apply equiv_A; simpl set_In; try omega; trivial.
  assert (Q1: C |- Fc 0 n t' ~aacc Fc 0 n t'0). 
@@ -765,13 +754,14 @@ Proof.
  apply aacc_equiv_TPlength with (E:=0) (n:=n) in Q0. 
  apply aacc_equiv_TPlength with (E:=0) (n:=n) in Q1.
  autorewrite with tuples in *|-.
- case (eq_nat_dec (TPlength t 0 n) 1); intro H8.
+ case (nat_eqdec (TPlength t 0 n) 1); intro H8.
  rewrite 2 TPithdel_TPlength_1;
  autorewrite with tuples; try omega; auto.
  rewrite 2 TPithdel_Fc_eq in *|-*; autorewrite with tuples; try omega.
  apply H with (t2:=Fc 0 n (TPithdel 1 t' 0 n)) 
               (m:=term_size (Fc 0 n (TPithdel 1 t 0 n))); trivial.
- assert (Q2 : term_size (TPithdel 1 t 0 n) < term_size t). auto. 
+ assert (Q2 : term_size (TPithdel 1 t 0 n) < term_size t).
+  apply term_size_TPithdel; trivial.
  simpl. omega.
 
  false. destruct H10. apply H1. simpl. right~.
@@ -790,13 +780,16 @@ Proof.
  apply equiv_AC with (i:=x); try split~; simpl set_In; try omega;
  autorewrite with tuples in *|-*; trivial. 
  apply H with (t2:=TPith i t' 1 n) (m:=term_size (TPith 1 t 1 n)); trivial. 
- assert (Q2 : term_size (TPith 1 t 1 n) <= term_size t). auto. omega.
- case (eq_nat_dec (TPlength t 1 n) 1); intro H12.
+ assert (Q2 : term_size (TPith 1 t 1 n) <= term_size t).
+  apply term_size_TPith. 
+ omega.
+ case (nat_eqdec (TPlength t 1 n) 1); intro H12.
  rewrite 2 TPithdel_TPlength_1;
  autorewrite with tuples; try omega; auto.
  rewrite 2 TPithdel_Fc_eq in *|-*; autorewrite with tuples; try omega. 
  apply H with (t2:=Fc 1 n (TPithdel i t' 1 n)) (m:=term_size (Fc 1 n (TPithdel 1 t 1 n))); trivial. 
- assert (Q2 : term_size (TPithdel 1 t 1 n) < term_size t). auto. 
+ assert (Q2 : term_size (TPithdel 1 t 1 n) < term_size t).
+  apply term_size_TPithdel; trivial.
  simpl. omega.
 
  inverts H11. destruct H10; try contradiction.
@@ -833,15 +826,15 @@ Lemma aacc_equiv_AC : forall C t t' i j n,
 Proof.
   intros. gen_eq l : (TPlength t 1 n); intro H1.
   gen t t' H1 i j. induction l using peano_induction; intros.
-  case (eq_nat_dec i 1); intro Qi. rewrite Qi in *|-.
+  case (nat_eqdec i 1); intro Qi. rewrite Qi in *|-.
   apply equiv_AC with (i:=j); repeat split~; simpl set_In;
   try omega; trivial. 
-  case (eq_nat_dec i 0); intro Qi'. rewrite Qi' in *|-.
+  case (nat_eqdec i 0); intro Qi'. rewrite Qi' in *|-.
   repeat rewrite TPith_0 in *|-; repeat rewrite TPithdel_0 in *|-.
   apply equiv_AC with (i:=j); simpl set_In; try omega; trivial.  
   
-  case (eq_nat_dec (TPlength t 1 n) 1);
-  case (eq_nat_dec (TPlength t' 1 n) 1); intros H3 H4.
+  case (nat_eqdec (TPlength t 1 n) 1);
+  case (nat_eqdec (TPlength t' 1 n) 1); intros H3 H4.
   apply equiv_AC with (i:=j); simpl set_In; try omega.
   autorewrite with tuples in *|-*. 
   try rewrite TPith_overflow with (i:=i) in H0; try omega.
@@ -877,7 +870,7 @@ Proof.
   case (le_dec i (TPlength t 1 n)); intro H9.
   rewrite TPith_TPithdel_geq; try omega.
 
-  case (eq_nat_dec j 0); intro H10; try rewrite H10 in *|-*;
+  case (nat_eqdec j 0); intro H10; try rewrite H10 in *|-*;
   repeat rewrite TPith_0 in *|-*;
   rewrite TPith_TPithdel_lt; try omega;
   replace (i -1 + 1) with i; try omega; trivial.
@@ -885,12 +878,12 @@ Proof.
   try rewrite TPlength_TPithdel; try omega.
   rewrite TPith_overflow with (i:=i) in H0; try omega.
   rewrite TPith_TPithdel_geq; try omega.
-  case (eq_nat_dec j 0); intro H10; try rewrite H10 in *|-*;
+  case (nat_eqdec j 0); intro H10; try rewrite H10 in *|-*;
   repeat rewrite TPith_0 in *|-*;
   rewrite TPith_TPithdel_lt; try omega;
   replace (TPlength t 1 n -1 + 1) with (TPlength t 1 n); try omega; trivial.  
   
-  case (eq_nat_dec (TPlength t 1 n) 2); intro H9.
+  case (nat_eqdec (TPlength t 1 n) 2); intro H9.
   rewrite 2 TPithdel_TPlength_1; autorewrite with tuples; 
   try rewrite TPlength_TPithdel; try omega; auto.
   
@@ -949,7 +942,7 @@ Proof.
   replace (TPlength t' 1 n -1 + 1) with (TPlength t' 1 n); try omega; trivial.
   replace (TPlength t 1 n -1 + 1) with (TPlength t 1 n); try omega; trivial.
   
-  case (eq_nat_dec (TPlength t 1 n) 2); intro H10.
+  case (nat_eqdec (TPlength t 1 n) 2); intro H10.
   rewrite 2 TPithdel_TPlength_1; autorewrite with tuples; 
   try rewrite TPlength_TPithdel; try omega; auto.
   rewrite 2 TPithdel_Fc_eq; try rewrite TPlength_TPithdel; try omega.
@@ -994,14 +987,14 @@ Proof.
  left~. right~. destruct H. split~.
  destruct H1. right~. left~. 
  
- assert (Q0 : C |- t' ~aacc (([(a', a)]) @ t)).
-  apply aacc_equiv_trans with (t2 := ([(a, a')]) @ t).
-  apply aacc_equiv_trans with (t2 := ([(a, a')]) @ (([(a, a')]) @ t')).
+ assert (Q0 : C |- t' ~aacc ((|[(a', a)]|) @ t)).
+  apply aacc_equiv_trans with (t2 := (|[(a, a')]|) @ t).
+  apply aacc_equiv_trans with (t2 := (|[(a, a')]|) @ ((|[(a, a')]|) @ t')).
   apply aacc_alpha_equiv_trans. exists t'. split~.
-  replace ([(a, a')]) with (!([(a, a')])).   
+  replace (|[(a, a')]|) with (!(|[(a, a')]|)).   
   apply perm_inv_side. apply alpha_equiv_refl. simpl; trivial.
   apply aacc_equivariance; trivial.  apply aacc_equiv_swap_comm. 
- assert (Q1 : C |- a # (([(a', a)]) @ t)).
+ assert (Q1 : C |- a # ((|[(a', a)]|) @ t)).
   apply aacc_equiv_fresh with (t1 := t'); trivial.
  apply fresh_lemma_1 in Q1. simpl rev in Q1. rewrite swap_right in Q1.
  apply equiv_Ab_2; trivial; auto.
@@ -1045,7 +1038,7 @@ Qed.
    
 (** Soundness of aacc_equiv *)
 
-Theorem aacc_equivalence : forall C, Equivalence (equiv (0::1::[2]) C).
+Theorem aacc_equivalence : forall C, Equivalence (equiv (0::1::|[2]|) C).
 Proof.
   split~.
   unfold Symmetric; intros. apply aacc_equiv_sym; trivial.
@@ -1054,9 +1047,9 @@ Qed.
 
 (** Soundness of a_equiv *)
 
-Corollary a_equivalence : forall C, Equivalence (equiv ([0]) C).
+Corollary a_equivalence : forall C, Equivalence (equiv (|[0]|) C).
 Proof.
-  intros. apply subset_equivalence with (S2:=0::1::[2]).
+  intros. apply subset_equivalence with (S2:=0::1::|[2]|).
   unfold subset. simpl; intros. omega.
   unfold proper_equiv_Fc; intros. apply aacc_equiv_Fc; trivial.
   apply aacc_equivalence.
@@ -1064,9 +1057,9 @@ Qed.
 
 (** Soundness of ac_equiv *)
 
-Corollary ac_equivalence : forall C, Equivalence (equiv ([1]) C).
+Corollary ac_equivalence : forall C, Equivalence (equiv (|[1]|) C).
 Proof.
-  intros. apply subset_equivalence with (S2:=0::1::[2]).
+  intros. apply subset_equivalence with (S2:=0::1::|[2]|).
   unfold subset. simpl; intros. omega.
   unfold proper_equiv_Fc; intros. apply aacc_equiv_Fc; trivial.
   apply aacc_equivalence.
@@ -1074,9 +1067,9 @@ Qed.
 
 (** Soundness of c_equiv *)
 
-Corollary c_equivalence : forall C, Equivalence (equiv ([2]) C).
+Corollary c_equivalence : forall C, Equivalence (equiv (|[2]|) C).
 Proof.
-  intros. apply subset_equivalence with (S2:=0::1::[2]).
+  intros. apply subset_equivalence with (S2:=0::1::|[2]|).
   unfold subset. simpl; intros. omega.
   unfold proper_equiv_Fc; intros. apply aacc_equiv_Fc; trivial.
   apply aacc_equivalence.
@@ -1084,9 +1077,9 @@ Qed.
 
 (** Soundness of acc_equiv *)
 
-Corollary acc_equivalence : forall C, Equivalence (equiv (1::[2]) C).
+Corollary acc_equivalence : forall C, Equivalence (equiv (1::|[2]|) C).
 Proof.
-  intros. apply subset_equivalence with (S2:=0::1::[2]).
+  intros. apply subset_equivalence with (S2:=0::1::|[2]|).
   unfold subset. simpl; intros. omega.
   unfold proper_equiv_Fc; intros. apply aacc_equiv_Fc; trivial.
   apply aacc_equivalence.
@@ -1116,3 +1109,261 @@ Proof.
 Qed.  
 
                             
+(** Some results about collections of arguments of a term *)
+
+Lemma aacc_Args_col_TPith_TPithdel : forall L0 L1 C s t E n,
+
+    C |- (Args_col L0 ([]) s E n) ~aacc (Args_col L1 ([]) t E n) ->
+
+    forall i,
+         
+      C |- TPith i (Args_col L0 ([]) s E n) E n ~aacc
+           TPith i (Args_col L1 ([]) t E n) E n
+      /\
+           
+      C |- TPithdel i (Args_col L0 ([]) s E n) E n ~aacc
+           TPithdel i (Args_col L1 ([]) t E n) E n
+. 
+
+Proof.
+  intros.
+
+  unfold Args_col in H|-*.
+  rewrite Args_assoc_nil in H|-*.
+ 
+  replace (Args_assoc 0 ([]) (Args_col_list L1 t E n))
+          with (Args_right_assoc (Args_col_list L1 t E n)) in *|-*.
+  
+  gen_eq l : (length L0); intro H0.
+  gen H0 H. gen i L0 L1 s t.
+  
+  induction l using peano_induction; intros.
+
+  destruct L0.
+  simpl Args_col_list in H1|-*.
+  simpl in *|-*. inverts H1. simpl. auto.
+  destruct L1. simpl Args_col_list in H1|-*.
+ 
+  gen_eq L2 : (TPith n0 s E n :: Args_col_list L0 s E n).
+  intro H2. simpl. inverts H1. simpl. auto.
+
+  assert (Q : length L0 = length L1).
+   apply aacc_equiv_TPlength with (E:=E) (n:=n) in H1.
+   rewrite 2 Args_right_assoc_TPlength in H1; simpl; try omega; trivial.
+   simpl in H1. omega.
+  simpl in H0.
+
+  simpl Args_col_list in *|-*.
+
+  case (nil_eqdec _ term_eqdec (Args_col_list L0 s E n)); intro H2.
+  rewrite H2 in *|-*. apply length_zero_iff_nil in H2.
+  rewrite Args_col_list_length in H2.
+  rewrite Q in H2. apply length_zero_iff_nil in H2.
+  rewrite H2 in H1|-*. simpl in H1|-*.
+  rewrite 2 TPith_TPith. split~.
+  rewrite 2 TPithdel_TPlength_1; auto.
+  rewrite TPlength_TPith; trivial.
+  rewrite TPlength_TPith; trivial.
+  
+  assert (H4: Args_col_list L1 t E n <> []).
+   intro H3. apply H2.
+   apply length_zero_iff_nil in H3.
+   apply length_zero_iff_nil.
+   rewrite Args_col_list_length.
+   rewrite Args_col_list_length in H3. omega.
+
+  assert (H5 : length (Args_col_list L0 s E n) <> 0).
+   intro H5. apply length_zero_iff_nil in H5. contradiction.   
+  assert (H6 : length (Args_col_list L1 t E n) <> 0).
+   intro H6. apply length_zero_iff_nil in H6. contradiction.
+  
+  rewrite 2 Args_right_assoc_cons in *|-*; trivial.
+  inverts H1. 
+   
+  case (le_dec i 1); intro H7.
+  rewrite 2 TPith_Pr_le;
+    try rewrite TPlength_TPith; trivial.
+  rewrite 2 TPithdel_t1_Pr;
+    try rewrite TPlength_TPith; trivial.
+  split~. rewrite 2 TPith_TPith; trivial.
+  
+  rewrite 2 TPith_Pr_gt;
+    try rewrite TPlength_TPith; try omega.
+  
+  rewrite 1 TPlength_TPith.  
+  split~.
+  apply H with (m:= length L0); try omega. trivial.  
+  
+  case (nat_eqdec (length L0) 1); intro H13.
+
+  rewrite 2 TPithdel_t2_Pr;
+    try rewrite TPlength_TPith; try omega; trivial.
+  rewrite Args_right_assoc_TPlength; try omega.
+  rewrite Args_right_assoc_TPlength; try omega.
+
+  rewrite Args_col_list_length in H5.
+  rewrite Args_col_list_length in H6.
+
+  rewrite 2 TPithdel_Pr_gt;
+    try rewrite TPlength_TPith; try omega.
+  apply equiv_Pr; trivial.
+  rewrite TPlength_TPith.
+  apply H with (m:= length L0); try omega. trivial.
+  rewrite Args_right_assoc_TPlength; try omega.
+  rewrite Args_right_assoc_TPlength; try omega.
+
+  symmetry. apply Args_assoc_nil. 
+Qed.
+
+
+
+
+Lemma aacc_equiv_Args_col_AC : forall L0 L1 C n s t,
+
+      valid_col L0 s 1 n -> valid_col L1 t 1 n ->
+
+      length L0 = TPlength s 1 n ->
+      length L1 = TPlength t 1 n ->
+
+      C |- (Args_col L0 ([]) s 1 n) ~aacc
+           (Args_col L1 ([]) t 1 n) ->
+         
+           C |- Fc 1 n s ~aacc Fc 1 n t .
+
+Proof.
+
+  intros. gen_eq l : (length L0). intro H4.
+  gen H4 H H0 H1 H2 H3. gen L0 L1 s t.
+  induction l using peano_induction; intros.
+
+  assert (Q : TPlength s 1 n = TPlength t 1 n).
+   apply aacc_equiv_TPlength with (E:=1) (n:=n) in H5.
+   rewrite 2 Args_col_TPlength in H5; simpl; trivial; try omega.
+   assert (TPlength t 1 n >= 1). auto. omega.
+   apply NoDup_nil. intros. contradiction.
+   assert (TPlength s 1 n >= 1). auto. omega. 
+   apply NoDup_nil. intros. contradiction.
+   
+  apply aacc_Args_col_TPith_TPithdel with (i:=1) in H5.
+  destruct H5.
+  
+  case  Args_col_TPith_TPithdel
+    with (L:=L0) (s:=s) (E:=1) (n:=n); trivial.
+  assert (Q' : TPlength s 1 n >= 1). auto. omega.
+  intros i H7. destruct H7.
+  case H8; clear H8; intros L0' H8. destruct H8.
+  destruct H9. destruct H10.
+  rewrite H7 in H5. rewrite H8 in H6.
+
+  case Args_col_TPith_TPithdel
+    with (L:=L1) (s:=t) (E:=1) (n:=n); trivial.
+  assert (Q' : TPlength t 1 n >= 1). auto. omega.
+  intros j H12. destruct H12.
+  case H13; clear H13; intros L1' H13. destruct H13.
+  destruct H14. destruct H15.
+  rewrite H12 in H5. rewrite H13 in H6.
+  
+  apply aacc_equiv_AC with (i:=i) (j:=j).
+  autorewrite with tuples; trivial.
+
+  case (nat_eqdec (TPlength s 1 n) 1); intro H17.
+  rewrite 2 TPithdel_TPlength_1;
+    autorewrite with tuples; try omega; auto. 
+  rewrite 2 TPithdel_Fc_eq; try omega.  
+
+  apply H with (m:=length L0') (L0 := L0') (L1 := L1');
+    try omega; trivial.
+
+  assert (Q' : TPlength s 1 n >= 1). auto. omega.
+  rewrite TPlength_TPithdel; omega.
+  rewrite TPlength_TPithdel; omega.  
+    
+Qed.
+
+  
+Lemma aacc_equiv_Args_assoc : forall C L0 L1 L' i,
+
+     length L0 = length L1 ->   
+
+      C |- Args_assoc i L' L0 ~aacc Args_assoc i L' L1  ->
+      C |- Args_right_assoc L0 ~aacc Args_right_assoc L1 .
+
+Proof.
+
+  intros.  gen_eq l : (length L'). intro H1.
+  gen H1 H H0. gen i L0 L1 L'.
+  induction l using peano_induction; intros.
+
+  destruct L'; simpl in *|-; trivial.
+  inverts H2. apply H with (m := length L') in H9; try omega.
+  gen_eq k : (n - i); intro H10.
+
+  2:{
+  case (le_dec (n - i) (length L0)); intro H10.
+   rewrite 2 tail_list_length; omega.
+  rewrite 2 tail_list_overflow; try omega. }
+   
+  clear L' n i l H H1 H10.
+
+  gen_eq l : (length L0); intro H10.
+  gen H10 H0 H7 H9. gen L0 L1 k.
+  induction l using peano_induction; intros.
+
+  destruct L0. simpl in H10.
+  assert (Q : L1 = []).
+   rewrite H10 in H0. symmetry in H0.
+   apply length_zero_iff_nil; trivial.
+  rewrite Q in *|-*.
+  destruct k; simpl in *|-*; trivial.
+  simpl in H10. destruct L1; simpl in H0; try omega.
+
+  case (nil_eqdec _ term_eqdec L0); intro H11.
+  rewrite H11 in *|-*. simpl in H10.
+  assert (Q : L1 = []).
+   assert (length L1 = 0). omega.
+   apply length_zero_iff_nil; trivial.
+  rewrite Q in *|-*.
+  destruct k; simpl in *|-*; trivial.
+  destruct k; simpl in *|-; trivial.
+
+  assert (Q0 : length L0 <> 0). 
+   intro H12;
+    apply length_zero_iff_nil in H12; contradiction.
+   
+  assert (Q1 : length L1 <> 0). 
+   intro H12;
+    apply length_zero_iff_nil in H12.
+   rewrite H12 in H0. simpl in H0. omega.
+
+  rewrite 2 Args_right_assoc_cons; trivial.
+   
+  case (nat_eqdec k 0); intro H12.
+  rewrite H12 in *|-.
+  simpl tail_list in *|-.
+  rewrite 2 Args_right_assoc_cons in H9; trivial.
+
+  case (nat_eqdec (k - 1) 0); intro H13.
+
+  rewrite 2 head_list_cons in *|-; trivial.
+  rewrite 2 tail_list_cons in *|-; trivial.
+
+  rewrite H13 in *|-. simpl in *|-.
+
+  apply equiv_Pr; trivial.
+  
+  case (le_dec k (length L0)); intro H14.
+
+  rewrite 2 head_list_cons in *|-; trivial.
+  rewrite 2 tail_list_cons in *|-; trivial.
+  
+  rewrite 2 Args_right_assoc_cons in *|-. 
+
+  inverts H7. apply equiv_Pr; trivial.
+  apply H with (m := length L0) (k:=k-1); try omega; trivial.
+  rewrite head_list_length; omega.
+  rewrite head_list_length; omega.
+
+  rewrite 2 head_list_overflow in *|-; simpl; try omega.
+  rewrite 2 Args_right_assoc_cons in *|-; trivial.
+
+Qed.

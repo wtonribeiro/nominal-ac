@@ -1,8 +1,7 @@
 (**
-%\begin{verbatim}
  ============================================================================
  Project     : Nominal A, AC and C Unification
- File        : C-Matching.v
+ File        : C_Matching.v
  Authors     : Washington Lu\'is R. de Carvalho Segundo and
                Mauricio Ayala Rinc\'on 
                Universidade de Bras\'ilia (UnB) - Brazil
@@ -13,9 +12,8 @@
                termination, soundness and completess are
                the contributions of this file.
  
- Last Modified On: Jun 23, 2018.
+ Last Modified On: Sep 17, 2018.
  ============================================================================
- \end{verbatim} %
 *)
 
 Require Import C_Unif_Completeness.
@@ -34,7 +32,7 @@ Definition match_sol (Sl : Context * Subst) (T : Triple) :=
   (* 2 *) ( forall a s, set_In (a#?s) P -> C' |- a # (s|^S') ) /\
   (* 3 *) ( forall s t, set_In (s~?t) P -> C' |- (s|^S') ~c t ) /\         
   (* 4 *) ( exists S'', C' |- (S©S'') ~:c S' ) /\
-  (* 5 *)  set_inter Var_eqdec (rhvars_Probl P) (dom_rec S') = [] 
+  (* 5 *)  set_inter var_eqdec (rhvars_Probl P) (dom_rec S') = [] 
 . 
 
 
@@ -77,12 +75,12 @@ Proof.
   right~. left~. split~. 
   
   apply nat_leq_inv. apply subset_list; intros.
-  apply Var_eqdec. apply NoDup_Problem_vars.
+  apply var_eqdec. apply NoDup_Problem_vars.
   rewrite equ_proj_rem_eq in H. 
   apply Problem_vars_remove in H; trivial.
   
   rewrite equ_Problem_size_remove; trivial.
-  assert (Q : equ_Problem_size P >= equ_Problem_size ([(pi|.X)~?(([])|.X)])).
+  assert (Q : equ_Problem_size P >= equ_Problem_size (|[(pi|.X)~?(([])|.X)]|)).
    apply equ_Problem_size_neq_nil; trivial.
   assert (Q' : equ_Problem_size P > 0).
    apply equ_Problem_size_gt_0 with (s:=pi|.X) (t:=([])|.X); trivial. 
@@ -96,7 +94,7 @@ Qed.
 
 Lemma unif_match_sol_equiv : forall T Sl,
       
-      set_inter Var_eqdec (rhvars_Probl (snd T)) (dom_rec (snd Sl)) = [] ->
+      set_inter var_eqdec (rhvars_Probl (snd T)) (dom_rec (snd Sl)) = [] ->
 
       sol_c Sl T <-> match_sol Sl T.
 
@@ -185,11 +183,11 @@ Qed.
 
 Corollary match_step_rh_inter_empty : forall T T' St ,
 
-      set_inter Var_eqdec (rhvars_Probl (snd T)) St = [] ->
+      set_inter var_eqdec (rhvars_Probl (snd T)) St = [] ->
       
       match_step T T' ->
 
-      set_inter Var_eqdec (rhvars_Probl (snd T')) St = [] .
+      set_inter var_eqdec (rhvars_Probl (snd T')) St = [] .
 Proof.
   intros. apply set_inter_nil; intros X H1.
   apply set_inter_elim in H1. destruct H1.
@@ -214,7 +212,7 @@ Lemma match_step_preserv : forall Sl T T',
 
       valid_triple T ->
 
-      set_inter Var_eqdec (rhvars_Probl (snd T)) (dom_rec (snd Sl)) = [] ->
+      set_inter var_eqdec (rhvars_Probl (snd T)) (dom_rec (snd Sl)) = [] ->
 
       match_step T T' ->
 
@@ -223,7 +221,7 @@ Lemma match_step_preserv : forall Sl T T',
 Proof.
   intros. inverts H1.
 
-  assert (Q : set_inter Var_eqdec (rhvars_Probl (snd T')) (dom_rec (snd Sl)) = []).
+  assert (Q : set_inter var_eqdec (rhvars_Probl (snd T')) (dom_rec (snd Sl)) = []).
   unfold match_sol in H2. apply H2.
   
   apply unif_match_sol_equiv; trivial.
@@ -244,7 +242,7 @@ Proof.
   case (Constraint_eqdec (s~?t) ((pi|.X)~?(([])|.X))); intro H10.
   inverts H10.
 
-  assert (Q : set_inter Var_eqdec ([X]) (dom_rec (snd Sl)) = []).
+  assert (Q : set_inter var_eqdec (|[X]|) (dom_rec (snd Sl)) = []).
 
    apply set_inter_nil. intros Y H11.  
    apply set_inter_nil with (a:=Y) in H0.
@@ -361,7 +359,7 @@ Qed.
 
 Lemma match_step_compl : forall T Sl,
       valid_triple T ->
-      set_inter Var_eqdec (rhvars_Probl (snd T)) (dom_rec (snd Sl)) = [] ->                     
+      set_inter var_eqdec (rhvars_Probl (snd T)) (dom_rec (snd Sl)) = [] ->                     
       ~ match_leaf T ->
       (match_sol Sl T  <-> (exists T', match_step T T' /\ match_sol Sl T')).
 Proof.
@@ -393,7 +391,7 @@ Proof.
   apply H1; trivial.
   apply fresh_context_mem in H9. destruct H9. rewrite <- H9.
   
-  assert (Q : set_inter Var_eqdec ([X]) (dom_rec (snd Sl)) = []).
+  assert (Q : set_inter var_eqdec (|[X]|) (dom_rec (snd Sl)) = []).
    apply set_inter_nil. intros Y H11.  
    apply set_inter_nil with (a:=Y) in H0.
    apply H0. apply set_inter_elim in H11. destruct H11.
@@ -452,7 +450,7 @@ Qed.
 
 Theorem match_path_soundness : forall T T' Sl,
                                 valid_triple T ->
-                                set_inter Var_eqdec (rhvars_Probl (snd T)) (dom_rec (snd Sl)) = [] -> 
+                                set_inter var_eqdec (rhvars_Probl (snd T)) (dom_rec (snd Sl)) = [] -> 
                                 match_path T T' -> match_sol Sl T' -> match_sol Sl T.
 Proof.
   intros. unfold match_path in H1.
@@ -476,7 +474,7 @@ Qed.
   
 Theorem match_path_compl : forall T Sl,
         valid_triple T ->
-        set_inter Var_eqdec (rhvars_Probl (snd T)) (dom_rec (snd Sl)) = [] ->                         
+        set_inter var_eqdec (rhvars_Probl (snd T)) (dom_rec (snd Sl)) = [] ->                         
         (match_sol Sl T <-> exists T', match_path T T' /\ match_sol Sl T').
 Proof.
   
@@ -537,7 +535,7 @@ Proof.
    exists Sl. split~.
    apply unif_match_sol_equiv; trivial.
    unfold match_sol in H1. apply H1.
-   assert (set_inter Var_eqdec (rhvars_Probl (snd T)) (dom_rec (snd Sl)) = []). apply H1.
+   assert (set_inter var_eqdec (rhvars_Probl (snd T)) (dom_rec (snd Sl)) = []). apply H1.
    apply set_inter_nil; intros Y H3.
    apply set_inter_nil with (a:=Y) in H2. apply H2.
    apply set_inter_elim in H3. destruct H3.

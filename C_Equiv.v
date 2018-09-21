@@ -1,4 +1,4 @@
-(** %\begin{verbatim}
+(**
  ============================================================================
  Project     : Nominal A, AC and C Unification
  File        : C_Equiv.v
@@ -10,13 +10,13 @@
 Description : This file contains specific results about alpha-equivalence
               modulo commutativity 
 
- Last Modified On: Jan 28, 2018.
+ Last Modified On: Sep 17, 2018.
  ============================================================================
-\end{verbatim}%*)
+*)
 
 Require Export AACC_Equiv.
 
-(** %\section{Inversion lemmas over c\_equiv}% *)
+(** Inversion lemmas over c\_equiv *)
 
 Lemma c_equiv_At_elim : forall C a a', C |- (%a) ~c (%a') -> a = a'.
 Proof. intros. inverts H; trivial. Qed.
@@ -26,7 +26,7 @@ C |- (<|t1,t2|>) ~c (<|t1',t2'|>) -> ((C |- t1 ~c t1') /\ (C |- t2 ~c t2')).
 Proof. intros. inverts H; try split~. Qed.
 
 Lemma c_equiv_Fc_elim : forall C E E' n n' t t',
-((~set_In E (0::1::[2])) \/ (E = 2 /\ ((~ is_Pr t) \/ (~ is_Pr t')))) ->                           
+((~set_In E (0::1::|[2]|)) \/ (E = 2 /\ ((~ is_Pr t) \/ (~ is_Pr t')))) ->                           
 C |- Fc E n t ~c Fc E' n' t' -> (E = E' /\ n = n' /\ C |- t ~c t').  
 Proof. 
  intros. inverts H0. repeat split~.
@@ -52,7 +52,7 @@ Qed.
 Lemma c_equiv_Ab_elim : forall C t t' a a', 
 C |- [a]^t ~c ([a']^t') -> 
 ((a = a' /\ C |- t ~c t') \/ 
-(a <> a' /\ ((C |- t ~c ([(a,a')] @ t')) /\ C |- a # t'))). 
+(a <> a' /\ ((C |- t ~c (|[(a,a')]| @ t')) /\ C |- a # t'))). 
 Proof.
   intros. inverts H. left~. right~. 
 Qed.
@@ -67,7 +67,7 @@ Hint Resolve c_equiv_Fc_elim.
 Hint Resolve c_equiv_Ab_elim.
 Hint Resolve c_equiv_Su_elim.
 
-(** %\section{Inversion lemmas Intermediate transitivity for c\_equiv with alpha\_equiv }% *)
+(** Inversion lemmas Intermediate transitivity for c\_equiv with alpha\_equiv  *)
 
 (** 
      The following lemma is the result that allows to
@@ -91,23 +91,23 @@ Proof.
  apply equiv_Ab_2; trivial. apply IHequiv.
  apply alpha_equiv_equivariance; trivial.
  apply alpha_equiv_fresh with (t1 := t'); trivial.
- case (a ==at a'0); intro H9. rewrite <- H9.
+ case (atom_eqdec a a'0); intro H9. rewrite <- H9.
  apply equiv_Ab_1. apply IHequiv.
  apply perm_inv_side'. simpl. rewrite H9.
- apply ds_empty_equiv_2 with (pi := [(a', a'0)]); trivial; intros.
+ apply ds_empty_equiv_2 with (pi := |[(a', a'0)]|); trivial; intros.
  intro H10. apply H10. apply swap_comm.
  assert (Q : C |- a # t'0).
-  apply alpha_equiv_fresh with (t1 := ([(a',a'0)]) @ t').
+  apply alpha_equiv_fresh with (t1 := (|[(a',a'0)]|) @ t').
   apply perm_inv_side'. simpl. trivial.
-  replace ([(a', a'0)]) with (![(a', a'0)]).
+  replace (|[(a', a'0)]|) with (!|[(a', a'0)]|).
   apply fresh_lemma_2. rewrite swap_neither; trivial.
   intro. symmetry in H2. contradiction.
   intro. symmetry in H2. contradiction.
   simpl; trivial.
  apply equiv_Ab_2; trivial. apply IHequiv.
  apply perm_inv_side'.
- apply alpha_equiv_trans with (t2 := ([(a', a'0)]) @ t'0); trivial.
- apply alpha_equiv_trans with (t2 := ([([(a,a')] $ a, [(a,a')] $ a'0)]) @ (([(a,a')]) @ t'0)). 
+ apply alpha_equiv_trans with (t2 := (|[(a', a'0)]|) @ t'0); trivial.
+ apply alpha_equiv_trans with (t2 := (|[(|[(a,a')]| $ a, |[(a,a')]| $ a'0)]|) @ ((|[(a,a')]|) @ t'0)). 
  rewrite swap_left. rewrite swap_neither; trivial.
  apply alpha_equiv_equivariance.
  apply alpha_equiv_sym.
@@ -133,7 +133,7 @@ Proof.
 Qed.
 
 
-(** %\section{Freshness preservation of c\_equiv}% *)
+(** Freshness preservation of c\_equiv *)
 
 (**  
 The following lemma is proved by induction in C |- t1 ~c t2.
@@ -152,13 +152,13 @@ Proof.
  destruct H0. apply fresh_Ab_2; trivial. apply IHequiv; trivial.
  apply fresh_Ab_elim in H0. destruct H0. apply fresh_Ab_2.
  intro. apply H. rewrite <- H0. trivial. rewrite <- H0 in H2. trivial.
- destruct H0. case (a ==at a'); intros.
+ destruct H0. case (atom_eqdec a a'); intros.
  rewrite e. apply fresh_Ab_1. apply fresh_Ab_2; trivial.
- assert (Q : C |- a # (([(a0, a')]) @ t')).  apply IHequiv; trivial.
+ assert (Q : C |- a # ((|[(a0, a')]|) @ t')).  apply IHequiv; trivial.
  apply fresh_lemma_1 in Q. simpl rev in Q. rewrite swap_neither in Q; trivial.
  intro. apply H0. rewrite H4; trivial. intro. apply n. rewrite H4; trivial.
  apply fresh_Su. apply fresh_Su_elim in H0.
- case (((!p) $ a) ==at ((!p') $ a)); intros. rewrite <- e; trivial.
+ case (atom_eqdec ((!p) $ a) ((!p') $ a)); intros. rewrite <- e; trivial.
  apply H; intros. intro. apply n. gen_eq g : (!p'); intro. 
  replace p' with (!g) in H1. rewrite perm_inv_atom in H1. 
  replace ((!p) $ a) with ((!p) $ (p $ (g $ a))). rewrite perm_inv_atom. trivial.
@@ -177,7 +177,7 @@ Proof.
 Qed.
 
 
-(** %\section{Equivariance of c\_equiv}% *)
+(** Equivariance of c\_equiv *)
 
 (**  
 The following lemma is also proved by induction in C |- t1 ~c t2, and it 
@@ -188,13 +188,12 @@ uses lemma c_alpha_equiv_trans.
 Lemma c_equiv_equivariance : forall C t1 t2 pi,  
  C |- t1 ~c t2 -> C |- (pi @ t1) ~c (pi @ t2).
 Proof.
- intros. induction H;
- autorewrite with perm; auto.
+ intros. induction H; simpl; auto.
  apply equiv_Fc; trivial.
  destruct H. left~. right~. destruct H.
  split~. destruct H1; [left~ | right~]; apply perm_neg_is_Pr; trivial.
  apply equiv_Ab_2. apply perm_diff_atom; trivial.
- apply c_alpha_equiv_trans with (t2 := (pi @ (([(a, a')]) @ t'))).
+ apply c_alpha_equiv_trans with (t2 := (pi @ ((|[(a, a')]|) @ t'))).
  apply IHequiv. apply alpha_equiv_pi_comm. apply fresh_lemma_3; trivial.
  apply equiv_Su. intros. apply H.
  apply ds_cancel in H0; trivial.
@@ -202,7 +201,7 @@ Proof.
 Qed.
 
 
-(** %\section{Equivalence of c\_equiv}% *)
+(** Equivalence of c\_equiv *)
 
 (**  
 The equivalence of c_equiv is proved as corollary of 
@@ -229,7 +228,7 @@ Proof.
 Qed.
 
 
-(** %\section{Some other basic properties of c\_equiv.}% *)
+(** Some other basic properties of c\_equiv. *)
 
 
 (** Invariance of terms under c_equiv and the action of permutations.

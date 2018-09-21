@@ -1,7 +1,7 @@
 (**
  ============================================================================
  Project     : Nominal A, AC and C Unification
- File        : C_Unif_Soundness.v
+ File        : AACC_Unif_Soundness.v
  Authors     : Washington Lu\'is R. de Carvalho Segundo and
                Mauricio Ayala Rinc\'on 
                Universidade de Bras\'ilia (UnB) - Brazil
@@ -12,11 +12,11 @@ Description : A proof of the soundness of the C-unification algorithm is
 	      was formalised that each solution of a generated successful 
 	      leaf is also a solution of the original problem.
  
- Last Modified On: Sep 17, 2018.
+ Last Modified On: Sep 17, 2017.
  ============================================================================
 *)
 
-Require Export C_Unif_Termination.
+Require Export AACC_Unif_Termination.
 
 (** Soundness of the C-unification algorithm *)
 	
@@ -201,7 +201,8 @@ Qed.
 	Be a reduction by equ_sys form T to T'. If Sl is a solution
 	for T', then Sl is also a solution for T. This is proved
 	by case analysis over equ_sys T T'.
-*)    
+ *)
+
 
 Lemma equ_sol_preserv : forall T T' Sl varSet, valid_triple T ->
                         equ_sys varSet T T' -> sol_c Sl T' -> sol_c Sl T .
@@ -214,7 +215,7 @@ Proof.
   (* equ_sys_refl *)
 
   apply H2. apply set_remove_3; trivial. discriminate.
-  case (term_eqdec s t); intro H5. rewrite H5. apply c_equiv_refl.
+  case (term_eqdec s t); intro H5. rewrite H5. apply aacc_equiv_refl.
   apply H3. apply set_remove_3; trivial. intro H7. inverts H7.
   apply H5; trivial.
 
@@ -223,7 +224,7 @@ Proof.
   apply H2. apply set_remove_3.
   apply set_add_intro1. apply set_add_intro1; trivial.
   discriminate.
-  assert (Q: c1 |- <|s2,s3|>|^s1 ~c (<|t0,t1|>|^s1)).
+  assert (Q: c1 |- <|s2,s3|>|^s1 ~aacc (<|t0,t1|>|^s1)).
    simpl. apply equiv_Pr.
    apply H3. apply set_remove_3. 
    apply set_add_intro1. apply set_add_intro2; trivial.
@@ -242,12 +243,12 @@ Proof.
 
   apply H2. apply set_remove_3. apply set_add_intro1; trivial.
   discriminate.
-  assert (Q : c1 |- (t|^s1) ~c (t'|^s1)).
+  assert (Q : c1 |- (t|^s1) ~aacc (t'|^s1)).
    apply H3. apply set_remove_3. apply set_add_intro2; trivial.
    intro H8. inverts H8. symmetry in H6.
    apply Fc_neq_psub in H6. trivial.
   case (Constraint_eqdec (s~?t0) ((Fc E n t)~?(Fc E n t'))); intro H8.
-  inverts H8. apply c_equiv_Fc; trivial.
+  inverts H8. apply aacc_equiv_Fc; trivial.
   apply H3. apply set_remove_3.
   apply set_add_intro1; trivial.
   intro H9. inverts H9. apply H8; trivial.
@@ -257,7 +258,7 @@ Proof.
   apply H2. apply set_remove_3. 
   apply set_add_intro1. apply set_add_intro1; trivial.
   discriminate.
-  assert (Q: c1 |- <|s2,s3|>|^s1 ~c (<|t0,t1|>|^s1)).
+  assert (Q: c1 |- <|s2,s3|>|^s1 ~aacc (<|t0,t1|>|^s1)).
    simpl. apply equiv_Pr.
    apply H3. apply set_remove_3. 
    apply set_add_intro1. apply set_add_intro2; trivial.
@@ -268,7 +269,7 @@ Proof.
    intro H7. inverts H7. symmetry in H8.
    apply Fc_Pr_neq_psub_2 in H8. trivial.   
   case (Constraint_eqdec (s~?t) (Fc 2 n (<|s2,s3|>)~?(Fc 2 n (<|t0,t1|>)))); intro H7.
-  inverts H7. simpl in Q|-*. apply c_equiv_Fc; trivial. 
+  inverts H7. simpl in Q|-*. apply aacc_equiv_Fc; trivial. 
   apply H3. apply set_remove_3; trivial.
   apply set_add_intro1. apply set_add_intro1; trivial. 
   
@@ -277,7 +278,7 @@ Proof.
   apply H2. apply set_remove_3. 
   apply set_add_intro1. apply set_add_intro1; trivial.
   discriminate.
-  assert (Q: c1 |- <|s2,s3|>|^s1 ~c (<|t1,t0|>|^s1)).
+  assert (Q: c1 |- <|s2,s3|>|^s1 ~aacc (<|t1,t0|>|^s1)).
    simpl. apply equiv_Pr.
    apply H3. apply set_remove_3. 
    apply set_add_intro1. apply set_add_intro2; trivial.
@@ -288,16 +289,22 @@ Proof.
    intro H7. inverts H7. symmetry in H8.
    apply Fc_Pr_neq_psub_2 in H8. trivial.   
   case (Constraint_eqdec (s~?t) (Fc 2 n (<|s2,s3|>)~?(Fc 2 n (<|t0,t1|>)))); intro H7.
-  inverts H7. simpl in Q|-*. inverts Q. apply equiv_C2; trivial. left~.
+  inverts H7. simpl in Q|-*. inverts Q. apply equiv_C2; trivial.
+  right~. right~. left~.
   apply H3. apply set_remove_3; trivial.
-  apply set_add_intro1. apply set_add_intro1; trivial. 
+  apply set_add_intro1. apply set_add_intro1; trivial.
 
+  (* equ_sys_AC *)
 
+   (**) skip. (**)
+
+   (**) skip. (**)
+  
   (* equ_sys_Ab1 *)
-
+  
   apply H2. apply set_remove_3. apply set_add_intro1; trivial.
   discriminate.
-  assert (Q: c1 |- t|^s1 ~c (t'|^s1)).
+  assert (Q: c1 |- t|^s1 ~aacc (t'|^s1)).
    apply H3. apply set_remove_3. 
    apply set_add_intro2; trivial.
    intro H5. inverts H5. symmetry in H8.
@@ -307,12 +314,11 @@ Proof.
   apply H3. apply set_remove_3; trivial.
   apply set_add_intro1; trivial.
 
-
   (* equ_sys_Ab2 *) 
   apply H2. apply set_remove_3.
   apply set_add_intro1. apply set_add_intro1; trivial.
   discriminate.
-  assert (Q : c1 |- t|^s1 ~c (((|[(a, b)]|) @ t')|^s1)).
+  assert (Q : c1 |- t|^s1 ~aacc (((|[(a, b)]|) @ t')|^s1)).
    apply H3. apply set_remove_3.
    apply set_add_intro1. apply set_add_intro2; trivial. 
    intro H5. inverts H5. symmetry in H8.
@@ -326,7 +332,6 @@ Proof.
   rewrite <- subst_perm_comm; trivial.
   apply H3. apply set_remove_3; trivial.
   apply set_add_intro1. apply set_add_intro1; trivial.
-
 
   (* equ_sys_inst *)
 
@@ -425,7 +430,7 @@ Proof.
 
   case (Constraint_eqdec (s0~?t0) (t~?(pi|.X))); intro H7. inverts H7. 
 
-  apply c_equiv_unif_2 with (S1:=(s©(|[(X,(!pi) @ t)]|))©s2); trivial.
+  apply c_equiv_unif_2 with (S1:=(s©([(X,(!pi) @ t)]))©s2); trivial.
   rewrite 4 subst_comp_expand.
   rewrite not_In_dom. rewrite subst_var_eq.
   rewrite inter_dom_term_vars with (t:= t).
@@ -442,24 +447,24 @@ Proof.
   apply set_inter_intro. apply In_dom_eq_dom_rec; trivial.
   apply Q2. simpl. left~.
   
-  assert (Q : c1 |- (s0|^((|[(X,(!pi)@t)]|©s1))) ~c (t0|^((|[(X,(!pi)@t)]|©s1)))).
+  assert (Q : c1 |- (s0|^(([(X,(!pi)@t)]©s1))) ~c (t0|^(([(X,(!pi)@t)]©s1)))).
    rewrite 2 subst_comp_expand. apply H3.
    apply set_union_intro1.
-   replace ((s0 |^ (|[(X, (! pi) @ t)]|)) ~? (t0 |^ (|[(X, (! pi) @ t)]|)))
-     with (subs_Constraint (s0~?t0) (|[(X, (! pi) @ t)]|)).
+   replace ((s0 |^ ([(X, (! pi) @ t)])) ~? (t0 |^ ([(X, (! pi) @ t)])))
+     with (subs_Constraint (s0~?t0) ([(X, (! pi) @ t)])).
    apply set_In_subs_problem. apply set_remove_3; trivial. apply set_remove_3; trivial.
    simpl; trivial.
 
   clear H0 H1 H2 H3 H5 H6 H7 H12.
   rewrite 2 subst_comp_expand in Q.
-  apply c_equiv_unif_2 with (S1 := (s © (|[(X, (! pi) @ t)]|)) © s2); trivial.
-  apply c_equiv_unif_2 with (S2 := (s © (|[(X, (! pi) @ t)]|)) © s2) in Q. clear H4.
+  apply c_equiv_unif_2 with (S1 := (s © ([(X, (! pi) @ t)])) © s2); trivial.
+  apply c_equiv_unif_2 with (S2 := (s © ([(X, (! pi) @ t)])) © s2) in Q. clear H4.
   rewrite 4 subst_comp_expand in Q.  rewrite 4 subst_comp_expand.
   rewrite inter_dom_term_vars with (t:= s0).
   rewrite inter_dom_term_vars with (t:= t0).
   rewrite 2 inter_dom_term_vars with (S:= s) in Q.
-  rewrite inter_dom_term_vars with (t:= s0 |^ (|[(X, (! pi) @ t)]|)) in Q.
-  rewrite inter_dom_term_vars with (t:= t0 |^ (|[(X, (! pi) @ t)]|)) in Q. trivial.
+  rewrite inter_dom_term_vars with (t:= s0 |^ ([(X, (! pi) @ t)])) in Q.
+  rewrite inter_dom_term_vars with (t:= t0 |^ ([(X, (! pi) @ t)])) in Q. trivial.
 
   clear Q.
   apply set_inter_nil; intros. intro H0.
@@ -516,7 +521,7 @@ Proof.
   apply subst_sym; trivial.
 
   case H4; clear H4; intros s2 H4.
-  exists (|[(X,(!pi)@t)]| © s2).
+  exists ([(X,(!pi)@t)] © s2).
   apply subst_assoc; trivial.
 
   (* equ_sys_inv *)
@@ -598,14 +603,14 @@ Qed.
 
 
 
-(** Characterisation of successful leaves *)   
+(**  Characterisation of successful leaves *)   
 (**
 	The characterisation of successful leaves is 
 	the subject of this part of the theory.
 
 *)
 
-(** Freshness constraints in a leaf *)
+(**  Freshness constraints in a leaf *)
 (**
 	Be a leaf T = (C, S, P). If [a#?s] is in P and the 
 	equational part of P is a fixpoint problem, then 
@@ -623,10 +628,10 @@ Proof.
   destruct s; trivial.
   false. apply (H0 (C, S, P\(a #? (<<>>)))).
   apply fresh_unif_step; trivial. apply fresh_sys_Ut; trivial.
-  case (atom_eqdec a a0); intro H2. rewrite H2; trivial.
+  case (a atom_eqdec a0); intro H2. rewrite H2; trivial.
   false. apply (H0 (C, S, P\(a #? (%a0)))).
   apply fresh_unif_step; trivial. apply fresh_sys_At; trivial. 
-  case (atom_eqdec a a0); intro H2. rewrite H2 in *|-.
+  case (a atom_eqdec a0); intro H2. rewrite H2 in *|-.
   false. apply (H0 (C, S, P\(a0 #? ([a0]^s)))).
   apply fresh_unif_step; trivial. apply fresh_sys_Ab_1; trivial. 
   false. apply (H0 (C, S, (P|+(a#?s))\(a #? ([a0]^s)))).
@@ -684,16 +689,15 @@ Proof.
    rewrite H2 in *|-*; clear H2. 
    false. apply (H0 (C, S, P\(t~?t))). apply equ_sys_refl; trivial.                             
   (* s <> t *)
-   case (is_Su_dec s); case (is_Su_dec t); intros H3 H4.
-   apply is_Su_exists in H3. apply is_Su_exists in H4.
+   case (Su_eqdec s); case (Su_eqdec t); intros H3 H4.
    (* s and t are both suspensions *)  
     case H3; clear H3; intros pi' H3. case H3; clear H3; intros Y H3.
     case H4; clear H4; intros pi H4. case H4; clear H4; intros X H4.
     rewrite H3 in *|-*. rewrite H4 in *|-*. clear H3 H4.
-    case (var_eqdec Y X); intro H3. 
+    case (Y ==v X); intro H3. 
      (* the variables of the two suspesions are equal *)
       rewrite H3 in *|-*. clear H3.
-      case (perm_eqdec pi' ([])); intro H3.
+      case (Perm_eqdec pi' ([])); intro H3.
       (* pi' = [] *) 
        rewrite H3 in *|-*. clear H3. 
        right~. right~. right~. unfold fixpoint_equ. exists pi X.
@@ -709,57 +713,47 @@ Proof.
          right~. right~. left~. exists pi pi' X Y. repeat split~.
         (* Y is not in varSet *) 
          false.
-          apply (H0 (C,S©(|[(Y,(!pi')@(pi|.X))]|),
-                        ((P\(pi'|.Y~?(pi|.X))\((pi|.X)~?(pi'|.Y)))|^^(|[(Y,(!pi')@(pi|.X))]|))
-                          \cup(C/?(S©(|[(Y,(!pi')@(pi|.X))]|))))).
+          apply (H0 (C,S©([(Y,(!pi')@(pi|.X))]),
+                        ((P\(pi'|.Y~?(pi|.X))\((pi|.X)~?(pi'|.Y)))|^^([(Y,(!pi')@(pi|.X))]))
+                          \cup(C/?(S©([(Y,(!pi')@(pi|.X))]))))).
           apply equ_sys_inst; trivial. simpl. intro H6.
           apply set_union_elim in H6. destruct H6; try contradiction.
           simpl in H6. destruct H6; trivial. symmetry in H6. contradiction.
           right~.
        false.
-         apply (H0 (C,S©(|[(X,(!pi)@(pi'|.Y))]|),
-                        ((P\(pi|.X~?(pi'|.Y))\((pi'|.Y)~?(pi|.X)))|^^(|[(X,(!pi)@(pi'|.Y))]|))
-                          \cup(C/?(S©(|[(X,(!pi)@(pi'|.Y))]|))))).
+         apply (H0 (C,S©([(X,(!pi)@(pi'|.Y))]),
+                        ((P\(pi|.X~?(pi'|.Y))\((pi'|.Y)~?(pi|.X)))|^^([(X,(!pi)@(pi'|.Y))]))
+                          \cup(C/?(S©([(X,(!pi)@(pi'|.Y))]))))).
        apply equ_sys_inst; trivial. simpl. intro H5.
        apply set_union_elim in H5. destruct H5; try contradiction.
        simpl in H5. destruct H5; trivial. contradiction.
        left~.
    (* only s is a suspension *)
-    apply is_Su_exists in H4.
     case H4; clear H4; intros pi H4.    
     case H4; clear H4; intros X H4. rewrite H4 in *|-*. clear H4.
     case (set_In_dec var_eqdec X (set_union var_eqdec (term_vars t) varSet)); intro H4.
     (* X is in set_union _ (term_vars t) varSet *)
-     left~. split~. intros. intro H5. rewrite H5 in H3.
-     simpl in H3. apply H3. trivial.
-     right~. right~. right~. right~. right~.
+     left~. split~. right~. right~. right~. right~. right~.
      exists pi X. split~.
     (* X is not in set_union _ (term_vars t) varSet *) 
-     false. apply (H0 (C,S©(|[(X,(!pi)@t)]|),
-                        ((P\(pi|.X~?t)\(t~?(pi|.X)))|^^(|[(X,(!pi)@t)]|))
-                          \cup(C/?(S©(|[(X,(!pi)@t)]|))))).
+     false. apply (H0 (C,S©([(X,(!pi)@t)]),
+                        ((P\(pi|.X~?t)\(t~?(pi|.X)))|^^([(X,(!pi)@t)]))
+                          \cup(C/?(S©([(X,(!pi)@t)]))))).
      apply equ_sys_inst; trivial. left~.
    (* only t is a suspension *)  
-    apply is_Su_exists in H3.
     case H3; clear H3; intros pi H3.    
     case H3; clear H3; intros X H3. rewrite H3 in *|-*. clear H3.
     case (set_In_dec var_eqdec X (set_union var_eqdec (term_vars s) varSet)); intro H5.
     (* X is in set_union _ (term_vars s) varSet *)
-     right~. left~. split~. intros. intro H6. rewrite H6 in H4.
-     simpl in H4. apply H4. trivial.
-     exists pi X. split~.     
+     right~. left~. split~. exists pi X. split~.     
     (* X is not in set_union _ (term_vars s) varSet *)
-     false. apply (H0 (C,S©(|[(X,(!pi)@s)]|),
-                        ((P\(pi|.X~?s)\(s~?(pi|.X)))|^^(|[(X,(!pi)@s)]|))
-                          \cup(C/?(S©(|[(X,(!pi)@s)]|))))).
+     false. apply (H0 (C,S©([(X,(!pi)@s)]),
+                        ((P\(pi|.X~?s)\(s~?(pi|.X)))|^^([(X,(!pi)@s)]))
+                          \cup(C/?(S©([(X,(!pi)@s)]))))).
      apply equ_sys_inst; trivial. right~.
 
-   left~. split~. destruct s;
-     try intros; try intro H5;
-     try  rewrite H5 in H3; try simpl in H3; try apply H3; trivial.  
-     
   (* both s and t are not suspensions *)
-    destruct s.
+   left~. split~. destruct s.
    (* s = <<>> *)
     left~.
    (* s = %a *)
@@ -768,10 +762,10 @@ Proof.
     right~. right~. right~. left~. 
     exists a. exists s. split~; intros.
     intro H5. rewrite H5 in *|-*; clear H5.
-    case (atom_eqdec a b); intro H5. rewrite H5 in H1.
+    case (a atom_eqdec b); intro H5. rewrite H5 in H1.
     apply (H0 (C,S,P|+(s~?v)\(([b]^s)~?([b]^v)))).
     apply equ_sys_Ab1; trivial. 
-    apply (H0 (C,S,((P|+(s~?(|[(a,b)]|@v))|+(a#?v)))\(([a]^s)~?([b]^v)))).
+    apply (H0 (C,S,((P|+(s~?([(a,b)]@v))|+(a#?v)))\(([a]^s)~?([b]^v)))).
     apply equ_sys_Ab2; trivial. 
    (* s = <|s1, s2|> *)
     right~. right~. right~. right~. left~.
@@ -798,7 +792,7 @@ Proof.
     apply (H0 (C,S,(P|+(s~?v))\(Fc n n0 s ~?(Fc n n0 v)))).
     apply equ_sys_Fc; trivial.
 
-   false. simpl in H4. apply H4; trivial.
+   false. 
  
 Qed.
 

@@ -6,6 +6,10 @@
                Mauricio Ayala Rincon 
                Universidade de Brasilia (UnB) - Brazil
                Group of Theory of Computation
+
+ Description : This file contains the definition of the disagreements set,   
+               also called the differences set, ds(\pi, \pi'), and some
+               results about this definition.
  
  Last Modified On: Mar 26, 2018.
  ============================================================================
@@ -24,7 +28,7 @@ Definition In_ds (p0 p1 : Perm) (a : Atom) := p0 $ a <> p1 $ a.
 Lemma In_ds_dec : forall pi pi' a, 
                   (In_ds pi pi' a) \/ ~ (In_ds pi pi' a).  
 Proof.
- intros. case ((pi $ a) ==at (pi' $ a)); intro H.
+ intros. case (atom_eqdec (pi $ a) (pi' $ a)); intro H.
  right~. left~. 
 Qed.
 
@@ -32,7 +36,7 @@ Lemma not_In_ds : forall pi pi' a,
                   (~ In_ds pi pi' a) <-> pi $ a = pi' $ a. 
 Proof.
   split~; intros.
-  case ((pi $ a) ==at (pi' $ a)); intro; trivial.
+  case (atom_eqdec (pi $ a) (pi' $ a)); intro; trivial.
   false. apply H. unfold In_ds. trivial.
 Qed.
 
@@ -107,7 +111,7 @@ Proof.
 Qed.
   
 Lemma h_ds_cancel : forall s a pi pi', 
-~ In_ds ([]) ([s]) a -> In_ds (s::pi) pi' a -> In_ds pi pi' a.
+~ In_ds ([]) (|[s]|) a -> In_ds (s::pi) pi' a -> In_ds pi pi' a.
 Proof.
  intros. apply not_In_ds in H. intro. apply H0.
  rewrite swap_app_atom. rewrite swap_app_atom in H.
@@ -140,22 +144,22 @@ Proof.
 Qed.
 
 Lemma ds_perm_left : forall a b pi1 pi2, 
-In_ds (pi1) (pi2 ++ [(pi1 $ b, pi2 $ b)]) a -> In_ds pi1 pi2 a .
+In_ds (pi1) (pi2 ++ |[(pi1 $ b, pi2 $ b)]|) a -> In_ds pi1 pi2 a .
 Proof. 
  intros. intro. apply H. clear H. rewrite <- perm_comp_atom.  
- simpl in *|-*. case ((pi1 $ b) ==at (pi2 $ a)); intros; trivial.
+ simpl in *|-*. case (atom_eqdec (pi1 $ b) (pi2 $ a)); intros; trivial.
  rewrite <- e in H0. apply perm_eq_atom in H0. rewrite H0 in e.
- rewrite H0; trivial. case ((pi2 $ b) ==at (pi2 $ a)); trivial; intros.
+ rewrite H0; trivial. case (atom_eqdec (pi2 $ b) (pi2 $ a)); trivial; intros.
  apply perm_eq_atom. apply perm_eq_atom in e. rewrite e; trivial.
 Qed.
 
 Lemma ds_perm_right : forall a b pi1 pi2, 
 a <> b -> pi1 $ b <> pi2 $ a -> 
-In_ds pi1 pi2 a -> In_ds (pi1) (pi2 ++ [(pi1 $ b, pi2 $ b)]) a .
+In_ds pi1 pi2 a -> In_ds (pi1) (pi2 ++ |[(pi1 $ b, pi2 $ b)]|) a .
 Proof. 
  intros. unfold In_ds in *|-*. rewrite <- perm_comp_atom. simpl. 
- case ((pi1 $ b) ==at (pi2 $ a)); intros; try contradiction.
- case ((pi2 $ b) ==at (pi2 $ a)); intros; trivial.
+ case (atom_eqdec (pi1 $ b) (pi2 $ a)); intros; try contradiction.
+ case (atom_eqdec (pi2 $ b) (pi2 $ a)); intros; trivial.
  apply perm_eq_atom in e. symmetry in e. contradiction.
 Qed.
 
@@ -175,7 +179,7 @@ Qed.
 Fixpoint atom_in_set (a : Atom) (S : set Atom) : bool :=
   match S with 
     | [] => false
-    | a0 :: S0 => if a ==at a0
+    | a0 :: S0 => if atom_eqdec a a0
                   then true
                   else atom_in_set a S0
   end.
@@ -184,16 +188,16 @@ Fixpoint atom_in_set (a : Atom) (S : set Atom) : bool :=
 Fixpoint atoms_perm (pi : Perm) : set Atom :=
   match pi with
     | [] => []
-    | (a, b) :: pi0 => set_add Atom_eqdec a (set_add Atom_eqdec b (atoms_perm pi0))
+    | (a, b) :: pi0 => set_add atom_eqdec a (set_add atom_eqdec b (atoms_perm pi0))
   end .                                  
 
 
 Fixpoint dom_perm_aux (pi : Perm) (S : set Atom) : set Atom :=
   match S with
      | [] => []
-     | a :: S0 => if a ==at (pi $ a)
+     | a :: S0 => if atom_eqdec a (pi $ a)
                   then dom_perm_aux pi S0
-                  else set_add Atom_eqdec a (dom_perm_aux pi S0)
+                  else set_add atom_eqdec a (dom_perm_aux pi S0)
   end.
 
 Definition dom_perm (pi : Perm) : set Atom :=
@@ -211,9 +215,9 @@ Proof.
   intros. unfold In_ds in H.
   induction pi; simpl in *|-*. apply H; trivial.
   destruct a0. gen H.
-  case (a0 ==at a); intros H H0.
+  case (atom_eqdec a0 a); intros H H0.
   apply set_add_intro2. symmetry. trivial.
-  gen H0. case (a1 ==at a); intros H0 H1.
+  gen H0. case (atom_eqdec a1 a); intros H0 H1.
   apply set_add_intro1.
   apply set_add_intro2. symmetry; trivial.
   apply IHpi in H1.
@@ -228,7 +232,7 @@ Proof.
   intros. unfold In_ds in H. simpl in H.
   gen pi a. induction A; intros.
   simpl in H0. contradiction.
-  simpl in *|-*. case (a ==at (pi $ a)); intro H1.
+  simpl in *|-*. case (atom_eqdec a (pi $ a)); intro H1.
   destruct H0. rewrite H0 in H1; contradiction.
   apply IHA; trivial.
   destruct H0. apply set_add_intro2.
@@ -244,7 +248,7 @@ Proof.
   simpl. gen a pi.
   induction A; intros; simpl in *|-*.
   contradiction.
-  gen H. case (a ==at (pi $ a)); intros.
+  gen H. case (atom_eqdec a (pi $ a)); intros.
   apply IHA; trivial.
   apply set_add_elim in H. destruct H.
   rewrite H; trivial. apply IHA; trivial.
@@ -293,3 +297,60 @@ Proof.
   rewrite dom_perm_inv in H.
   apply In_dom_perm; trivial.
 Qed.  
+
+
+
+Fixpoint fresh_context (S : set Atom) (X : Var) :=
+  match S with
+    | [] => []
+    | a :: S0 => (a, X) :: fresh_context S0 X
+  end.
+
+Definition sub_context (C0 C1 : Context) :=
+  forall c, set_In c C0 -> set_In c C1.
+
+
+Fixpoint sub_context_rec (C C' : Context) : bool :=
+  match C with
+  | [] => true
+  | c :: C0 => if in_context_dec c C'
+               then sub_context_rec C0 C'
+               else false                 
+  end.
+
+
+Lemma sub_context_rec_correctness : forall C C',
+
+       sub_context C C' <->
+     
+       sub_context_rec C C' = true .
+
+Proof.
+  intros. unfold sub_context.
+  gen C'. induction C; intros.
+  split~; intros. simpl in H0. contradiction.
+  simpl. split~; intro H.
+  case (in_context_dec a C'); intro H0.
+  apply IHC; intros. apply H. right~.
+  assert (Q : In a C'). apply H. left~. contradiction.
+  intros. gen H.
+  case (in_context_dec a C'); intros H2 H1.
+  destruct H0. rewrite H in H2. trivial.
+  apply IHC; trivial.
+  inverts H1.
+Qed.
+
+
+Lemma fresh_context_mem : forall a X Y St,
+      set_In (a, Y) (fresh_context St X) <->
+      (X = Y /\ set_In a St).
+Proof.
+  intros. induction St;
+    simpl; split~; intros; try contradiction.
+  destruct H; trivial.
+  destruct H. inverts H. split~.
+  apply IHSt in H. destruct H. split~.
+  destruct H. rewrite H in *|-*. destruct H0.
+  rewrite H0. left~. right~. 
+  apply <- IHSt. split~.
+Qed.

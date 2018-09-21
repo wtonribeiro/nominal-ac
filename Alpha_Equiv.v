@@ -6,8 +6,11 @@
                Mauricio Ayala Rincon 
                Universidade de Brasilia (UnB) - Brazil
                Group of Theory of Computation
+
+ Description : This file contains the definition of alpha-equivalence 
+               and its soundness proof.
  
- Last Modified On: Feb 13, 2018.
+ Last Modified On: Set 17, 2018.
  ============================================================================
 *)
 
@@ -29,7 +32,7 @@ Inductive alpha_equiv : Context -> term -> term -> Prop :=
                                alpha_equiv C ([a]^t) ([a]^t')
 
  | alpha_equiv_Ab_2 : forall C a a' t t', 
-                a <> a' -> (alpha_equiv C t ([(a,a')] @ t')) -> C |- a # t' -> 
+                a <> a' -> (alpha_equiv C t (|[(a,a')]| @ t')) -> C |- a # t' -> 
                                     alpha_equiv C ([a]^t) ([a']^t')
 
  | alpha_equiv_Su   : forall (C: Context) p p' (X: Var), 
@@ -63,7 +66,7 @@ Qed.
 Lemma alpha_equiv_Ab_elim : forall C t t' a a', 
 C |- [a]^t ~alpha ([a']^t') -> 
 ((a = a' /\ C |- t ~alpha t') \/ 
-(a <> a' /\ ((C |- t ~alpha ([(a,a')] @ t')) /\ C |- a # t'))). 
+(a <> a' /\ ((C |- t ~alpha (|[(a,a')]| @ t')) /\ C |- a # t'))). 
 Proof.
  intros. inversion H.
  left~. right~. 
@@ -71,7 +74,7 @@ Qed.
 
 Lemma alpha_equiv_Ab_intro : forall C t t' a a', 
 ((a = a' /\ C |- t ~alpha t') \/ 
- (a <> a' /\ ((C |- t ~alpha ([(a,a')] @ t'))) /\ C |- a # t')) ->
+ (a <> a' /\ ((C |- t ~alpha (|[(a,a')]| @ t'))) /\ C |- a # t')) ->
 C |- [a]^t ~alpha ([a']^t') .
 Proof.
  intros. destruct H. 
@@ -91,6 +94,7 @@ Hint Resolve alpha_equiv_Ab_elim.
 Hint Resolve alpha_equiv_Ab_intro.
 Hint Resolve alpha_equiv_Su_elim.
 
+Require Import Omega.
 
 Lemma alpha_equiv_term_size : forall C s t,
       C |- s ~alpha t -> term_size s = term_size t.                               
@@ -131,7 +135,7 @@ Qed.
 Lemma ds_empty_fresh_2 : forall C pi pi' a t, (forall b, ~ In_ds pi pi' b) ->
                          C |-  a # (pi @ t) -> C |- a # (pi' @ t) .
 Proof.
-  intros. induction t; autorewrite with perm in *|-*; trivial.
+  intros. induction t; simpl in *|-*; trivial.
   replace (pi' $ a0) with (pi $ a0); trivial.
   apply not_In_ds. apply H; trivial.
   replace (pi' $ a0) with (pi $ a0). 
@@ -164,7 +168,7 @@ Lemma ds_empty_equiv_1 : forall C pi pi' s t, (forall b, ~ In_ds pi pi' b) ->
 Proof.
   intros. gen t.
   induction s; intros;
-   autorewrite with perm in *|-*; inverts H0; auto.
+   simpl in *|-*; inverts H0; auto.
   replace (pi' $ a) with (pi $ a). auto.
   apply not_In_ds; trivial.
   replace (pi' $ a) with (pi $ a). 
@@ -194,7 +198,7 @@ Lemma ds_empty_equiv_2 : forall C pi pi' s t, (forall b, ~ In_ds pi pi' b) ->
 Proof.
   intros. gen pi pi' s.
   induction t; intros;
-   autorewrite with perm in *|-*; inverts H0; auto.
+   simpl in *|-*; inverts H0; auto.
   replace (pi' $ a) with (pi $ a). auto.
   apply not_In_ds; trivial.
   replace (pi' $ a) with (pi $ a). 
@@ -203,7 +207,7 @@ Proof.
   replace (pi' $ a) with (pi $ a).
   apply alpha_equiv_Ab_2; trivial.
   rewrite perm_comp in *|-*.
-  apply IHt with (pi := pi ++ ([(a0, pi $ a)])); trivial; intros.
+  apply IHt with (pi := pi ++ (|[(a0, pi $ a)]|)); trivial; intros.
   rewrite ds_cancel; trivial.
   apply ds_empty_fresh_2 with (pi := pi); trivial.
   apply not_In_ds; trivial.
@@ -229,26 +233,25 @@ Lemma perm_inv_side : forall C pi s t,
                       C |- (pi @ s) ~alpha t -> C |- s ~alpha (!pi @ t).   
 Proof.
   intros. gen pi t.
-  induction s; intros;
-  autorewrite with perm in *|-*; inverts H;
-  autorewrite with perm in *|-*; auto.                         
+  induction s; intros pi t H; destruct t; simpl in *|-*; inverts H;
+  autorewrite with perm; auto.  
   apply alpha_equiv_Ab_2.
-  intro H0. apply H2. clear H2.
+  intro H. apply H5. 
   apply perm_inv_side_atom; trivial.
-  apply IHs in H4. rewrite perm_comp in *|-*.
-  gen H4. apply ds_empty_equiv_2; intro.
-  intro H0. apply H0. clear H0.
+  apply IHs in H6. rewrite perm_comp in *|-*.
+  gen H6. apply ds_empty_equiv_2; intro.
+  intro H. apply H. clear H.
   rewrite <- 2 perm_comp_atom. 
   apply perm_inv_side_atom.  
   rewrite rev_involutive.
   rewrite pi_comm_atom.  
-  gen_eq g : (!pi); intro H0.
+  gen_eq g : (!pi); intro H.
   replace pi with (!g).
   rewrite 2 perm_inv_atom; trivial.
-  rewrite H0. rewrite rev_involutive; trivial.
+  rewrite H. rewrite rev_involutive; trivial.
   apply fresh_lemma_2; trivial.
   apply alpha_equiv_Su; intros.
-  apply H4. apply ds_sym in H.
+  apply H2. apply ds_sym in H.
   apply ds_rev in H.
   rewrite rev_app_distr in H.
   rewrite rev_involutive in H.
@@ -262,9 +265,8 @@ Lemma perm_inv_side' : forall C pi s t,
 Proof.
   intros. split~; intro. apply perm_inv_side; trivial.
   gen pi s.
-  induction t; intros;
-  autorewrite with perm in *|-*; inverts H;
-  autorewrite with perm in *|-*; auto. 
+  induction t; intros pi s H; inverts H; simpl;
+    autorewrite with perm in *|-*; auto.
   gen_eq g : (!pi); intro H.
   replace pi with (!g).
   rewrite perm_inv_atom. apply alpha_equiv_At.
@@ -277,11 +279,11 @@ Proof.
   apply alpha_equiv_Ab_2.
   intro H0. apply H2. apply perm_inv_side_atom; trivial.
   rewrite perm_comp in H5.
-  replace ([(a0, (! pi) $ a)]) with (!([(a0, (! pi) $ a)])) in H5; simpl; trivial.
+  replace (|[(a0, (! pi) $ a)]|) with (!(|[(a0, (! pi) $ a)]|)) in H5; simpl; trivial.
   rewrite <- rev_app_distr in H5. apply IHt in H5.
-  replace ([(pi $ a0, a)]) with (!([(pi $ a0, a)])).
+  replace (|[(pi $ a0, a)]|) with (!(|[(pi $ a0, a)]|)).
   apply perm_inv_side. rewrite perm_comp.
-  apply ds_empty_equiv_1 with (pi := ([(a0, (! pi) $ a)]) ++ pi); trivial; intro.
+  apply ds_empty_equiv_1 with (pi := (|[(a0, (! pi) $ a)]|) ++ pi); trivial; intro.
   intro H0. apply H0. clear H0.
   rewrite <- 2 perm_comp_atom. 
   rewrite pi_comm_atom.
@@ -312,13 +314,13 @@ Proof.
  destruct H0. apply fresh_Ab_2; trivial. apply IHalpha_equiv; trivial.
  apply fresh_Ab_elim in H0. destruct H0. apply fresh_Ab_2.
  intro. apply H. rewrite <- H0. trivial. rewrite <- H0 in H2. trivial.
- destruct H0. case (a ==at a'); intros.
+ destruct H0. case (atom_eqdec a a'); intros.
  rewrite e. apply fresh_Ab_1. apply fresh_Ab_2; trivial.
- assert (Q : C |- a # (([(a0, a')]) @ t')).  apply IHalpha_equiv; trivial.
+ assert (Q : C |- a # ((|[(a0, a')]|) @ t')).  apply IHalpha_equiv; trivial.
  apply fresh_lemma_1 in Q. simpl rev in Q. rewrite swap_neither in Q; trivial.
  intro. apply H0. rewrite H4; trivial. intro. apply n. rewrite H4; trivial.
  apply fresh_Su. apply fresh_Su_elim in H0.
- case (((!p) $ a) ==at ((!p') $ a)); intros. rewrite <- e; trivial.
+ case (atom_eqdec ((!p) $ a) ((!p') $ a)); intros. rewrite <- e; trivial.
  apply H; intros. intro. apply n. gen_eq g : (!p'); intro. 
  replace p' with (!g) in H1. rewrite perm_inv_atom in H1. 
  replace ((!p) $ a) with ((!p) $ (p $ (g $ a))). rewrite perm_inv_atom. trivial.
@@ -363,13 +365,13 @@ Proof.
  (* Ab *)
   (* -> *)
  apply alpha_equiv_Ab_intro. 
- case ((pi $ a) ==at (pi' $ a)); intros. left~; split~; trivial.
+ case (atom_eqdec (pi $ a) (pi' $ a)); intros. left~; split~; trivial.
  apply IHt; intros. assert (Q : C |- a0 # Ab a t). apply H; trivial.
  apply fresh_Ab_elim in Q. destruct Q.  unfold In_ds in H0. 
  rewrite H1 in H0. contradiction. destruct H1; trivial. 
  right~. split~; trivial. split~. 
  rewrite perm_comp. apply IHt; intros. unfold In_ds in H0.
- case (a0 ==at a); intros. apply False_ind. apply H0.
+ case (atom_eqdec a0 a); intros. apply False_ind. apply H0.
  rewrite e. rewrite <- perm_comp_atom. rewrite swap_right; trivial.
  apply ds_perm_left in H0. assert (Q : C |- a0 # Ab a t). apply H; trivial.
  apply fresh_Ab_elim in Q. destruct Q. contradiction.  
@@ -386,15 +388,15 @@ Proof.
  destruct H0. apply fresh_lemma_2 in H1. rewrite perm_inv_inv in H1. trivial.
   (* <- *)
  apply alpha_equiv_Ab_elim in H. destruct H.
- destruct H. case (a0 ==at a); intros. rewrite e in H0. unfold In_ds in H0. contradiction. 
+ destruct H. case (atom_eqdec a0 a); intros. rewrite e in H0. unfold In_ds in H0. contradiction. 
  apply fresh_Ab_2; trivial. apply (IHt pi'); trivial.
  destruct H. destruct H1.
- case (a0 ==at a); intros. rewrite e. apply fresh_Ab_1. 
+ case (atom_eqdec a0 a); intros. rewrite e. apply fresh_Ab_1. 
  apply fresh_Ab_2; trivial.
- case ((pi $ a) ==at (pi' $ a0)); intro. 
+ case (atom_eqdec (pi $ a) (pi' $ a0)); intro. 
  rewrite e in H2. apply fresh_lemma_1 in H2. rewrite perm_inv_atom in H2. trivial.
  rewrite perm_comp in H1. 
- apply IHt with (pi' := pi' ++ ([(pi $ a, pi' $ a)])); trivial. 
+ apply IHt with (pi' := pi' ++ (|[(pi $ a, pi' $ a)]|)); trivial. 
  apply ds_perm_right; trivial. 
  (* Pr *)
  apply alpha_equiv_Pr; [apply IHt1 | apply IHt2]; intros; 
@@ -440,9 +442,9 @@ Proof.
  intros. induction H; auto; trivial. 
  apply alpha_equiv_Ab_2.
  intro H2. apply H. clear H. symmetry; trivial.
- replace ([(a', a)]) with (!([(a', a)])). 
+ replace (|[(a', a)]|) with (!(|[(a', a)]|)). 
  apply perm_inv_side.  
- apply ds_empty_equiv_1 with (pi := [(a, a')]); trivial.
+ apply ds_empty_equiv_1 with (pi := |[(a, a')]|); trivial.
  intro c. apply not_In_ds. apply swap_comm.
  simpl; trivial.
  apply perm_inv_side in IHalpha_equiv. simpl in IHalpha_equiv.
@@ -477,17 +479,17 @@ Proof.
   apply H with (m:=term_size t) (t2:=t'); try omega; trivial.
   (* a <> b = c *)
   apply alpha_equiv_Ab_2; trivial. simpl in H0.
-  apply H with (m:=term_size t) (t2:=([(a, a')]) @ t'); try omega; trivial.
+  apply H with (m:=term_size t) (t2:=(|[(a, a')]|) @ t'); try omega; trivial.
   apply alpha_equiv_equivariance; trivial.
   apply alpha_equiv_fresh with (a:=a) in H9; trivial.
   (* a <> b <> c *) 
-  simpl in H0. case (a ==at a'0); intro H1.
+  simpl in H0. case (atom_eqdec a a'0); intro H1.
    (* a = c *)
    rewrite <- H1 in *|-*. clear H1 H7.
    apply alpha_equiv_Ab_1. 
-   apply H with (m:=term_size t) (t2:=([(a, a')]) @ t'); try omega; trivial.  
+   apply H with (m:=term_size t) (t2:=(|[(a, a')]|) @ t'); try omega; trivial.  
    apply perm_inv_side'. simpl.   
-   apply ds_empty_equiv_2 with (pi := [(a', a)]); trivial.
+   apply ds_empty_equiv_2 with (pi := |[(a', a)]|); trivial.
    intro c. apply not_In_ds. apply swap_comm.
    (* a <> c *)
    assert (Q : C |- a # t'0).
@@ -497,17 +499,17 @@ Proof.
     intro H2. apply H3. symmetry. trivial.
     intro H2. apply H1. symmetry. trivial.      
    apply alpha_equiv_Ab_2; trivial.
-   apply H with (m:=term_size t) (t2:=([(a, a')]) @ t'); try omega; trivial.  
+   apply H with (m:=term_size t) (t2:=(|[(a, a')]|) @ t'); try omega; trivial.  
    apply perm_inv_side'. simpl. rewrite perm_comp.
-   apply H with (m:=term_size t') (t2:=([(a', a'0)]) @ t'0); trivial.
+   apply H with (m:=term_size t') (t2:=(|[(a', a'0)]|) @ t'0); trivial.
    apply alpha_equiv_term_size in H4. rewrite perm_term_size in H4. omega.
    apply alpha_equiv_pi. intros b H2.
    unfold In_ds in H2. rewrite <- perm_comp_atom in H2.
    rewrite pi_comm_atom in H2.
    rewrite swap_left in H2. rewrite swap_neither with (c:=a'0) in H2; trivial.
    apply perm_diff_atom in H2.
-   case (a ==at b); intro H10. rewrite <- H10; trivial.
-   case (a' ==at b); intro H12. rewrite <- H12; trivial.   
+   case (atom_eqdec a b); intro H10. rewrite <- H10; trivial.
+   case (atom_eqdec a' b); intro H12. rewrite <- H12; trivial.   
    rewrite swap_neither in H2; trivial. false.
  (* Su *)
  inversion H0. apply alpha_equiv_Su; intros.
@@ -519,7 +521,7 @@ Qed.
 (** Corollaries *)
 
 Corollary alpha_equiv_pi_comm : forall C a b t pi, 
-C |- pi @ ([(a,b)] @ t) ~alpha ([(pi $ a, pi $ b)] @ (pi @ t)) . 
+C |- pi @ (|[(a,b)]| @ t) ~alpha (|[(pi $ a, pi $ b)]| @ (pi @ t)) . 
 Proof.
   intros. rewrite 2 perm_comp.
   apply alpha_equiv_pi; intros c H.
@@ -537,13 +539,13 @@ Proof.
 Qed.  
 
 Corollary alpha_equiv_swap_neither : forall C a a' t, 
-C |- a # t -> C |- a' # t -> C |- ([(a, a')]) @ t ~alpha t.
+C |- a # t -> C |- a' # t -> C |- (|[(a, a')]|) @ t ~alpha t.
 Proof.
  intros. replace t with ([] @ t).
  rewrite perm_comp. simpl. apply alpha_equiv_pi; intros.
  unfold In_ds in H1. 
- case (a ==at a0); intro H2. rewrite <- H2; trivial.
- case (a' ==at a0); intro H3. rewrite <- H3; trivial.
+ case (atom_eqdec a a0); intro H2. rewrite <- H2; trivial.
+ case (atom_eqdec a' a0); intro H3. rewrite <- H3; trivial.
  rewrite swap_neither in H1; trivial. simpl in H1. false.
  autorewrite with perm; trivial.
 Qed.

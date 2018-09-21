@@ -1,14 +1,14 @@
 (**
  ============================================================================
  Project     : Nominal A, AC and C Unification
- File        : C_Unif.v
+ File        : AACC_Unif.v
  Authors     : Washington Lu\'is R. de Carvalho Segundo and
                Mauricio Ayala Rinc\'on 
                Universidade de Bras\'ilia (UnB) - Brazil
                Group of Theory of Computation
  
  Description : This file is dedicated to the definition of 
-               the C-unification algorithm and somes basics
+               the AACC-unification algorithm and somes basics
                results over this definition.
 
 
@@ -29,9 +29,11 @@ Definition sol_c (Sl : Context * Subst) (T : Triple) :=
   let W := (snd Sl) in
 (* 1 *) ( fresh_env C D W ) /\
 (* 2 *) ( forall a t, set_In (a#?t) P -> D |- a # (t|^W) ) /\
-(* 3 *) ( forall s t, set_In (s~?t) P -> D |- (s|^W) ~c (t|^W) ) /\
+(* 3 *) ( forall s t, set_In (s~?t) P -> D |- (s|^W) ~aacc (t|^W) ) /\
 (* 4 *) ( exists S'', D |- (S©S'') ~:c W ) .
                                     
+(***** TODO: To correct the last item  with AACC-equivalence *****)
+
 
 (** The fresh\_sys relation *)
 
@@ -66,12 +68,6 @@ Inductive fresh_sys : Triple -> Triple -> Prop :=
                                                 (C,S,(((P|+(a#?s))|+(a#?t))\(a#?(<|s,t|>))))   
 .
 
-(** Definition of A_equivalence between two terms w.r.t. the function symbol f^E_n *)
-
-Definition A_equiv (s t : term) (E n : nat) :=
-                    term_size s = term_size t /\
-                    (forall i, i <= TPlength s E n -> TPith i s E n = TPith i t E n) . 
-
 
 
 (** The equ\_sys relation *)
@@ -88,27 +84,50 @@ Inductive equ_sys (varSet : set Var) : Triple -> Triple -> Prop :=
                                   (C,S,(((P|+(s0~?t0))|+(s1~?t1))\((<|s0,s1|>)~?(<|t0,t1|>))))
                            
                           
- | equ_sys_Fc : forall C S P E n t t', (set_In ((Fc E n t)~?(Fc E n t')) P) -> E <> 2 ->
-                                                                                      
+ | equ_sys_Fc : forall C S P E n t t', (set_In ((Fc E n t)~?(Fc E n t')) P) ->
+                                       ~ set_In E (1::|[2]|) ->
                                         equ_sys varSet (C,S,P)
                                                        (C,S,(P|+(t~?t'))\((Fc E n t)~?(Fc E n t'))) 
 
 
- | equ_sys_C1 : forall C S P n s0 s1 t0 t1,    
+ | equ_sys_C1 : forall C S P n s0 s1 t0 t1,
                   
    (set_In ((Fc 2 n (<|s0,s1|>))~?(Fc 2 n (<|t0,t1|>)))) P ->
                   
      equ_sys varSet (C,S,P)
-                    (C,S,((P|+(s0~?t0))|+(s1~?t1))\(Fc 2 n (<|s0,s1|>)~?(Fc 2 n (<|t0,t1|>))))
+             (C,S,((P|+(s0~?t0))|+(s1~?t1))\
+             (Fc 2 n (<|s0,s1|>)~?(Fc 2 n (<|t0,t1|>))))
 
 
- | equ_sys_C2 : forall C S P n s0 s1 t0 t1,    
+ | equ_sys_C2 : forall C S P n s0 s1 t0 t1,
+ 
                   
    (set_In ((Fc 2 n (<|s0,s1|>))~?(Fc 2 n (<|t0,t1|>)))) P ->
                   
      equ_sys varSet (C,S,P)
-                    (C,S,((P|+(s0~?t1))|+(s1~?t0))\(Fc 2 n (<|s0,s1|>)~?(Fc 2 n (<|t0,t1|>))))
+             (C,S,((P|+(s0~?t1))|+(s1~?t0))\
+             (Fc 2 n (<|s0,s1|>)~?(Fc 2 n (<|t0,t1|>))))
                        
+                    
+
+ | equ_sys_AC : forall C S P n s t L0 L0' L1 L1',
+  
+     
+     set_In (Fc 1 n s ~? Fc 1 n t) P ->
+
+     valid_col L0 s 1 n -> valid_col L1 t 1 n ->
+
+     valid_assoc L0' s 1 n -> valid_assoc L1' t 1 n ->
+
+     length L0 = TPlength s 1 n ->
+
+     length L1 = TPlength t 1 n ->
+                                          
+     equ_sys varSet (C, S, P)
+                    (C, S, P|+((Args_col L0 L0' s 1 n)~?(Args_col L1 L1' t 1 n))\
+                            (Fc 1 n s~?(Fc 1 n t)))
+
+
                     
 
  | equ_sys_Ab1 : forall C S P a t t', (set_In (([a]^t)~?([a]^t')) P) ->
@@ -118,7 +137,7 @@ Inductive equ_sys (varSet : set Var) : Triple -> Triple -> Prop :=
  | equ_sys_Ab2 : forall C S P a b t t',
                     a <> b -> (set_In (([a]^t)~?([b]^t')) P) ->
                     equ_sys varSet (C,S,P)
-                                   (C,S,((P|+(t~?(((a,b)::nil)@t'))|+(a#?t')))\(([a]^t)~?([b]^t')))
+                                   (C,S,((P|+(t~?(|[(a,b)]|@t'))|+(a#?t')))\(([a]^t)~?([b]^t')))
 
  | equ_sys_inst : forall C S S' P pi X t,
 
@@ -126,10 +145,10 @@ Inductive equ_sys (varSet : set Var) : Triple -> Triple -> Prop :=
 
                     ((set_In (pi|.X~?t) P) \/ (set_In (t~?(pi|.X)) P)) ->
 
-                    S' = S©((X,(!pi)@t)::nil) ->
+                    S' = S©(|[(X,(!pi)@t)]|) ->
 
                     equ_sys varSet (C,S,P)
-                                   (C,S',((P\(pi|.X~?t)\(t~?(pi|.X)))|^^((X,(!pi)@t)::nil))\cup(C/?S'))
+                                   (C,S',((P\(pi|.X~?t)\(t~?(pi|.X)))|^^(|[(X,(!pi)@t)]|))\cup(C/?S'))
                                                           
  | equ_sys_inv : forall C S P pi pi' X,
                    pi <> pi' -> pi' <> [] -> (set_In ((pi|.X)~?(pi'|.X)) P) ->
@@ -185,7 +204,7 @@ Definition leaf (varSet : set Var) (T : Triple) := NF _ (unif_step varSet) T .
 
 (**
 	A unifcation path from T to T' (unif_path T T') is zero
-	or more steps of unif_step from T and T'  
+	or more steps of unif_step from T and T' 
 	where T' is a normal form (w.r.t. unif_path), ie, a leaf.
 *) 
 
@@ -214,9 +233,13 @@ Proof.
     try apply H in H3; try destruct H3;
     try destruct H0; try destruct H0; try inverts H1.
   inverts H4. false.
+
+  (**) skip. (**)
+
   apply equ_proj_set_In_eq in H8.
   apply H in H8. destruct H8.
   destruct H0. destruct H0. inverts H1.
+
   destruct H8; apply equ_proj_set_In_eq in H0;  apply H in H0;
   destruct H0; destruct H0; destruct H0; inverts H1;
   apply H5; simpl; apply set_union_intro1; left~.
@@ -224,6 +247,7 @@ Proof.
   destruct H9. destruct H0. destruct H0.  
   inverts H1. apply H8; trivial.
 Qed.
+
 
 (** 
 	The fixpoint equations are preserved by unif_step 
@@ -321,6 +345,9 @@ Proof.
   simpl. apply set_add_intro1. apply set_add_intro1.
   apply set_union_intro2. apply In_subterms.  
   apply H0; trivial.
+
+  (**) skip. (**)
+
   apply set_add_elim in H1. destruct H1. inverts H.
   apply H0 in H3. destruct H3. split~.
   apply Proper_subterm with (t :=[a]^t0); trivial.  
@@ -466,7 +493,7 @@ Proof.
   generalize H; intro H'.
   apply set_inter_nil with (a:=Y) in H;
   apply H; destruct H0; simpl in *|-*;
-      repeat apply Problem_vars_remove in H3; simpl; trivial. 
+      repeat apply Problem_vars_remove in H3; simpl; trivial.
        
   apply set_inter_intro; trivial.
   
@@ -521,6 +548,10 @@ Proof.
   apply set_union_intro1. apply set_union_intro2; trivial.
   apply set_union_intro2. apply set_union_intro1; trivial.
 
+  
+  (**) skip. (**)
+
+  
   apply set_inter_intro; trivial.
   apply Problem_vars_add in H3.
   apply set_union_elim in H3. destruct H3; trivial.
@@ -564,7 +595,7 @@ Proof.
   apply set_add_intro1; trivial.
   apply subs_fresh_vars_im in H3.
   assert (Q:  set_inter var_eqdec (dom_rec S') (im_vars S') = []).
-   replace S' with (snd (fst (C,S',((P\(pi|.X~?t)\(t~?(pi|.X)))|^^((X,(!pi)@t)::nil))\cup(C/?S')))).
+   replace S' with (snd (fst (C,S',((P\(pi|.X~?t)\(t~?(pi|.X)))|^^(|[(X,(!pi)@t)]|))\cup(C/?S')))).
    apply equ_valid_preservation_aux with (T := (C,S,P)) (varSet := varSet).
    unfold valid_triple. simpl. split~.
    apply equ_sys_inst; trivial.
