@@ -4,8 +4,8 @@
 
 **File** | Short description
 ------------ | -------------
-**[Impl_Equiv/](https://github.com/wtonribeiro/nominal-ac/tree/master/Impl-Equiv)** | Folder with the implementation (in OCaml) of the naive nominal A, C and AC-checking algorithm
-**[Impl_Unif/](https://github.com/wtonribeiro/nominal-ac/tree/master/Impl-Unif)** | Folder with the implementation (in OCaml) of the nominal C-unification algorithm
+**[Impl_Equiv/](https://github.com/wtonribeiro/nominal-ac/tree/master/Impl-Equiv)** | Folder with the implementations extracted from the specification of the naive and of the improved nominal A, C and AC-checking algorithms (OCaml code)
+**[Impl_Unif/](https://github.com/wtonribeiro/nominal-ac/tree/master/Impl-Unif)** | Folder with the implementation of the nominal C-unification algorithm (OCaml code)
 **C_Matching**      | Specification and formalisation of the properties of termination, soundness and completeness of the C-matching algorithm
 **C_Unif_Completeness.v**  | Formalisation of the completeness of  $\Rightarrow_{\#}$ and $\Rightarrow_{\approx}$
 **C_Unif_Soundness.v**     | Formalisation of the soundness of $\Rightarrow_{\#}$ and $\Rightarrow_{\approx}$ and successful leaves characterisation of the derivation tree
