@@ -1,8 +1,6 @@
 library(ggplot2)
 library(dplyr)
 
-setwd('/home/wlr/Nominal-AC/Impl/Tests/test15')
-
 
 experiments <- read.csv("results.csv")
 
