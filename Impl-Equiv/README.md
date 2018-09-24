@@ -64,29 +64,29 @@
 8) At the Utop prompt is possible to test some inputs 
    for each equality checking implementation. Follows some examples:
 
-   utop # equiv Nil Ut Ut;;
-   - : Basics.bool = False
+   utop # equiv_rec Nil Ut Ut;;
+   - : Adjusted_Generated_Equiv.bool = True
 
-   utop # eff_equiv Nil eq00 eq01;;
-   - : bool = false
+   utop # equiv_rec Nil (At 0) (At 0);;
+   - : Adjusted_Generated_Equiv.bool = True
 
-   utop # equiv_rec Nil eq10 eq11;;
-   - : Basics.bool = True
+   utop # equiv_rec Nil (Ab (0, At 0)) (Ab (1, At 1));;
+   - : Adjusted_Generated_Equiv.bool = True
 
-   utop # eff_equiv Nil eq10 eq11;;
-   - : bool = true
+   utop # equiv_rec Nil (Ab (0, At 0)) (Ab (1, At 0));;
+   - : Adjusted_Generated_Equiv.bool = False
 
-   utop # equiv_rec Nil eq50 eq51;;
-   - : Basics.bool = True
+   utop # improved_equiv [] Ut Ut;;
+   - : Adjusted_Generated_Equiv.bool = True
 
-   utop # eff_equiv Nil eq50 eq51;;
-   - : bool = true
+   utop # improved_equiv [] (F_At 0) (F_At 0);;
+   - : Adjusted_Generated_Equiv.bool = True
 
-   utop # equiv_rec eq70 eq71 eq72;;
-   - : Basics.bool = True
+   utop # improved_equiv [] (F_Ab (0, F_At 0)) (F_Ab (1, F_At 1));;
+   - : Adjusted_Generated_Equiv.bool = True
 
-   utop # eff_equiv eq70 eq71 eq72;;
-   - : bool = true
+   utop # improved_equiv [] (F_Ab (0, F_At 0)) (F_Ab (1, F_At 0));;
+   - : Adjusted_Generated_Equiv.bool = False
 
 
 
