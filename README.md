@@ -7,7 +7,7 @@
 **[Impl_Equiv/](https://github.com/wtonribeiro/nominal-ac/tree/master/Impl-Equiv)** | Folder with the implementations of the naive (extracted from the specification) and of the improved nominal A, C and AC-checking algorithms (OCaml code)
 **[Impl_Unif/](https://github.com/wtonribeiro/nominal-ac/tree/master/Impl-Unif)** | Folder with the implementation of the nominal C-unification algorithm (OCaml code)
 **LibTactics.v**    | Library of tactics given by http://www.chargueraud.org/softs/tlc/
-**Basics.v**        |  
+**Basics.v**        | Necessary basic results in arithmetic and lists that are not in the standard libraries of Coq
 **Terms.v**         | Syntax definition of nominal terms and some properties about
 **Perm.v**          | Permutation action definition and its properties
 **Disgr.v**         | Disagreement set definition and its properties
@@ -15,7 +15,7 @@
 **Fresh.v**         | Deftinition of the freshness relation and some related basic properties
 **Alpha_Equiv.v**   | Definition of the nominal alpha_equivalence and the formalisation of its soundness
 **Equiv.v**         | Extentions of nominal alpha_equivalence in a parametrised way
-**AACC_Equiv_rec**  |
+**AACC_Equiv_rec**  | Recursive versions of the inductive definitions fresh and equiv from files Fresh.v and Equiv.v and OCaml code extraction
 **Equiv_Tuples.v**  | Interactions between the extentions of nominal alpha_equivalence and tuples
 **AACC_Equiv.v**    | Definitions of the nominal A+AC+C, A, AC and C-equivalences and the formalisation of their soundness
 **C_Equiv.v**       | Specific Lemmas about nominal C-equivalence
