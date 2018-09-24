@@ -55,8 +55,6 @@
 7) At the Utop prompt, execute:
 
    utop # #load "Basics.cmo";;
-
-   utop # #load "Original_Generated_Equiv.cmo";;
    
    utop # #load "Adjusted_Generated_Equiv.cmo";;
 
@@ -66,7 +64,7 @@
 8) At the Utop prompt is possible to test some inputs 
    for each equality checking implementation. Follows some examples:
 
-   utop # equiv Nil eq00 eq01;;
+   utop # equiv Nil Ut Ut;;
    - : Basics.bool = False
 
    utop # eff_equiv Nil eq00 eq01;;
