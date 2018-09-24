@@ -55,16 +55,17 @@
 
 7) At the Utop prompt, execute:
 
-   utop # #load "Basic.cmo";;
+   utop # #load "Basics.cmo";;
 
-   utop # #load "Generated_Equiv.cmo";;
+   utop # #load "Original_Generated_Equiv.cmo";;
+   
+   utop # #load "Adjusted_Generated_Equiv.cmo";;
 
    utop # #load "Improved_Equiv.cmo";;
 
-   utop # #use "Tests.ml";;
 
-
-8) At the Utop prompt run an especific test. Examples:
+8) At the Utop prompt is possible to test some inputs 
+   for each equality checking implementation. Examples:
 
    utop # equiv_rec Nil eq00 eq01;;
    - : Basics.bool = False
