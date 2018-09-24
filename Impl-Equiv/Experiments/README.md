@@ -5,7 +5,10 @@
 ------------ | -------------
 **results.csv**  |
 **results.r** |
-**sets.tar.gz** |
+**alpha.txt.tar.gz** |
+**alpha_A.txt.tar.gz** |
+**alpha_A_C.txt.tar.gz** |
+**alpha_A_C_AC.txt.tar.gz** |
 **alpha.png** |
 **alpha_A.png** |
 **alpha_A_C.png** |
