@@ -76,17 +76,17 @@
    utop # equiv_rec Nil (Ab (0, At 0)) (Ab (1, At 0));;
    - : Adjusted_Generated_Equiv.bool = False
 
-   utop # improved_equiv [] Ut Ut;;
-   - : Adjusted_Generated_Equiv.bool = True
+   utop # impr_equiv [] F_Ut F_Ut;;
+   - : Improved_Generated_Equiv.bool = True
 
-   utop # improved_equiv [] (F_At 0) (F_At 0);;
-   - : Adjusted_Generated_Equiv.bool = True
+   utop # impr_equiv [] (F_At 0) (F_At 0);;
+   - : Improved_Generated_Equiv.bool = True
 
-   utop # improved_equiv [] (F_Ab (0, F_At 0)) (F_Ab (1, F_At 1));;
-   - : Adjusted_Generated_Equiv.bool = True
+   utop # impr_equiv [] (F_Ab (0, F_At 0)) (F_Ab (1, F_At 1));;
+   - : Improved_Generated_Equiv.bool = True
 
-   utop # improved_equiv [] (F_Ab (0, F_At 0)) (F_Ab (1, F_At 0));;
-   - : Adjusted_Generated_Equiv.bool = False
+   utop # impr_equiv [] (F_Ab (0, F_At 0)) (F_Ab (1, F_At 0));;
+   - : Improved_Generated_Equiv.bool = False
 
 
 
