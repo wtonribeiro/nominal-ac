@@ -1,4 +1,4 @@
-**Experiments with the implementations of the nominal A, C and AC-checking algorithms**
+**Experiments with the implementations of the nominal A, C and AC-checking algorithm**
 
 
 **File** | Short description
