@@ -55,13 +55,11 @@
 
 7) At the Utop prompt, execute:
 
-   utop # #load "Basics.cmo";;
+   utop # #load "Basic.cmo";;
 
-   utop # #load "Naive_Equiv.cmo";;
+   utop # #load "Generated_Equiv.cmo";;
 
-   utop # #load "Perfect_Matching.cmo";;
-
-   utop # #load "Efficient_Equiv.cmo";;
+   utop # #load "Improved_Equiv.cmo";;
 
    utop # #use "Tests.ml";;
 
