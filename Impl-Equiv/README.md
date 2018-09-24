@@ -64,9 +64,9 @@
 
 
 8) At the Utop prompt is possible to test some inputs 
-   for each equality checking implementation. Examples:
+   for each equality checking implementation. Follows some examples:
 
-   utop # equiv_rec Nil eq00 eq01;;
+   utop # equiv Nil eq00 eq01;;
    - : Basics.bool = False
 
    utop # eff_equiv Nil eq00 eq01;;
