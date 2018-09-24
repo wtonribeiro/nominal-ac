@@ -28,8 +28,10 @@
 3) Install ocamlgraph library (http://ocamlgraph.lri.fr/):
 
    $ opam update
+   
    $ opam install ocamlgraph
-   $ eval `opam config env`
+   
+   $ eval \`opam config env\`
   
 
 4) Being inside folder Impl/ , give permition of execution of build.sh:
@@ -45,8 +47,10 @@
 6) Install Utop (https://ocaml.org/docs/install.html):
 
    $ opam update
+   
    $ opam install utop
-   $ eval `opam config env`
+   
+   $ eval \`opam config env\`
 
 
 7) At the Utop prompt, execute:
