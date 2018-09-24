@@ -56,13 +56,22 @@
 
    utop # #load "Basics.cmo";;
    
+   utop # open Basics;;
+   
    utop # #load "Adjusted_Generated_Equiv.cmo";;
+   
+   utop # open Adjusted_Generated_Equiv;;
 
    utop # #load "Improved_Equiv.cmo";;
+   
+   utop # open Improved_Equiv;;
 
 
 8) At the Utop prompt is possible to test some inputs 
    for each equality checking implementation. Follows some examples:
+
+
+   a) For Adjusted_Generated_Equiv:
 
    utop # equiv_rec Nil Ut Ut;;
    - : Adjusted_Generated_Equiv.bool = True
@@ -75,6 +84,9 @@
 
    utop # equiv_rec Nil (Ab (0, At 0)) (Ab (1, At 0));;
    - : Adjusted_Generated_Equiv.bool = False
+   
+   
+   b) For Improved_Equiv:
 
    utop # impr_equiv [] F_Ut F_Ut;;
    - : Improved_Generated_Equiv.bool = True
