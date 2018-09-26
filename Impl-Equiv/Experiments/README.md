@@ -13,7 +13,3 @@
 **alpha_A.png** | Plots of the syntactic and A function symbols set
 **alpha_A_C.png** | Plots of the syntactic, A and C function symbols set
 **alpha_A_C_AC.png** | Plots of the syntactic, A, C and AC function symbols set
-**alpha_max.png** | Plots of the syntactic function symbols set just for maximum values
-**alpha_A_max.png** | Plots of the syntactic and A function symbols set just for maximum values
-**alpha_A_C_max.png** | Plots of the syntactic, A and C function symbols set just for maximum values
-**alpha_A_C_AC_max.png** | Plots of the syntactic, A, C and AC function symbols set just for maximum values
