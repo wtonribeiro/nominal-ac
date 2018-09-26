@@ -38,20 +38,3 @@ alpha_plot
 alpha_A_plot
 alpha_A_C_plot
 alpha_A_C_AC_plot
-
-
-alpha_max_plot = ggplot(alpha_max, aes(x = size, y = max)) + point_style +
-  plot_theme + facet_wrap(~ algorithm, scales = "free") + plot_stat + ggtitle("Alpha") + x_label + y_label
-alpha_A_max_plot = ggplot(alpha_A_max, aes(x = size, y = max)) + point_style +
-  plot_theme + facet_wrap(~ algorithm, scales = "free") + plot_stat + ggtitle("Alpha and A") + x_label + y_label
-alpha_A_C_max_plot = ggplot(alpha_A_C_max, aes(x = size, y = max)) + point_style +
-  plot_theme + facet_wrap(~ algorithm, scales = "free") + plot_stat + ggtitle("Alpha, A and C") + x_label + y_label
-alpha_A_C_AC_max_plot = ggplot(alpha_A_C_AC_max, aes(x = size, y = max)) + point_style +
-  plot_theme + facet_wrap(~ algorithm, scales = "free") + plot_stat + ggtitle("Alpha, A, C and AC") + x_label + y_label
-
-
-alpha_max_plot
-alpha_A_max_plot
-alpha_A_C_max_plot
-alpha_A_C_AC_max_plot
-
