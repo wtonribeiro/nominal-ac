@@ -8,7 +8,7 @@
 **alpha.txt.tar.gz** | Inputs with syntactic function symbols
 **alpha_A.txt.tar.gz** | Inputs with syntactic and A function symbols
 **alpha_A_C.txt.tar.gz** | Inputs with syntactic, A and C function symbols
-**alpha_A_C_AC.txt.tar.gz** | Inputs with syntactic, A, and AC function symbols
+**alpha_A_C_AC.txt.tar.gz** | Inputs with syntactic, A, C and AC function symbols
 **alpha.png** | Plots of the syntactic function symbols set
 **alpha_A.png** | Plots of the syntactic and A function symbols set
 **alpha_A_C.png** | Plots of the syntactic, A and C function symbols set
