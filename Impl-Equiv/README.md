@@ -52,8 +52,11 @@
    
    $ eval \`opam config env\`
 
+7) Execute Utop: 
+   
+   $ utop
 
-7) At the Utop prompt, execute:
+8) At the Utop prompt, execute:
 
    utop # #load "Basics.cmo";;
    
@@ -68,7 +71,7 @@
    utop # open Improved_Equiv;;
 
 
-8) At the Utop prompt is possible to test some inputs 
+9) At the Utop prompt is possible to test some inputs 
    for each equality checking implementation. Follows some examples:
 
 
@@ -86,20 +89,33 @@
    utop # equiv_rec Nil (Ab (0, At 0)) (Ab (1, At 0));;
    - : Adjusted_Generated_Equiv.bool = False
    
+   utop # equiv_rec Nil (Fc (0, 1, Pr (At 0, Pr (At 1, At 2)))) (Fc (0, 1, Pr (Pr (At 0, At 1), At 2)));;
+   - : Adjusted_Generated_Equiv.bool = True
+   
+   utop # equiv_rec Nil (Fc (1, 1, Pr (At 0, Pr (At 1, At 2)))) (Fc (1, 1, Pr (Pr (At 2, At 0), At 1)));;
+   - : Adjusted_Generated_Equiv.bool = True
    
    b) For the Improved_Equiv implementation:
 
    utop # impr_equiv [] F_Ut F_Ut;;
-   - : Improved_Generated_Equiv.bool = True
+   - : bool = True
 
    utop # impr_equiv [] (F_At 0) (F_At 0);;
-   - : Improved_Generated_Equiv.bool = True
+   - : bool = True
 
    utop # impr_equiv [] (F_Ab (0, F_At 0)) (F_Ab (1, F_At 1));;
-   - : Improved_Generated_Equiv.bool = True
+   - : bool = True
 
    utop # impr_equiv [] (F_Ab (0, F_At 0)) (F_Ab (1, F_At 0));;
-   - : Improved_Generated_Equiv.bool = False
+   - : bool = False
+   
+   utop # impr_equiv [] (flat_term (A (1, [F_At 0; A (1, [F_At 1; F_At 2])]))) (flat_term (A (1, [A (1, [F_At 0; F_At 1]); F_At 2])));;
+   - : bool = true
+   
+   utop # impr_equiv [] (flat_term (AC (1, [F_At 0; AC (1, [F_At 1; F_At 2])]))) (flat_term (AC (1, [AC (1, [F_At 2; F_At 0]); F_At 1])));;
+   - : bool = true
+
+
 
 
 
