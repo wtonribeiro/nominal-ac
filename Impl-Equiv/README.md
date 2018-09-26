@@ -72,7 +72,7 @@
    for each equality checking implementation. Follows some examples:
 
 
-   a) For Adjusted_Generated_Equiv:
+   a) For the Adjusted_Generated_Equiv implementation:
 
    utop # equiv_rec Nil Ut Ut;;
    - : Adjusted_Generated_Equiv.bool = True
@@ -87,7 +87,7 @@
    - : Adjusted_Generated_Equiv.bool = False
    
    
-   b) For Improved_Equiv:
+   b) For the Improved_Equiv implementation:
 
    utop # impr_equiv [] F_Ut F_Ut;;
    - : Improved_Generated_Equiv.bool = True
