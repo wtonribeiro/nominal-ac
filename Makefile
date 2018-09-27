@@ -5,7 +5,7 @@ COQDEP = coqdep
 
 FILES = \
 	LibTactics \
-        ListFacts \
+        Basics \
 	Terms \
 	Perm \
 	Disagr \
@@ -13,15 +13,16 @@ FILES = \
 	Fresh \
         Alpha_Equiv \
 	Equiv \
+        AACC_Equiv_rec \
 	Equiv_Tuples \
         AACC_Equiv \
         C_Equiv \
         Problems \
         Substs \
         C_Unif \
-        Termination \
-        Soundness \
-        Completeness
+        C_Unif_Termination \
+        C_Unif_Soundness \
+        C_Unif_Completeness
 
 all : main
 pat: $(foreach i, $(PAT), $(i).vo)
