@@ -29,7 +29,7 @@ alpha_A <- filter(experiments, set == "Alpha and A")
 alpha_A_C <- filter(experiments, set == "Alpha, A and C")
 alpha_A_C_AC <- filter(experiments, set == "Alpha, A, C and AC")
 
-# Defines the layout of the plot
+# Defines the layout of the plots
 
 point_style = geom_point(size = 1,  shape=21)
 plot_theme = theme(plot.title = element_text(hjust = 0.5),
