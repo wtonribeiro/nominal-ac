@@ -5,9 +5,9 @@
  #               Mauricio Ayala Rinc\'on 
  #               Universidade de Bras\'ilia (UnB) - Brazil
  #               Group of Theory of Computation
- 
+ #
  # Description : This file contains the data analysis of the results of the
-                 experiments
+ #               experiments
  #
  # Last Modified On: Sep 27, 2018.
  # ============================================================================
