@@ -1,3 +1,17 @@
+ # ============================================================================
+ # Project     : Nominal A, AC and C Unification
+ # File        : Basics.ml
+ # Authors     : Washington Lu\'is R. de Carvalho Segundo and
+ #               Mauricio Ayala Rinc\'on 
+ #               Universidade de Bras\'ilia (UnB) - Brazil
+ #               Group of Theory of Computation
+ 
+ # Description : This file contains the definitions of f_terms, flattening,
+ #               the freshness checking function, iterator function
+ #               and the difference set operator.
+ # Last Modified On: Sep 27, 2018.
+ ============================================================================
+
 library(ggplot2)
 library(dplyr)
 
