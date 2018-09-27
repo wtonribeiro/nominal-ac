@@ -7,7 +7,7 @@
 **[Impl_Equiv/](https://github.com/wtonribeiro/nominal-ac/tree/master/Impl-Equiv)** | Folder with the implementations of the naive (extracted from the specification) and of the improved nominal A, C and AC-checking algorithms (OCaml code)
 **[Impl_Unif/](https://github.com/wtonribeiro/nominal-ac/tree/master/Impl-Unif)** | Folder with the implementation of the nominal C-unification algorithm (OCaml code)
 **LibTactics.v**    | Library of tactics given by http://www.chargueraud.org/softs/tlc/
-**Basics.v**        | Necessary basic results in arithmetic and lists that are not in the standard libraries of Coq
+**Basics.v**        | Necessary basic results on arithmetics and lists that are not in the standard libraries of Coq
 **Terms.v**         | Syntax definition of nominal terms and some properties about
 **Perm.v**          | Permutation action definition and its properties
 **Disgr.v**         | Disagreement set definition and its properties
