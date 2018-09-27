@@ -4,7 +4,7 @@
 **File** | Short description
 ------------ | -------------
 **results.csv** | Summary of the results of the experiments
-**results.r** | R code with the analysis of the data in file results.csv
+**results.r** | R code with the analysis of the results.csv data
 **alpha.txt.tar.gz** | Inputs with syntactic function symbols
 **alpha_A.txt.tar.gz** | Inputs with syntactic and A function symbols
 **alpha_A_C.txt.tar.gz** | Inputs with syntactic, A and C function symbols
