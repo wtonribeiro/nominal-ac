@@ -47,15 +47,18 @@ let rec probl_string (pbr : constr list) =
   | [] -> ""
 
 
-let matching_pair_string pr =
-  match pr with 
-    (c, prb) -> "\\langle\\{" ^ fresh_ctx_string c ^ "\\}, \\;\\{" ^ probl_string prb ^ "\\} \\rangle"
-
+let rec varSet_string list =
+  match list with
+  | [] -> ""
+  | [x] -> x          
+  | x :: list0 -> x ^ ", " ^ varSet_string list0
+            
                                                                                           
-let unif_triple_string tr =
-  match tr with 
-    (c, s, prb) -> "\\langle\\{" ^ fresh_ctx_string c ^ "\\}, \\;" ^
-                     subst_string s ^ ", \\;\\{" ^ probl_string prb ^ "\\} \\rangle"
+let unif_triple_string qr =
+  match qr with 
+    (c, varSet, s, prb) -> "\\langle\\{" ^ fresh_ctx_string c ^ "\\}, \\;" ^
+                              "\\{" ^ varSet_string varSet ^ "\\}, \\;" ^
+                              subst_string s ^ ", \\;\\{" ^ probl_string prb ^ "\\} \\rangle"
 
                                                                         
 let rec list_string f_string list =
@@ -78,7 +81,7 @@ let file = "out.tex"
 
 let message f_string alg obj =
 "\\documentclass[11pt]{article}
-\\usepackage[a0paper]{geometry}
+\\usepackage[a4paper]{geometry}
 
 \\usepackage{tikz-qtree}
 \\usepackage{fullpage}

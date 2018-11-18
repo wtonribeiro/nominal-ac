@@ -30,12 +30,9 @@ type constr =
 
 (** Adding an element in a list with prevention of element duplications **)
 
-let rec set_add a l =
-  match l with
-  | [] -> [a]
-  | a0 :: l0 -> if a = a0
-                then l
-                else a0 :: set_add a l0
+let set_add a l = if mem a l
+                  then l
+                  else a :: l
 
 (** "Union" of two lists with prevention of element duplications **)
                                    
@@ -43,7 +40,17 @@ let rec set_union l l' =
   match l with
   | [] -> l'
   | a0 :: l0 -> set_add a0 (set_union l0 l')
-                                   
+
+
+(** "Intersection of two lists" **)
+
+let rec set_inter l l' =
+  match l with
+  | [] -> []  
+  | a0 :: l0 -> if mem a0 l'
+                then set_add a0 (set_inter l0 l')
+                else set_inter l0 l'             
+          
              
 (** Permutation action over atoms *)
              
@@ -180,8 +187,16 @@ let rec vars t =
 let rec prb_vars ctrl =
   match ctrl with
   | [] -> []
-  | Fresh (a, t) :: ctrl0 -> vars t
-  | Equ (s, t) :: ctrl0 -> (vars s) @ (vars t)                   
+  | Fresh (a, t) :: ctrl0 -> set_union (vars t) (prb_vars ctrl0)
+  | Equ (s, t) :: ctrl0 -> set_union (set_union (vars s) (vars t)) (prb_vars ctrl0)
+
+(** Variables that occur in the equations **)
+           
+let rec prb_eq_vars ctrl =
+  match ctrl with
+  | [] -> []
+  | Fresh (a, t) :: ctrl0 -> prb_eq_vars ctrl0
+  | Equ (s, t) :: ctrl0 -> set_union (set_union (vars s) (vars t)) (prb_eq_vars ctrl0)                                           
                                                                   
 
 (** Auxiliar function to build substituion action **)                      
@@ -198,7 +213,7 @@ let rec sub_act (t : term) sub  =
   match  t with
   | Ut -> Ut
   | At a -> At a  
-  | Ab (a, s) -> Ab (a, sub_act t sub)
+  | Ab (a, s) -> Ab (a, sub_act s sub)
   | Pr (u, v) -> Pr (sub_act u sub, sub_act v sub)
   | Fc (e, n, s) -> Fc (e, n, sub_act s sub)
   | Su (pi, x) -> p_act_t pi (look_up x sub)
@@ -251,11 +266,19 @@ let rec is_fixpoint_set prb =
   match prb with
   | [] -> true
   | Fresh (a, u) :: prb0 -> is_fixpoint_set prb0         
-  | Equ (Su (pi, x), Su ([], y)) :: prb0 -> if is_fixpoint_equ (Equ (Su (pi, x), Su ([], y)))
-                                            then is_fixpoint_set prb0
-                                            else false                     
-  | _ :: prb0 -> false                                                                  
+  | Equ (s, t) :: prb0 -> if is_fixpoint_equ (Equ (s, t))
+                          then is_fixpoint_set prb0
+                          else false                                                                  
 
+(** Verify if a problem contains only freshness constraints **)
+                                                                    
+let rec is_freshness_set prb =
+  match prb with
+  | [] -> true
+  | Fresh (a, u) :: prb0 -> is_freshness_set prb0         
+  | Equ (s, t) :: prb0 -> false 
+                                 
+                                 
                    
 (** Verify if a problem is composed only by equations *) 
 
