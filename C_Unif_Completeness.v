@@ -193,7 +193,6 @@ Proof.
   apply c_equiv_unif_fresh with (S1:=s1).
   apply subst_sym; trivial. apply H2; trivial.
 
-  unfold fresh_env in H2.
   apply set_In_subs_fresh_constraints in H0.
   case H0; clear H0; intros Y H0. destruct H0.
   apply H1 in H0. rewrite H5. rewrite H11. clear H1 H2 H3 H5 H12.
@@ -214,6 +213,7 @@ Proof.
   assert (Q0 : c1 |- (pi|.X)|^s1 ~c (t|^s1)).
    destruct H12. apply H3; trivial.
    apply c_equiv_sym. apply H3; trivial.
+
 
   apply c_equiv_unif in Q0.
    

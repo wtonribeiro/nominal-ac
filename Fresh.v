@@ -81,74 +81,56 @@ Hint Resolve fresh_Su_elim.
 
 
 Lemma fresh_lemma_1 : forall C pi a t, 
-(C |- a # (pi @ t)) -> (C |- ((!pi) $ a) # t).
+(C |- a # (pi @ t)) <-> (C |- ((!pi) $ a) # t).
 Proof. 
- intros. induction t.
- apply fresh_Ut.
- apply fresh_At. simpl in H.
- inversion H. intro H'. apply H3.
- symmetry. apply perm_inv_side_atom.
- symmetry. trivial. case (atom_eqdec ((!pi) $ a) a0). 
- intro H'. rewrite H'. apply fresh_Ab_1. 
- intro H'. apply fresh_Ab_2; trivial.
- apply IHt. simpl in H.
- clear IHt. inversion H. symmetry in H3.
- apply perm_inv_side_atom in H3. symmetry in H3.
- contradiction. trivial.
- simpl in H. inversion H. 
- apply fresh_Pr; [apply IHt1; trivial | apply IHt2; trivial].
- simpl in H. inversion H.
- apply fresh_Fc. apply IHt; trivial.
- simpl in H. inversion H.
- apply fresh_Su. rewrite perm_comp_atom. 
- rewrite <- distr_rev. trivial.
-Qed.
+ intros; induction t; simpl.
+  
+ split~; intros. 
+
+ split~; intro H; inverts H;
+   apply fresh_At; intro H0; apply H3;
+   symmetry; apply perm_inv_side_atom;
+   symmetry; trivial. 
+
+ case (atom_eqdec a (pi $ a0)); intro H0.
+ rewrite <- H0. replace ((!pi) $ a) with a0.
+ split~; intro H1. apply perm_inv_side_atom.
+ symmetry. trivial.
+ split~; intro H1; inverts H1; apply fresh_Ab_2;
+   try apply IHt; trivial.
+   false. false.
+   intro H1. apply H0.
+   symmetry. apply perm_inv_side_atom;
+   symmetry; trivial. 
+   false. apply H0. symmetry.
+   apply perm_inv_side_atom. trivial.
+
+ split~; intro H; inverts H;
+   apply fresh_Pr; try apply IHt1; try apply IHt2; trivial.
+ 
+ split~; intro H; inverts H;
+   apply fresh_Fc; apply IHt; trivial.   
+
+ split~; intro H; inverts H;
+  apply fresh_Su; try rewrite perm_comp_atom in *|-*;
+  try rewrite <- distr_rev in *|-*; trivial.
+
+ Qed.
 
 Hint Resolve fresh_lemma_1.
 
+
 Lemma fresh_lemma_2 : forall C pi a t, 
-(C |- (pi $ a) # t) -> (C |- a # (!pi @ t)).
+(C |- a # t) <-> (C |- (pi $ a) # (pi @ t)).  
 Proof. 
- intros. induction t.
- simpl. apply fresh_Ut.
- simpl. apply fresh_At.
- inversion H. intro H'. apply H3.
- apply perm_inv_side_atom. trivial.
- simpl. case (atom_eqdec a ((!pi) $ a0)). 
- intro H'. rewrite H'. apply fresh_Ab_1. 
- intro H'. apply fresh_Ab_2; trivial.
- apply IHt. clear IHt. inversion H. 
- apply perm_inv_side_atom in H3. 
- contradiction. trivial.
- simpl. inversion H. 
- simpl. apply fresh_Pr; [apply IHt1; trivial | apply IHt2; trivial].
- simpl. inversion H.
- apply fresh_Fc. apply IHt; trivial.
- simpl. inversion H.
- apply fresh_Su. rewrite perm_comp_atom in H3. 
- rewrite distr_rev. rewrite rev_involutive.
- trivial.
+  intros. split~; intro H.
+  apply fresh_lemma_1. rewrite perm_inv_atom; trivial.
+  apply fresh_lemma_1 in H. rewrite perm_inv_atom in H; trivial.
 Qed.
 
 Hint Resolve fresh_lemma_2.
 
-Lemma fresh_lemma_3 : forall C pi a t, 
-(C |- a # t) <-> (C |- (pi $ a) # (pi @ t)).  
-Proof. 
- intros. split~; intro.
- gen_eq g : (!pi). intro H'.
- assert (Q : pi = !g). rewrite H'. rewrite rev_involutive. trivial.
- rewrite Q. apply fresh_lemma_2. rewrite <- Q. rewrite H'.
- rewrite perm_inv_atom. 
- trivial.
- apply fresh_lemma_1 in H.
- rewrite perm_inv_atom in H.
- trivial.
-Qed.
-
-Hint Resolve fresh_lemma_3.
-
-Lemma fresh_lemma_4 : forall C C' a t,
+Lemma fresh_lemma_3 : forall C C' a t,
       sub_context C C' -> C |- a # t -> C' |- a # t. 
 Proof.
   intros. unfold sub_context in H.

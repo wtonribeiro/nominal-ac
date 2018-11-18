@@ -9,12 +9,12 @@ let rec equ_sys (qr : ((string * string) list) * (string list) * ((string * term
  
   match qr with
     
-  | (c, varSet, s, []) -> Leaf ("\\approx Success", (c, varSet, s, []))            
+  | (c, varSet, s, []) -> Leaf ("\\top", (c, varSet, s, []))            
 
    (*** ~ Refl : Ut ***)   
             
   | (c, varSet, s, Equ (Ut, Ut) :: prb) ->
-     Node ("\\approx Refl", qr,  [equ_sys (c, varSet, s, prb)])
+     Node ("\\approx_? refl", qr,  [equ_sys (c, varSet, s, prb)])
 
           
   (*** ~ Refl : At ***)                                        
@@ -22,8 +22,8 @@ let rec equ_sys (qr : ((string * string) list) * (string list) * ((string * term
                                          
   | (c, varSet, s, Equ (At a, At b) :: prb) ->
      if a = b
-     then Node ("\\approx Refl", qr, [equ_sys (c, varSet, s, prb)])
-     else Leaf ("\\approx Fail", qr)
+     then Node ("\\approx_? refl", qr, [equ_sys (c, varSet, s, prb)])
+     else Leaf ("\\bot", qr)
      
                           
   (*** ~ [aa] / [ab] ***)                         
@@ -33,11 +33,11 @@ let rec equ_sys (qr : ((string * string) list) * (string list) * ((string * term
 
       if a = b
       then
-        let label = "\\approx [aa]" in
+        let label = "\\approx_? [aa]" in
         let rec_call = equ_sys (c, varSet, s, Equ (u0, u1) :: prb) in
          Node (label, qr, [rec_call])
       else 
-        let label = "\\approx [ab]" in
+        let label = "\\approx_? [ab]" in
         let rec_call = equ_sys (c, varSet, s, (Equ (u0, p_act_t [(a, b)] u1)) :: (Fresh (a, u1)) :: prb) in
          Node (label, qr, [rec_call])
      
@@ -51,10 +51,10 @@ let rec equ_sys (qr : ((string * string) list) * (string list) * ((string * term
      then  
 
        if (e0 <> "C")
-       then Node ("\\approx C", qr, [equ_sys (c, varSet, s, Equ (u0, u1) :: Equ (v0, v1) :: prb)])
-       else Node ("\\approx C", qr, [equ_sys (c, varSet, s, Equ (u0, u1) :: Equ (v0, v1) :: prb); equ_sys (c, varSet, s, Equ (u0, v1) :: Equ (v0, u1) :: prb)])
+       then Node ("\\approx_? C", qr, [equ_sys (c, varSet, s, Equ (u0, u1) :: Equ (v0, v1) :: prb)])
+       else Node ("\\approx_? C", qr, [equ_sys (c, varSet, s, Equ (u0, u1) :: Equ (v0, v1) :: prb); equ_sys (c, varSet, s, Equ (u0, v1) :: Equ (v0, u1) :: prb)])
 
-     else Leaf ("\\approx Fail", qr)
+     else Leaf ("\\bot", qr)
 
                                                      
   (*** ~ App ***)          
@@ -63,17 +63,17 @@ let rec equ_sys (qr : ((string * string) list) * (string list) * ((string * term
 
      if ((e0 = e1) && (n0 = n1))
 
-     then Node ("\\approx App", qr,
+     then Node ("\\approx_? app", qr,
                  [equ_sys (c, varSet, s, Equ (u0, u1) :: prb)] )
 
-     else Leaf ("\\approx Fail", qr)
+     else Leaf ("\\bot", qr)
 
 
    (*** Pr ***)
                       
                       
   | (c, varSet, s, Equ (Pr (u0, v0), Pr (u1 ,v1)) :: prb) ->
-     Node ("\\approx Pr", qr, 
+     Node ("\\approx_? pair", qr, 
     [equ_sys (c, varSet, s, (Equ (u0, u1)) :: (Equ (v0, v1)) :: prb)])                          
 
 
@@ -86,17 +86,17 @@ let rec equ_sys (qr : ((string * string) list) * (string list) * ((string * term
 
       then if pi = pi'
 
-           then Node ("\\approx Refl", qr, [equ_sys (c, varSet, s, prb)])
+           then Node ("\\approx_? refl", qr, [equ_sys (c, varSet, s, prb)])
                      
            else if pi' = []
 
                 then if is_fixpoint_set prb
 
-                     then Leaf ("\\approx Success", qr)
+                     then Leaf ("\\top", qr)
 
                      else equ_sys (c, varSet, s, prb @ [Equ (Su (pi, x), Su (pi', y))])
                   
-                else Node ("\\approx Inv", qr, [equ_sys (c, varSet, s, prb @ [Equ (Su (pi @ (rev pi'), x), Su ([], x))])])
+                else Node ("\\approx_? inv", qr, [equ_sys (c, varSet, s, prb @ [Equ (Su (pi @ (rev pi'), x), Su ([], x))])])
 
       else               
                           
@@ -104,10 +104,10 @@ let rec equ_sys (qr : ((string * string) list) * (string list) * ((string * term
 
         if not (mem x varSet)
 
-        then let s' = sub_comp s [(x, p_act_t (rev pi) (Su (pi' @ (rev pi), y)))] in
-             Node ("\\approx Inst", qr, [equ_sys (c, varSet, s', (sub_prb prb [(x, p_act_t (rev pi) (Su (pi' @ (rev pi), y)))]) @ sub_fresh c s')])
+        then let s' = sub_comp s [(x, Su (pi' @ (rev pi), y))] in
+             Node ("\\approx_? inst", qr, [equ_sys (c, varSet, s', (sub_prb prb [(x, Su (pi' @ (rev pi), y))]) @ sub_fresh c s')])
                 
-        else Leaf ("\\approx Fail", qr)
+        else Leaf ("\\bot", qr)
                                                                                    
                     
   | (c, varSet, s, Equ (Su (pi, x), t) :: prb) ->
@@ -115,9 +115,9 @@ let rec equ_sys (qr : ((string * string) list) * (string list) * ((string * term
       if (not (mem x (vars t)) && not (mem x varSet))
 
       then let s' = sub_comp s [(x, p_act_t (rev pi) t)] in
-           Node ("\\approx Inst", qr, [equ_sys (c, varSet, s', (sub_prb prb [(x, p_act_t (rev pi) t)]) @ sub_fresh c s')])
+           Node ("\\approx_? inst", qr, [equ_sys (c, varSet, s', (sub_prb prb [(x, p_act_t (rev pi) t)]) @ sub_fresh c s')])
                 
-      else Leaf ("\\approx Fail", qr)
+      else Leaf ("\\bot", qr)
 
 
  | (c, varSet, s, Equ (t, Su (pi, x)) :: prb) ->
@@ -125,9 +125,9 @@ let rec equ_sys (qr : ((string * string) list) * (string list) * ((string * term
       if not ((mem x (vars t)) && not (mem x varSet))
 
       then let s' = sub_comp s [(x, p_act_t (rev pi) t)] in
-           Node ("\\approx Inst", qr, [equ_sys (c, varSet, s', (sub_prb prb [(x, p_act_t (rev pi) t)]) @ sub_fresh c s')])
+           Node ("\\approx_? inst", qr, [equ_sys (c, varSet, s', (sub_prb prb [(x, p_act_t (rev pi) t)]) @ sub_fresh c s')])
                 
-      else Leaf ("\\approx Fail", qr)
+      else Leaf ("\\bot", qr)
 
 
  (*** Freshness constaints are ignored **)
@@ -136,14 +136,14 @@ let rec equ_sys (qr : ((string * string) list) * (string list) * ((string * term
 
     if is_fixpoint_set prb
 
-    then Leaf ("\\approx Success", qr)
+    then Leaf ("\\top", qr)
 
     else equ_sys (c, varSet, s, prb @ [Fresh  (a, u)])                  
 
 
  (*** Remaining cases are leaves of fail **)                  
                        
- | (c, varSet, s, _ :: prb) -> Leaf ("\\approx Fail", qr)                          
+ | (c, varSet, s, _ :: prb) -> Leaf ("\\bot", qr)                          
 
 
 
@@ -156,12 +156,12 @@ let rec fresh_sys qr  =
 
   match qr with
 
-  | (c, varSet, s, []) -> Leaf ("\\# Success", (c, varSet, s, [])) 
+  | (c, varSet, s, []) -> Leaf ("\\top", (c, varSet, s, [])) 
     
 
   (** # Ut **)
 
-  | (c, varSet, s, Fresh (a, Ut) :: prb) -> Node ("\\# Ut", qr, [fresh_sys (c, varSet, s, prb)])
+  | (c, varSet, s, Fresh (a, Ut) :: prb) -> Node ("\\#_?\\, \\langle\\rangle", qr, [fresh_sys (c, varSet, s, prb)])
                                              
   (** # At **)                                       
                                          
@@ -169,9 +169,9 @@ let rec fresh_sys qr  =
 
       if a <> b
                                                        
-      then Node ("\\# At", qr, [fresh_sys (c, varSet, s, prb)])
+      then Node ("\\#_?\\, a\\bar{b}", qr, [fresh_sys (c, varSet, s, prb)])
                   
-      else Leaf ("\\# Fail", qr)     
+      else Leaf ("\\bot", qr)     
 
  
   (** # [aa] / [ab] **)
@@ -180,24 +180,24 @@ let rec fresh_sys qr  =
      
       if a = b
                                
-      then Node ("\\# [aa]", qr, [fresh_sys (c, varSet, s, prb)])
+      then Node ("\\#_?\\, a[a]", qr, [fresh_sys (c, varSet, s, prb)])
                           
-      else Node ("\\# [ab]", qr, [fresh_sys (c, varSet, s, Fresh (a, t) :: prb)])
+      else Node ("\\#_?\\, a[b]", qr, [fresh_sys (c, varSet, s, Fresh (a, t) :: prb)])
 
 
   (** # Pr **)                                                              
                                                                  
-  | (c, varSet, s, Fresh (a, Pr (u, v)) :: prb) -> Node ("\\# Pr", qr, [fresh_sys (c, varSet, s, Fresh (a, u) :: Fresh (a, v) :: prb)]) 
+  | (c, varSet, s, Fresh (a, Pr (u, v)) :: prb) -> Node ("\\#_?\\, pair", qr, [fresh_sys (c, varSet, s, Fresh (a, u) :: Fresh (a, v) :: prb)]) 
                                                                          
 
   (** Fc **)
                                                                          
-  | (c, varSet, s, Fresh (a, Fc (e, n, t)) :: prb) -> Node ("\\# App", qr, [fresh_sys (c, varSet, s, Fresh (a, t) :: prb)]) 
+  | (c, varSet, s, Fresh (a, Fc (e, n, t)) :: prb) -> Node ("\\#_?\\, app", qr, [fresh_sys (c, varSet, s, Fresh (a, t) :: prb)]) 
 
 
   (** Su **)                                                       
                                                          
-  | (c, varSet, s, Fresh (a, Su (pi, x)) :: prb) -> Node ("\\# Su", qr, [fresh_sys ((p_act (rev pi) a, x) :: c, varSet, s, prb)])
+  | (c, varSet, s, Fresh (a, Su (pi, x)) :: prb) -> Node ("\\#_?\\, var", qr, [fresh_sys ((p_act (rev pi) a, x) :: c, varSet, s, prb)])
 
 
   (** Fixed point equations **)                                                                
@@ -208,20 +208,20 @@ let rec fresh_sys qr  =
 
         if mem x varSet
 
-        then Node ("\\# FP Elim", qr, [fresh_sys (set_union (fresh_atoms (dom_perm pi) x) c, varSet, s, prb)])
+        then Node ("\\mu_{fp}", qr, [fresh_sys (set_union (fresh_atoms (dom_perm pi) x) c, varSet, s, prb)])
 
         else if (set_inter varSet (prb_eq_vars prb) != [])
 
              then fresh_sys (c, varSet, s, prb @ [Equ (Su (pi, x), Su ([], x))])
 
-             else Leaf ("\\# Success", qr)
+             else Leaf ("\\top", qr)
 
-     else Leaf ("\\# Fail", qr)
+     else Leaf ("\\bot", qr)
                
 
   (** Other equations **)
 
-  | (c, varSet, s, Equ (u, v) :: prb ) -> Leaf ("\\# Fail", qr)       
+  | (c, varSet, s, Equ (u, v) :: prb ) -> Leaf ("\\bot", qr)       
      
 
 (******************************************)                 
@@ -233,7 +233,7 @@ let rec app_fresh_tree tree =
     
   | Leaf (lab, qr0) ->
 
-     if lab = "\\approx Success"
+     if lab = "\\top"
 
      then fresh_sys qr0
 
@@ -260,7 +260,7 @@ let rec c_unif_str qrl =
     
   | Leaf (lab, qr) :: qrl0 ->
      
-     (if lab = "\\approx Success"
+     (if lab = "\\top"
       then [qr]
       else []) @ c_unif_str qrl0
                                     

@@ -24,8 +24,8 @@ let qr5 = ([],[],[],[Equ (Ab ("e", Fc ("C", "n", Pr (At "e", At "a"))),
 let qr6 = ([],[],[],[Equ (Ab ("a", Ab ("b", Su ([], "X"))) ,
                        Ab ("b", Ab ("a", Su ([], "X"))))])             
             
-let qr7 = ([],[],[],[Equ (Ab ("e", Fc ("C", "n", Pr (Su ([("a","b")],"X"), Su ([],"Y")))),
-                       Ab ("f", Fc ("C", "n", Pr (Su ([("a","c");("c","d")],"X"), Su ([],"Y")))))])
+let qr7 = ([],[],[],[Equ (Ab ("a'", Fc ("C", "n", Pr (Su ([("a","b")],"X"), Su ([],"Y")))),
+                       Ab ("b'", Fc ("C", "n", Pr (Su ([("a","c");("c","d")],"X"), Su ([],"Y")))))])
 
 let qr8 = ([("a","X")],[],[],[Equ (Ab ("a", (Fc ("C", "n", Pr (Fc ("E","m", At "a"), Su ([], "X"))))),
                                    Ab ("b", (Fc ("C", "n", Pr (Fc ("E","k", At "b"), Su ([], "X"))))))])

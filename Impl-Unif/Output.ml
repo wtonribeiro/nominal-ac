@@ -36,7 +36,7 @@ let rec subst_string sub =
             
 let rec constr_string ctr =
   match ctr with
-  | Fresh (a, t) -> a ^ "\\#_?" ^ term_string t
+  | Fresh (a, t) -> a ^ "\\,\\#_?\\," ^ term_string t
   | Equ (s, t) -> term_string s ^ "\\approx_?" ^ term_string t
 
                                                              
@@ -69,9 +69,9 @@ let rec list_string f_string list =
                                                  
 let rec tree_string (f_string : 'a -> string) tree =
   match tree with
-  | Leaf (lab, obj) -> "[.{$" ^ (f_string obj) ^ "$} [.{\\tiny ${\\tt " ^ lab ^ "}$} ]]"
+  | Leaf (lab, obj) -> "[.{$" ^ (f_string obj) ^ "$} [.{\\small $\\rulefont{" ^ lab ^ "}$} ]]"
   | Node (lab, obj, list) -> "[.{$" ^ (f_string obj) ^ "$}\n\t" ^
-                                     "\\edge node[auto=right] {\\tiny ${\\tt " ^ lab ^ "}$};\n" ^
+                                     "\\edge node[auto=right] {\\small $\\rulefont{" ^ lab ^ "}$};\n" ^
                                        list_string (tree_string f_string) list ^ " ]\n"
 
 
@@ -81,17 +81,32 @@ let file = "out.tex"
 
 let message f_string alg obj =
 "\\documentclass[11pt]{article}
-\\usepackage[a4paper]{geometry}
+\\usepackage{geometry}
 
+\\geometry{landscape, a4paper, margin=0mm}
+
+\\usepackage{amsmath,amssymb}
 \\usepackage{tikz-qtree}
 \\usepackage{fullpage}
 \\usepackage{pdflscape}
+
+\\hoffset = 0pt
+\\voffset = 0pt
+\\oddsidemargin = -70pt
+\\topmargin = -70pt
+\\headheight = 0pt
+\\headsep = 0pt
+\\marginparsep = 0pt
+\\marginparwidth = 0pt
+\\footskip = 0pt
+\\textheight = 800pt
+
+\\newcommand{\\rulefont}[1]{\\ensuremath{\\mathbf{(#1)}}}
 
 \\begin{document}
 
 \\pagestyle{empty}
 
-\\begin{landscape}
 {\\footnotesize
 \\begin{tikzpicture}[
   level distance=1.5cm,sibling distance=0.5cm,
@@ -100,7 +115,6 @@ let message f_string alg obj =
 \\Tree" ^ tree_string f_string (alg obj) ^
 "\\end{tikzpicture}
 }
-\\end{landscape}
 
 \\end{document}"
 

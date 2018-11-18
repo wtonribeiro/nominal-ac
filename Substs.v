@@ -449,8 +449,7 @@ Proof.
   intros. induction H; simpl; auto.
   apply H0 in H. simpl in H.
   autorewrite with perm in H.
-  apply fresh_lemma_2 in H.
-  rewrite rev_involutive in H; trivial.
+  apply fresh_lemma_1 in H; trivial.
 Qed.
 
 

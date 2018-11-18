@@ -161,7 +161,8 @@ Proof.
     rewrite subst_perm_comm.
     gen_eq pi' : (!pi); intro H8.
     replace pi with (!pi').
-    apply fresh_lemma_2. unfold fresh_env in H0.
+    apply fresh_lemma_1. rewrite rev_involutive.
+    unfold fresh_env in H0.
     apply H0. apply set_add_intro2; trivial.
     rewrite H8. apply rev_involutive.
     autorewrite with perm. simpl. trivial.

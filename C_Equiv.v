@@ -93,19 +93,20 @@ Proof.
  apply alpha_equiv_fresh with (t1 := t'); trivial.
  case (atom_eqdec a a'0); intro H9. rewrite <- H9.
  apply equiv_Ab_1. apply IHequiv.
- apply perm_inv_side'. simpl. rewrite H9.
+ apply perm_inv_side. simpl. rewrite H9.
  apply ds_empty_equiv_2 with (pi := |[(a', a'0)]|); trivial; intros.
  intro H10. apply H10. apply swap_comm.
  assert (Q : C |- a # t'0).
   apply alpha_equiv_fresh with (t1 := (|[(a',a'0)]|) @ t').
-  apply perm_inv_side'. simpl. trivial.
+  apply perm_inv_side. simpl. trivial.
   replace (|[(a', a'0)]|) with (!|[(a', a'0)]|).
-  apply fresh_lemma_2. rewrite swap_neither; trivial.
+  apply fresh_lemma_1. rewrite rev_involutive.
+  rewrite swap_neither; trivial.
   intro. symmetry in H2. contradiction.
   intro. symmetry in H2. contradiction.
   simpl; trivial.
  apply equiv_Ab_2; trivial. apply IHequiv.
- apply perm_inv_side'.
+ apply perm_inv_side.
  apply alpha_equiv_trans with (t2 := (|[(a', a'0)]|) @ t'0); trivial.
  apply alpha_equiv_trans with (t2 := (|[(|[(a,a')]| $ a, |[(a,a')]| $ a'0)]|) @ ((|[(a,a')]|) @ t'0)). 
  rewrite swap_left. rewrite swap_neither; trivial.
@@ -194,7 +195,7 @@ Proof.
  split~. destruct H1; [left~ | right~]; apply perm_neg_is_Pr; trivial.
  apply equiv_Ab_2. apply perm_diff_atom; trivial.
  apply c_alpha_equiv_trans with (t2 := (pi @ ((|[(a, a')]|) @ t'))).
- apply IHequiv. apply alpha_equiv_pi_comm. apply fresh_lemma_3; trivial.
+ apply IHequiv. apply alpha_equiv_pi_comm. apply fresh_lemma_2; trivial.
  apply equiv_Su. intros. apply H.
  apply ds_cancel in H0; trivial.
  simpl in H. omega. simpl in H. omega.
@@ -299,6 +300,6 @@ Proof.
   apply alpha_equiv_refl.
   apply c_equiv_equivariance with (pi:=pi) in H.
   apply c_alpha_equiv_trans with (t2:= pi @ ((! pi) @ t2)); trivial. 
-  apply perm_inv_side'.
+  apply perm_inv_side.
   apply alpha_equiv_refl.  
 Qed.
