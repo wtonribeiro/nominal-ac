@@ -79,7 +79,7 @@ Proof.
    rewrite swap_neither in H7; auto.
   apply equiv_Ab_2; trivial. apply IHequiv.
   replace (|[(a, a')]|) with (!(|[(a, a')]|)). 
-  apply perm_inv_side'. simpl.
+  apply perm_inv_side. simpl.
   apply alpha_equiv_trans with (t2 := (|[(a', a'0)]|) @ t'0); trivial.
   apply alpha_equiv_trans with 
   (t2 := (|[(|[(a, a')]| $ a, |[(a, a')]| $ a'0)]|) @ ((|[(a, a')]|) @ t'0)); trivial.
@@ -190,7 +190,7 @@ Proof.
  apply aacc_alpha_equiv_trans.
  exists (pi @ ((|[(a, a')]|) @ t')). split~.
  apply alpha_equiv_pi_comm.
- apply fresh_lemma_3; trivial.
+ apply fresh_lemma_2; trivial.
 
  apply equiv_Su. intros. apply H. intro. apply H0.
  rewrite <- 2 perm_comp_atom. rewrite H1; trivial. 
@@ -219,7 +219,7 @@ Proof.
  apply aacc_alpha_equiv_trans.
  exists ((|[(a', a)]|) @ ((|[(a, a')]|) @ t')). split~.
  apply aacc_equivariance; trivial.
- apply perm_inv_side'. simpl.
+ apply perm_inv_side. simpl.
  apply alpha_equiv_pi. intros b H11. false. apply H11. apply swap_comm.
 Qed.
 
@@ -1018,7 +1018,7 @@ Proof.
    apply IHequiv; trivial.
   apply equiv_Ab_2; trivial.
    apply IHequiv; trivial.
-  apply fresh_lemma_4 with (C:=C); trivial.
+  apply fresh_lemma_3 with (C:=C); trivial.
   apply equiv_Su; intros.
    unfold sub_context in H. 
    apply H. apply H0; trivial.
