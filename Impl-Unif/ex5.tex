@@ -1,0 +1,72 @@
+\documentclass[11pt]{article}
+\usepackage{geometry}
+
+\geometry{landscape, a4paper, margin=0mm}
+
+\usepackage{amsmath,amssymb}
+\usepackage{tikz-qtree}
+\usepackage{fullpage}
+\usepackage{pdflscape}
+
+\hoffset = 0pt
+\voffset = 0pt
+\oddsidemargin = -70pt
+\topmargin = -70pt
+\headheight = 0pt
+\headsep = 0pt
+\marginparsep = 0pt
+\marginparwidth = 0pt
+\footskip = 0pt
+\textheight = 800pt
+
+\newcommand{\rulefont}[1]{\ensuremath{\mathbf{(#1)}}}
+
+\begin{document}
+
+\pagestyle{empty}
+
+{\footnotesize
+\begin{tikzpicture}[
+  level distance=1.5cm,sibling distance=0.5cm,
+  edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}]
+\tikzstyle{level 1}=[level distance=1.7cm] 
+\Tree[.{$\langle\{\}, \;\{X, Y\}, \;id, \;\{[a]\langle [b]f^{C}_{n} \langle X, \overline{b} \rangle, Y \rangle\approx_?[b]\langle [a]f^{C}_{n} \langle \overline{a}, X \rangle, Y \rangle\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? [ab]}$};
+[.{$\langle\{\}, \;\{X, Y\}, \;id, \;\{\langle [b]f^{C}_{n} \langle X, \overline{b} \rangle, Y \rangle\approx_?\langle [b]f^{C}_{n} \langle \overline{b}, (a\,b).X \rangle, (a\,b).Y \rangle,\; a\,\#_?\,\langle [a]f^{C}_{n} \langle \overline{a}, X \rangle, Y \rangle\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? pair}$};
+[.{$\langle\{\}, \;\{X, Y\}, \;id, \;\{[b]f^{C}_{n} \langle X, \overline{b} \rangle\approx_?[b]f^{C}_{n} \langle \overline{b}, (a\,b).X \rangle,\; Y\approx_?(a\,b).Y,\; a\,\#_?\,\langle [a]f^{C}_{n} \langle \overline{a}, X \rangle, Y \rangle\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? [aa]}$};
+[.{$\langle\{\}, \;\{X, Y\}, \;id, \;\{f^{C}_{n} \langle X, \overline{b} \rangle\approx_?f^{C}_{n} \langle \overline{b}, (a\,b).X \rangle,\; Y\approx_?(a\,b).Y,\; a\,\#_?\,\langle [a]f^{C}_{n} \langle \overline{a}, X \rangle, Y \rangle\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? C}$};
+[.{$\langle\{\}, \;\{X, Y\}, \;id, \;\{X\approx_?\overline{b},\; \overline{b}\approx_?(a\,b).X,\; Y\approx_?(a\,b).Y,\; a\,\#_?\,\langle [a]f^{C}_{n} \langle \overline{a}, X \rangle, Y \rangle\} \rangle$} [.{\small $\rulefont{\bot}$} ]] [.{$\langle\{\}, \;\{X, Y\}, \;id, \;\{X\approx_?(a\,b).X,\; \overline{b}\approx_?\overline{b},\; Y\approx_?(a\,b).Y,\; a\,\#_?\,\langle [a]f^{C}_{n} \langle \overline{a}, X \rangle, Y \rangle\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? inv}$};
+[.{$\langle\{\}, \;\{X, Y\}, \;id, \;\{\overline{b}\approx_?\overline{b},\; Y\approx_?(a\,b).Y,\; a\,\#_?\,\langle [a]f^{C}_{n} \langle \overline{a}, X \rangle, Y \rangle,\; (a\,b).X\approx_?X\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? refl}$};
+[.{$\langle\{\}, \;\{X, Y\}, \;id, \;\{Y\approx_?(a\,b).Y,\; a\,\#_?\,\langle [a]f^{C}_{n} \langle \overline{a}, X \rangle, Y \rangle,\; (a\,b).X\approx_?X\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? inv}$};
+[.{$\langle\{\}, \;\{X, Y\}, \;id, \;\{a\,\#_?\,\langle [a]f^{C}_{n} \langle \overline{a}, X \rangle, Y \rangle,\; (a\,b).X\approx_?X,\; (a\,b).Y\approx_?Y\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\#_?\, pair}$};
+[.{$\langle\{\}, \;\{X, Y\}, \;id, \;\{a\,\#_?\,[a]f^{C}_{n} \langle \overline{a}, X \rangle,\; a\,\#_?\,Y,\; (a\,b).X\approx_?X,\; (a\,b).Y\approx_?Y\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\#_?\, a[a]}$};
+[.{$\langle\{\}, \;\{X, Y\}, \;id, \;\{a\,\#_?\,Y,\; (a\,b).X\approx_?X,\; (a\,b).Y\approx_?Y\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\#_?\, var}$};
+[.{$\langle\{a\#Y\}, \;\{X, Y\}, \;id, \;\{(a\,b).X\approx_?X,\; (a\,b).Y\approx_?Y\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\mu_{fp}}$};
+[.{$\langle\{a\#X, \;b\#X, \;a\#Y\}, \;\{X, Y\}, \;id, \;\{(a\,b).Y\approx_?Y\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\mu_{fp}}$};
+[.{$\langle\{b\#Y, \;a\#X, \;b\#X, \;a\#Y\}, \;\{X, Y\}, \;id, \;\{\} \rangle$} [.{\small $\rulefont{\top}$} ]]  ]
+  ]
+  ]
+  ]
+  ]
+  ]
+  ]
+  ]
+  ]
+  ]
+  ]
+  ]
+\end{tikzpicture}
+}
+
+\end{document}

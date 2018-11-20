@@ -1,0 +1,78 @@
+\documentclass[11pt]{article}
+\usepackage{geometry}
+
+\geometry{landscape, a4paper, margin=0mm}
+
+\usepackage{amsmath,amssymb}
+\usepackage{tikz-qtree}
+\usepackage{fullpage}
+\usepackage{pdflscape}
+
+\hoffset = 0pt
+\voffset = 0pt
+\oddsidemargin = -70pt
+\topmargin = -70pt
+\headheight = 0pt
+\headsep = 0pt
+\marginparsep = 0pt
+\marginparwidth = 0pt
+\footskip = 0pt
+\textheight = 800pt
+
+\newcommand{\rulefont}[1]{\ensuremath{\mathbf{(#1)}}}
+
+\begin{document}
+
+\pagestyle{empty}
+
+{\footnotesize
+\begin{tikzpicture}[
+  level distance=1.7cm,sibling distance=0.5cm,
+  edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}]
+\tikzstyle{level 1}=[level distance=1.7cm] 
+\Tree[.{$\langle\{\}, \;\{\}, \;id, \;\{[a']f^{C}_{n} \langle (a\,b).X, Y \rangle\approx_?[b']f^{C}_{n} \langle (a\,c)(c\,d).X, Y \rangle\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? [ab]}$};
+[.{$\langle\{\}, \;\{\}, \;id, \;\{f^{C}_{n} \langle (a\,b).X, Y \rangle\approx_?f^{C}_{n} \langle (a\,c)(c\,d)(a'\,b').X, (a'\,b').Y \rangle,\; a'\,\#_?\,f^{C}_{n} \langle (a\,c)(c\,d).X, Y \rangle\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? C}$};
+[.{$\langle\{\}, \;\{\}, \;id, \;\{(a\,b).X\approx_?(a\,c)(c\,d)(a'\,b').X,\; Y\approx_?(a'\,b').Y,\; a'\,\#_?\,f^{C}_{n} \langle (a\,c)(c\,d).X, Y \rangle\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? inv}$};
+[.{$\langle\{\}, \;\{\}, \;id, \;\{Y\approx_?(a'\,b').Y,\; a'\,\#_?\,f^{C}_{n} \langle (a\,c)(c\,d).X, Y \rangle,\; (a\,b)(a'\,b')(c\,d)(a\,c).X\approx_?X\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? inv}$};
+[.{$\langle\{\}, \;\{\}, \;id, \;\{a'\,\#_?\,f^{C}_{n} \langle (a\,c)(c\,d).X, Y \rangle,\; (a\,b)(a'\,b')(c\,d)(a\,c).X\approx_?X,\; (a'\,b').Y\approx_?Y\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\#_?\, app}$};
+[.{$\langle\{\}, \;\{\}, \;id, \;\{a'\,\#_?\,\langle (a\,c)(c\,d).X, Y \rangle,\; (a\,b)(a'\,b')(c\,d)(a\,c).X\approx_?X,\; (a'\,b').Y\approx_?Y\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\#_?\, pair}$};
+[.{$\langle\{\}, \;\{\}, \;id, \;\{a'\,\#_?\,(a\,c)(c\,d).X,\; a'\,\#_?\,Y,\; (a\,b)(a'\,b')(c\,d)(a\,c).X\approx_?X,\; (a'\,b').Y\approx_?Y\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\#_?\, var}$};
+[.{$\langle\{a'\#X\}, \;\{\}, \;id, \;\{a'\,\#_?\,Y,\; (a\,b)(a'\,b')(c\,d)(a\,c).X\approx_?X,\; (a'\,b').Y\approx_?Y\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\#_?\, var}$};
+[.{$\langle\{a'\#Y, \;a'\#X\}, \;\{\}, \;id, \;\{(a\,b)(a'\,b')(c\,d)(a\,c).X\approx_?X,\; (a'\,b').Y\approx_?Y\} \rangle$} [.{\small $\rulefont{\top}$} ]]  ]
+  ]
+  ]
+  ]
+  ]
+  ]
+ [.{$\langle\{\}, \;\{\}, \;id, \;\{(a\,b).X\approx_?(a'\,b').Y,\; Y\approx_?(a\,c)(c\,d)(a'\,b').X,\; a'\,\#_?\,f^{C}_{n} \langle (a\,c)(c\,d).X, Y \rangle\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? inst}$};
+[.{$\langle\{\}, \;\{\}, \;X/(a'\,b')(a\,b).Y, \;\{Y\approx_?(a'\,b')(a\,b)(a\,c)(c\,d)(a'\,b').Y,\; a'\,\#_?\,f^{C}_{n} \langle (a'\,b')(a\,b)(a\,c)(c\,d).Y, Y \rangle\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? inv}$};
+[.{$\langle\{\}, \;\{\}, \;X/(a'\,b')(a\,b).Y, \;\{a'\,\#_?\,f^{C}_{n} \langle (a'\,b')(a\,b)(a\,c)(c\,d).Y, Y \rangle,\; (a'\,b')(c\,d)(a\,c)(a\,b)(a'\,b').Y\approx_?Y\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\#_?\, app}$};
+[.{$\langle\{\}, \;\{\}, \;X/(a'\,b')(a\,b).Y, \;\{a'\,\#_?\,\langle (a'\,b')(a\,b)(a\,c)(c\,d).Y, Y \rangle,\; (a'\,b')(c\,d)(a\,c)(a\,b)(a'\,b').Y\approx_?Y\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\#_?\, pair}$};
+[.{$\langle\{\}, \;\{\}, \;X/(a'\,b')(a\,b).Y, \;\{a'\,\#_?\,(a'\,b')(a\,b)(a\,c)(c\,d).Y,\; a'\,\#_?\,Y,\; (a'\,b')(c\,d)(a\,c)(a\,b)(a'\,b').Y\approx_?Y\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\#_?\, var}$};
+[.{$\langle\{b'\#Y\}, \;\{\}, \;X/(a'\,b')(a\,b).Y, \;\{a'\,\#_?\,Y,\; (a'\,b')(c\,d)(a\,c)(a\,b)(a'\,b').Y\approx_?Y\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\#_?\, var}$};
+[.{$\langle\{a'\#Y, \;b'\#Y\}, \;\{\}, \;X/(a'\,b')(a\,b).Y, \;\{(a'\,b')(c\,d)(a\,c)(a\,b)(a'\,b').Y\approx_?Y\} \rangle$} [.{\small $\rulefont{\top}$} ]]  ]
+  ]
+  ]
+  ]
+  ]
+  ]
+  ]
+  ]
+\end{tikzpicture}
+}
+
+\end{document}
