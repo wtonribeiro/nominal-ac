@@ -34,11 +34,11 @@ let rec equ_sys (qr : ((string * string) list) * (string list) * ((string * term
       if a = b
       then
         let label = "\\approx_? [aa]" in
-        let rec_call = equ_sys (c, varSet, s, Equ (u0, u1) :: prb) in
+        let rec_call = equ_sys (c, varSet, s, set_add (Equ (u0, u1)) prb) in
          Node (label, qr, [rec_call])
       else 
         let label = "\\approx_? [ab]" in
-        let rec_call = equ_sys (c, varSet, s, (Equ (u0, p_act_t [(a, b)] u1)) :: (Fresh (a, u1)) :: prb) in
+        let rec_call = equ_sys (c, varSet, s, set_add (Equ (u0, p_act_t [(a, b)] u1)) (set_add (Fresh (a, u1)) prb)) in
          Node (label, qr, [rec_call])
      
                              
@@ -51,8 +51,9 @@ let rec equ_sys (qr : ((string * string) list) * (string list) * ((string * term
      then  
 
        if (e0 <> "C")
-       then Node ("\\approx_? C", qr, [equ_sys (c, varSet, s, Equ (u0, u1) :: Equ (v0, v1) :: prb)])
-       else Node ("\\approx_? C", qr, [equ_sys (c, varSet, s, Equ (u0, u1) :: Equ (v0, v1) :: prb); equ_sys (c, varSet, s, Equ (u0, v1) :: Equ (v0, u1) :: prb)])
+       then Node ("\\approx_? app \\& pair", qr, [equ_sys (c, varSet, s, set_add (Equ (u0, u1)) (set_add (Equ (v0, v1)) prb))])
+       else Node ("\\approx_? C", qr, [equ_sys (c, varSet, s, set_add (Equ (u0, u1)) (set_add (Equ (v0, v1)) prb));
+                                       equ_sys (c, varSet, s, set_add (Equ (u0, v1)) (set_add (Equ (v0, u1)) prb))])
 
      else Leaf ("\\bot", qr)
 
@@ -64,7 +65,7 @@ let rec equ_sys (qr : ((string * string) list) * (string list) * ((string * term
      if ((e0 = e1) && (n0 = n1))
 
      then Node ("\\approx_? app", qr,
-                 [equ_sys (c, varSet, s, Equ (u0, u1) :: prb)] )
+                 [equ_sys (c, varSet, s, set_add (Equ (u0, u1)) prb)] )
 
      else Leaf ("\\bot", qr)
 
@@ -74,7 +75,7 @@ let rec equ_sys (qr : ((string * string) list) * (string list) * ((string * term
                       
   | (c, varSet, s, Equ (Pr (u0, v0), Pr (u1 ,v1)) :: prb) ->
      Node ("\\approx_? pair", qr, 
-    [equ_sys (c, varSet, s, (Equ (u0, u1)) :: (Equ (v0, v1)) :: prb)])                          
+    [equ_sys (c, varSet, s, set_add (Equ (u0, u1)) (set_add (Equ (v0, v1)) prb))])                          
 
 
 
@@ -182,22 +183,25 @@ let rec fresh_sys qr  =
                                
       then Node ("\\#_?\\, a[a]", qr, [fresh_sys (c, varSet, s, prb)])
                           
-      else Node ("\\#_?\\, a[b]", qr, [fresh_sys (c, varSet, s, Fresh (a, t) :: prb)])
+      else Node ("\\#_?\\, a[b]", qr, [fresh_sys (c, varSet, s, set_add (Fresh (a, t)) prb)])
 
 
   (** # Pr **)                                                              
                                                                  
-  | (c, varSet, s, Fresh (a, Pr (u, v)) :: prb) -> Node ("\\#_?\\, pair", qr, [fresh_sys (c, varSet, s, Fresh (a, u) :: Fresh (a, v) :: prb)]) 
+  | (c, varSet, s, Fresh (a, Pr (u, v)) :: prb) ->
+     Node ("\\#_?\\, pair", qr, [fresh_sys (c, varSet, s, set_add (Fresh (a, u)) (set_add (Fresh (a, v)) prb))]) 
                                                                          
 
   (** Fc **)
                                                                          
-  | (c, varSet, s, Fresh (a, Fc (e, n, t)) :: prb) -> Node ("\\#_?\\, app", qr, [fresh_sys (c, varSet, s, Fresh (a, t) :: prb)]) 
+  | (c, varSet, s, Fresh (a, Fc (e, n, t)) :: prb) ->
+     Node ("\\#_?\\, app", qr, [fresh_sys (c, varSet, s, set_add (Fresh (a, t))  prb)]) 
 
 
   (** Su **)                                                       
                                                          
-  | (c, varSet, s, Fresh (a, Su (pi, x)) :: prb) -> Node ("\\#_?\\, var", qr, [fresh_sys ((p_act (rev pi) a, x) :: c, varSet, s, prb)])
+  | (c, varSet, s, Fresh (a, Su (pi, x)) :: prb) ->
+     Node ("\\#_?\\, var", qr, [fresh_sys (set_add (p_act (rev pi) a, x) c, varSet, s, prb)])
 
 
   (** Fixed point equations **)                                                                
