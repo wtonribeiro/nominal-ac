@@ -1,0 +1,57 @@
+\documentclass[11pt]{article}
+\usepackage{geometry}
+
+\geometry{landscape, a5paper, margin=0mm}
+
+\usepackage{amsmath,amssymb}
+\usepackage{tikz-qtree}
+\usepackage{fullpage}
+\usepackage{pdflscape}
+
+\hoffset = 0pt
+\voffset = 0pt
+\oddsidemargin = -70pt
+\topmargin = -70pt
+\headheight = 0pt
+\headsep = 0pt
+\marginparsep = 0pt
+\marginparwidth = 0pt
+\footskip = 0pt
+\textheight = 800pt
+
+\newcommand{\rulefont}[1]{\ensuremath{\mathbf{(#1)}}}
+
+\begin{document}
+
+\pagestyle{empty}
+
+{\footnotesize
+\begin{tikzpicture}[
+  level distance=1.7cm,sibling distance=0.5cm,
+  edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}]
+\tikzstyle{level 1}=[level distance=1.7cm] 
+\Tree[.{$\langle\{\}, \;\{X\}, \;id, \;\{f^{C}_{n} \langle (a\,b).X, (c\,d).X \rangle\approx_?f^{C}_{n} \langle (c\,d)(b\,d)(a\,d).X, X \rangle\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? C}$};
+[.{$\langle\{\}, \;\{X\}, \;id, \;\{(a\,b).X\approx_?(c\,d)(b\,d)(a\,d).X,\; (c\,d).X\approx_?X\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? inv}$};
+[.{$\langle\{\}, \;\{X\}, \;id, \;\{(c\,d).X\approx_?X,\; (a\,b)(a\,d)(b\,d)(c\,d).X\approx_?X\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\mu_{fp}}$};
+[.{$\langle\{c\#X, \;d\#X\}, \;\{X\}, \;id, \;\{(a\,b)(a\,d)(b\,d)(c\,d).X\approx_?X\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\mu_{fp}}$};
+[.{$\langle\{a\#X, \;c\#X, \;d\#X\}, \;\{X\}, \;id, \;\{\} \rangle$} [.{\small $\rulefont{\top}$} ]]  ]
+  ]
+  ]
+ [.{$\langle\{\}, \;\{X\}, \;id, \;\{(c\,d).X\approx_?(c\,d)(b\,d)(a\,d).X,\; (a\,b).X\approx_?X\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\approx_? inv}$};
+[.{$\langle\{\}, \;\{X\}, \;id, \;\{(a\,b).X\approx_?X,\; (c\,d)(a\,d)(b\,d)(c\,d).X\approx_?X\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\mu_{fp}}$};
+[.{$\langle\{a\#X, \;b\#X\}, \;\{X\}, \;id, \;\{(c\,d)(a\,d)(b\,d)(c\,d).X\approx_?X\} \rangle$}
+	\edge node[auto=right] {\small $\rulefont{\mu_{fp}}$};
+[.{$\langle\{c\#X, \;a\#X, \;b\#X\}, \;\{X\}, \;id, \;\{\} \rangle$} [.{\small $\rulefont{\top}$} ]]  ]
+  ]
+  ]
+  ]
+\end{tikzpicture}
+}
+
+\end{document}

@@ -66,6 +66,11 @@ let qr21 = ([],["X"; "Y"],[],[Equ (Ab ("a", Pr (Ab ("b", Fc ("C", "n", Pr (Su ([
 
 
 let qr22 = ([],[],[],[Equ (Ab ("a'", Pr (Fc ("C", "n", Pr (Su ([("a","c")],"X"), Su ([("b","c");("a","c")],"Y"))), Su ([("c","d");("b","d");("a","d")], "X"))),
-                          Ab ("b'", Pr (Fc ("C", "n", Pr (Su ([],"X"), Su ([],"Y"))), Su ([], "X"))))])
+                           Ab ("b'", Pr (Fc ("C", "n", Pr (Su ([],"X"), Su ([],"Y"))), Su ([], "X"))))])
 
 
+let qr23 = ([],[],[],[Equ (Fc ("C", "0", Pr (Fc ("C", "1", Pr (Su ([], "X"), Su ([], "Y"))), Fc ("C", "1", Pr (At "a", At "b")))),  
+                           Fc ("C", "0", Pr (Fc ("C", "1", Pr (At "c", At "d")), Fc ("C", "1", Pr (Su ([], "Z"), Su ([], "W"))))))])
+
+let qr24 = ([],["X"],[],[Equ (Fc ("C", "n", Pr (Su ([("a", "b")], "X"), Su ([("c", "d")], "X"))),
+                              Fc ("C", "n", Pr (Su ([("c", "d");("b", "d");("a", "d")], "X"), Su ([], "X"))))]) 
