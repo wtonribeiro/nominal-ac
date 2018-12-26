@@ -11,6 +11,8 @@ FILES = \
 	Disagr \
 	Tuples \
 	Fresh \
+        w_Equiv \
+        Alpha_Equiv_old \
         Alpha_Equiv \
 	Equiv \
         AACC_Equiv_rec \
@@ -22,7 +24,8 @@ FILES = \
         C_Unif \
         C_Unif_Termination \
         C_Unif_Soundness \
-        C_Unif_Completeness
+        C_Unif_Completeness \
+        C_Matching
 
 all : main
 pat: $(foreach i, $(PAT), $(i).vo)
