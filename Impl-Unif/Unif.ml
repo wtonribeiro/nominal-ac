@@ -214,7 +214,7 @@ let rec fresh_sys qr  =
 
         then Node ("\\mu_{fp}", qr, [fresh_sys (set_union (fresh_atoms (dom_perm pi) x) c, varSet, s, prb)])
 
-        else if (set_inter varSet (prb_eq_vars prb) != [])
+        else if ((set_inter varSet (prb_eq_vars prb) != []) || has_freshness prb)
 
              then fresh_sys (c, varSet, s, prb @ [Equ (Su (pi, x), Su ([], x))])
 

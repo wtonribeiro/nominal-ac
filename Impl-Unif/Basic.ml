@@ -251,7 +251,7 @@ let rec sub_prb prb s =
 
 
 
-(** Verify if a constraint is a fixpoint equation **)
+(** Verifies if a constraint is a fixpoint equation **)
 
 let is_fixpoint_equ ctr =
   match ctr with
@@ -260,7 +260,7 @@ let is_fixpoint_equ ctr =
                                     then true else false
   | _ -> false                                                   
                                            
-(** Verify if the equational part of a problem is a set of fixpoint equations **)
+(** Verifies if the equational part of a problem is a set of fixpoint equations **)
                                                                     
 let rec is_fixpoint_set prb =
   match prb with
@@ -270,17 +270,24 @@ let rec is_fixpoint_set prb =
                           then is_fixpoint_set prb0
                           else false                                                                  
 
-(** Verify if a problem contains only freshness constraints **)
+(** Verifies if a problem contains only freshness constraints **)
                                                                     
 let rec is_freshness_set prb =
   match prb with
   | [] -> true
   | Fresh (a, u) :: prb0 -> is_freshness_set prb0         
-  | Equ (s, t) :: prb0 -> false 
+  | Equ (s, t) :: prb0 -> false
+
+(** Verifies if a problem contains freshness constraints *)
+
+let rec has_freshness prb =
+  match prb with
+  | [] -> false
+  | Fresh (a, u) :: prb0 -> true         
+  | Equ (s, t) :: prb0 -> has_freshness prb0                            
                                  
-                                 
-                   
-(** Verify if a problem is composed only by equations *) 
+   
+(** Verifies if a problem is composed only by equations *) 
 
 let rec is_equation_set prb =
   match prb with

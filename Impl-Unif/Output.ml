@@ -27,13 +27,18 @@ let rec fresh_ctx_string ctx =
   | [] -> ""                                         
 
             
-let rec subst_string sub =
+let subst_string sub =
   match sub with
-  | [(x,t)] -> x ^ "/" ^ term_string t
-  | (x,t) :: sub0 -> "\\{" ^ x ^ "/" ^ term_string t ^ ", \\;" ^ subst_string sub0 ^ "\\}"
-  | [] -> "id"                                         
-                 
-            
+  | [] -> "id"          
+  | _  -> (let rec subst_body sub =
+            match sub with
+             | [] -> "" 
+             | [(x,t)] -> x ^ "/" ^ term_string t
+             | (x,t) :: sub0 -> x ^ "/" ^ term_string t ^ ", \\;" ^ subst_body sub0 in                      
+              "\\{" ^  subst_body sub   ^ "\\}")
+
+
+                                                                      
 let rec constr_string ctr =
   match ctr with
   | Fresh (a, t) -> a ^ "\\,\\#_?\\," ^ term_string t
