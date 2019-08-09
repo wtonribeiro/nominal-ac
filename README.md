@@ -1,6 +1,6 @@
 **A Formalisation (in Coq) of Nominal C-Unification and Nominal A, C and AC-Equivalence**
 
-**The current version of this dataset is also available at [https://doi.org/10.5281/zenodo.2582109](https://doi.org/10.5281/zenodo.2582109)**
+**The current version of this dataset is also available at [https://doi.org/10.5281/zenodo.3364517](https://doi.org/10.5281/zenodo.3364517)**.
 
 **Compiled with the Coq Proof Assistant Version 8.7:**
 
