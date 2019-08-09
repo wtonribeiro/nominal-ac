@@ -4,6 +4,7 @@
 
 **File/Folder** | Short description
 ------------ | -------------
+**thesis20190319.pdf** | The text of the doctoral thesis entitled "Nominal Equational Problems Modulo Associativity, Commutativity and Associativity-Commutativity"
 **[Impl_Equiv/](https://github.com/wtonribeiro/nominal-ac/tree/master/Impl-Equiv)** | Folder with the implementations of the naive (extracted from the specification) and of the improved nominal A, C and AC-checking algorithms (OCaml code)
 **[Impl_Unif/](https://github.com/wtonribeiro/nominal-ac/tree/master/Impl-Unif)** | Folder with the implementation of the nominal C-unification algorithm (OCaml code)
 **LibTactics.v**    | Library of tactics given by http://www.chargueraud.org/softs/tlc/
