@@ -1,10 +1,12 @@
 **A Formalisation (in Coq) of Nominal C-Unification and Nominal A, C and AC-Equivalence**
 
+**The current version of this dataset is also available at [https://doi.org/10.5281/zenodo.2582109](https://doi.org/10.5281/zenodo.2582109)**
+
 **Compiled with the Coq Proof Assistant Version 8.7:**
 
 **File/Folder** | Short description
 ------------ | -------------
-**thesis20190319.pdf** | The text of the doctoral thesis entitled "Nominal Equational Problems Modulo Associativity, Commutativity and Associativity-Commutativity"
+**[thesis20190319.pdf](https://doi.org/10.13140/RG.2.2.17014.14404)** | The text of the doctoral thesis entitled "Nominal Equational Problems Modulo Associativity, Commutativity and Associativity-Commutativity"
 **[Impl_Equiv/](https://github.com/wtonribeiro/nominal-ac/tree/master/Impl-Equiv)** | Folder with the implementations of the naive (extracted from the specification) and of the improved nominal A, C and AC-checking algorithms (OCaml code)
 **[Impl_Unif/](https://github.com/wtonribeiro/nominal-ac/tree/master/Impl-Unif)** | Folder with the implementation of the nominal C-unification algorithm (OCaml code)
 **LibTactics.v**    | Library of tactics given by http://www.chargueraud.org/softs/tlc/
