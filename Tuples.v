@@ -1542,6 +1542,7 @@ Proof.
 Qed.
 
 
+
 Lemma Args_col_TPith_TPithdel  : forall L s E n,
 
       valid_col L s E n ->
@@ -1658,12 +1659,15 @@ Proof.
   destruct H16. split~. destruct H17; [left~ | right~]. right~.
      
   unfold valid_col. split~.
-  2: { intros. simpl in H16.
+
+  Focus 2.
+  (* 2: { *) intros. simpl in H16.
   destruct H16. rewrite <- H16.
   rewrite TPlength_TPithdel; try omega.
-  apply H15. trivial. }
+  apply H15. trivial. (* } *)
   apply NoDup_cons.
-  2: { apply H15. }
+  Focus 2.
+  (* 2: { *) apply H15. (* } *)
 
   intro H16. apply H14 in H16.
   destruct H16; destruct H16.
@@ -1691,3 +1695,4 @@ Proof.
   apply length_zero_iff_nil in H2. contradiction.
   
 Qed.
+

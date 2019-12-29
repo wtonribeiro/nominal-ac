@@ -347,7 +347,8 @@ Proof.
   apply set_add_intro1; trivial.
   apply set_union_intro2. apply set_add_intro1; trivial. omega.
 
-  5:{ assert (Q:n=n1). omega. rewrite <- Q in *|-*.
+  Focus 5.
+  (* 5:{ *) assert (Q:n=n1). omega. rewrite <- Q in *|-*.
   clear H3 H7 H9 Q. assert (Q: ~ set_In n S1). intro.
   assert (Q: set_In n (S1 |I S2)). apply set_inter_intro; trivial.
   rewrite H in Q. simpl in Q. contradiction.
@@ -357,21 +358,30 @@ Proof.
   apply set_union_intro1. apply set_union_elim in H3. destruct H3.
   apply set_union_intro1; trivial. apply set_union_intro2.
   apply set_add_intro1; trivial.
-  apply set_union_intro2. apply set_add_intro1; trivial. omega. } 
-  
-  5:{ assert (Q:n=n1). omega. rewrite <- Q in *|-*.
+  apply set_union_intro2. apply set_add_intro1; trivial. omega. (* } *)
+
+  Focus 5.
+  (* 5:{*) assert (Q:n=n1). omega. rewrite <- Q in *|-*.
   clear H12 H13 H3 H8 Q. assert (n = 0). omega.
   assert (E = 0). omega. rewrite H3 in *|-*. rewrite H5 in *|-*.
-  assert (0 >= 1). apply H1. apply set_union_intro1. apply set_union_intro1; trivial. omega. }
+  assert (0 >= 1). apply H1. apply set_union_intro1. apply set_union_intro1; trivial. omega. (*}*)
   
-  7:{ assert (Q:E >= n + E + 1). apply H1. apply set_union_intro2. apply set_add_intro2; trivial. omega. }
-  7:{ assert (n = 0). omega. assert (E = 0). omega. rewrite H5 in *|-*. rewrite H6 in *|-*.
-  assert (0 >= 1). apply H1. apply set_union_intro1. apply set_union_intro1; trivial. omega. }
-  9:{ assert (Q:E >= n1 + E + 1). apply H1. apply set_union_intro1. apply set_union_intro2. apply set_add_intro2; trivial. omega. }
-  9:{ assert (n1 = 0). omega. assert (E = 0). omega. rewrite H4 in *|-*. rewrite H5 in *|-*. 
-  assert (0 >= 1). apply H1. apply set_union_intro1. apply set_union_intro1; trivial. omega. }
+  Focus 7.
+  (* 7:{ *) assert (Q:E >= n + E + 1). apply H1. apply set_union_intro2. apply set_add_intro2; trivial. omega. (* } *)
 
-  11:{  apply equiv_Fc. destruct H7.
+  Focus 7.
+  (* 7:{ *) assert (n = 0). omega. assert (E = 0). omega. rewrite H5 in *|-*. rewrite H6 in *|-*.
+      assert (0 >= 1). apply H1. apply set_union_intro1. apply set_union_intro1; trivial. omega. (* } *)
+
+  Focus 9.
+  (* 9:{ *) assert (Q:E >= n1 + E + 1). apply H1. apply set_union_intro1. apply set_union_intro2. apply set_add_intro2; trivial. omega. (* } *)
+ 
+  Focus 9.
+  (* 9:{ *) assert (n1 = 0). omega. assert (E = 0). omega. rewrite H4 in *|-*. rewrite H5 in *|-*. 
+  assert (0 >= 1). apply H1. apply set_union_intro1. apply set_union_intro1; trivial. omega. (* } *)
+
+  Focus 11.
+  (* 11:{ *)  apply equiv_Fc. destruct H7.
   left~. destruct H4. right~. split~.
   destruct H5; [left~ | right~];
     intro H6; apply H5; apply rpl_super_is_Pr; trivial.  
@@ -380,7 +390,7 @@ Proof.
   apply set_union_intro1. apply set_union_elim in H4. destruct H4.
   apply set_union_intro1; trivial. apply set_union_intro2.
   apply set_add_intro1; trivial.
-  apply set_union_intro2. apply set_add_intro1; trivial. omega. }
+  apply set_union_intro2. apply set_add_intro1; trivial. omega. (* } *)
 
 
   clear H3. assert (Q:E >=0). apply H1.
@@ -465,8 +475,9 @@ Proof.
    apply term_size_TPithdel; trivial. omega.
    simpl in Q'. gen Q'. case (set_In_dec nat_eqdec 1 S2);
                           intros; try contradiction; try omega; trivial.
-   
-  9:{ clear H3. assert (Q:E >=0). apply H1.
+
+  Focus 9. 
+  (* 9:{ *) clear H3. assert (Q:E >=0). apply H1.
   apply set_union_intro2. apply set_add_intro2; simpl; omega.
   apply equiv_A; trivial. autorewrite with tuples in *|-*.
   rewrite 2 TPith_rpl_super in H12; trivial.
@@ -508,10 +519,10 @@ Proof.
   destruct H0. apply set_add_intro2; trivial.
   apply set_add_intro1. apply set_super_TPithdel in H0; trivial.
   simpl. assert (Q':term_size (TPithdel 1 t 0 n2) < term_size t).
-  apply term_size_TPithdel; trivial. omega. }
+  apply term_size_TPithdel; trivial. omega. (* } *)
 
-
-  9:{ clear H3. assert (Q:E >=1). apply H1.
+  Focus 9.
+  (* 9:{ *) clear H3. assert (Q:E >=1). apply H1.
   apply set_union_intro2. apply set_add_intro2; simpl; omega.
   apply equiv_AC with (i:=i); repeat split~;
   autorewrite with tuples in *|-*; trivial.
@@ -555,7 +566,7 @@ Proof.
   apply set_add_intro2; trivial. apply set_add_intro1.
   apply set_super_TPithdel in H0; trivial.
   simpl. assert (Q':term_size (TPithdel 1 t 1 n2) < term_size t).
-  apply term_size_TPithdel; trivial. omega. }
+  apply term_size_TPithdel; trivial. omega. (* } *)
 
   simpl rpl_super. apply equiv_C1; trivial.
   apply -> H0; intros; trivial; clear H0; try omega.  

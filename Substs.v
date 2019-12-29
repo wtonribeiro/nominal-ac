@@ -1491,7 +1491,8 @@ Lemma TPlength_TPith_subst : forall S i t E n,
 Proof.
   intros. gen i. induction t; intros.
   simpl; omega. simpl; omega. simpl; omega.
-  3:{ simpl; omega. }
+  Focus 3.
+  (* 3:{ *) simpl; omega. (* } *)
   case (le_dec i (TPlength t1 E n)); intro H.
   rewrite TPith_Pr_le; trivial; simpl subs.
   assert (Q : TPlength (TPith i t1 E n|^S) E n <= TPlength (t1|^S) E n).
@@ -1572,7 +1573,8 @@ Proof.
   gen i. induction t; intros.
   simpl in H. inverts H. simpl in H. inverts H.
   simpl in H. inverts H.
-  3:{simpl in H. inverts H; trivial. }
+  Focus 3.
+  (* 3:{ *) simpl in H. inverts H; trivial. (* } *)
   simpl subs.
   case (le_dec i (TPlength (t1|^S) E n)); intro H1.
   rewrite TPith_Pr_le; trivial. apply IHt1; trivial.
@@ -1598,7 +1600,8 @@ Lemma TPlength_TPith_TPithdel_subst : forall i t E n S,
 Proof.
   intros. gen i. induction t; intros.
   simpl in H. false. simpl in H. false. simpl in H. false.
-  3:{ simpl in H. false. }
+  Focus 3.
+  (* 3:{ *)  simpl in H. false. (* } *)
   case (le_dec i (TPlength t1 E n)); intro H0.
   rewrite TPith_Pr_le; trivial.
   case (eq_nat_dec (TPlength t1 E n) 1); intro H1.

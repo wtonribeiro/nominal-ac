@@ -399,8 +399,9 @@ Proof.
   apply Problem_vars_union in H2.
   apply set_union_elim in H2. destruct H2.
 
-  2:{ rewrite equ_proj_subs_fresh in H2.
-  simpl in H2. contradiction. }
+  Focus 2.
+  (* 2:{ *) rewrite equ_proj_subs_fresh in H2.
+  simpl in H2. contradiction. (* } *)
 
   rewrite equ_proj_subs in H2.
   case (var_eqdec b X); intro H3. rewrite H3 in H2.
@@ -427,8 +428,9 @@ Proof.
   apply Problem_vars_union in H2.
   apply set_union_elim in H2. destruct H2.
 
-  2:{ rewrite equ_proj_subs_fresh in H2.
-  simpl in H2; trivial. }
+  Focus 2.
+  (* 2:{ *) rewrite equ_proj_subs_fresh in H2.
+  simpl in H2; trivial. (* } *)
   rewrite equ_proj_subs in H2.
   apply In_im_subst_term_Problem in H2.
   rewrite perm_term_vars in H2.

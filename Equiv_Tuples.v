@@ -301,7 +301,9 @@ Proof.
   intros. gen_eq l : (TPlength t E n); intro H0.
   gen t t' H0 H. induction l using peano_induction; intros.
   case (set_In_dec nat_eqdec E (0 :: 1 :: (|[2]|))); intro H2.
-  2:{ apply equiv_Fc. left~. trivial. }
+
+  Focus 2.
+  (* 2:{ *) apply equiv_Fc. left~. trivial. (* } *)
 
   generalize H1; intro H1'.
   apply aacc_equiv_TPlength with (E:=E) (n:=n) in H1'.

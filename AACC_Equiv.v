@@ -1298,10 +1298,11 @@ Proof.
   inverts H2. apply H with (m := length L') in H9; try omega.
   gen_eq k : (n - i); intro H10.
 
-  2:{
+  Focus 2.
+(*  2:{ *)
   case (le_dec (n - i) (length L0)); intro H10.
    rewrite 2 tail_list_length; omega.
-  rewrite 2 tail_list_overflow; try omega. }
+  rewrite 2 tail_list_overflow; try omega. (* } *)
    
   clear L' n i l H H1 H10.
 

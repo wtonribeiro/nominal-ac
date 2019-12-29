@@ -459,8 +459,9 @@ Lemma equ_valid_preservation : forall T T' varSet,
       valid_triple T -> equ_sys varSet T T' -> valid_triple T' .   
 Proof.
   intros. unfold valid_triple in *|-*. split~.
-  2:{
-  apply equ_valid_preservation_aux with (T:=T) (varSet := varSet); trivial. }
+  Focus 2.
+  (* 2:{ *)
+  apply equ_valid_preservation_aux with (T:=T) (varSet := varSet); trivial. (* } *)
    destruct H. apply set_inter_nil. intros Y H2.
    apply set_inter_elim in H2. destruct H2.
   generalize H; intro H'.
