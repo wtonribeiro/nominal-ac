@@ -2,7 +2,7 @@
 
 **The current version of this dataset is also available at [https://doi.org/10.5281/zenodo.3364517](https://doi.org/10.5281/zenodo.3364517)**.
 
-**Compiled with the Coq Proof Assistant Version 8.7:**
+**Compiled with the Coq Proof Assistant Version 8.7.2:**
 
 **File/Folder** | Short description
 ------------ | -------------
